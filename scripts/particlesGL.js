@@ -40,6 +40,8 @@
       this.targetRotation = new THREE.Vector2();
       this.lastMousePos = new THREE.Vector2();
       this.mouseVelocity = new THREE.Vector2();
+      this.isMouseOverTarget = false;
+      this.resetAnimation = { x: 0, y: 0 };
 
       // Bind events
       this.onMouseMove = this.onMouseMove.bind(this);
@@ -127,6 +129,7 @@
       // Find which element the mouse is over
       let activeSystem = null;
       let activeOptions = null;
+      let mouseOverAnyTarget = false;
 
       for (const [instanceId, systemData] of this.particleSystems) {
         const rect = systemData.element.getBoundingClientRect();
@@ -138,24 +141,70 @@
         ) {
           activeSystem = systemData.system;
           activeOptions = systemData.options;
+          mouseOverAnyTarget = true;
 
           const relativeX = event.clientX - rect.left;
           const relativeY = event.clientY - rect.top;
 
           this.mouse.x = (relativeX / rect.width) * 2 - 1;
           this.mouse.y = -(relativeY / rect.height) * 2 + 1;
-
-          this.targetRotation.x =
-            this.mouse.y * activeOptions.rotationSensitivity;
-          this.targetRotation.y =
-            this.mouse.x * activeOptions.rotationSensitivity;
           break;
         }
+      }
+
+      // Handle mouse enter/leave
+      if (mouseOverAnyTarget && !this.isMouseOverTarget) {
+        // Mouse entered target
+        this.isMouseOverTarget = true;
+      } else if (!mouseOverAnyTarget && this.isMouseOverTarget) {
+        // Mouse left target - start reset animation
+        this.isMouseOverTarget = false;
+        this.startResetAnimation();
+      }
+
+      // Update rotation only when mouse is over target
+      if (mouseOverAnyTarget && activeOptions) {
+        this.targetRotation.x =
+          this.mouse.y * activeOptions.rotationSensitivity;
+        this.targetRotation.y =
+          this.mouse.x * activeOptions.rotationSensitivity;
       }
     }
 
     onResize() {
       this.updateRendererSize();
+    }
+
+    startResetAnimation() {
+      // Animate back to center (0, 0) with easing
+      this.resetAnimation.x = this.targetRotation.x;
+      this.resetAnimation.y = this.targetRotation.y;
+
+      const animate = () => {
+        const easeSpeed = 0.08; // Adjust for faster/slower easing
+
+        this.resetAnimation.x += (0 - this.resetAnimation.x) * easeSpeed;
+        this.resetAnimation.y += (0 - this.resetAnimation.y) * easeSpeed;
+
+        this.targetRotation.x = this.resetAnimation.x;
+        this.targetRotation.y = this.resetAnimation.y;
+
+        // Continue animation until close to center
+        if (
+          Math.abs(this.resetAnimation.x) > 0.001 ||
+          Math.abs(this.resetAnimation.y) > 0.001
+        ) {
+          requestAnimationFrame(animate);
+        } else {
+          // Snap to exact center
+          this.targetRotation.x = 0;
+          this.targetRotation.y = 0;
+          this.resetAnimation.x = 0;
+          this.resetAnimation.y = 0;
+        }
+      };
+
+      animate();
     }
 
     updateRendererSize() {
