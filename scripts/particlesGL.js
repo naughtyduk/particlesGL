@@ -8,12 +8,12 @@
    *  Global State Management
    * ------------------------------------------------*/
   let globalRenderer = null;
-  let globalScene = null;
-  let globalCamera = null;
   let instanceCounter = 0;
   let activeInstances = new Map();
   let animationFrameId = null;
   let isAnimating = false;
+  let resizeObserver = null;
+  let resizeDebounceTimer = null;
 
   /* --------------------------------------------------
    *  Shared Renderer Architecture
@@ -585,6 +585,7 @@
       if (!globalRenderer) {
         globalRenderer = new ParticlesGLRenderer();
         globalRenderer.startAnimation();
+        setupGlobalResizeObserver();
       }
 
       // Create particle systems for each target element
@@ -633,6 +634,7 @@
       if (activeInstances.size === 0 && globalRenderer) {
         globalRenderer.dispose();
         globalRenderer = null;
+        cleanupGlobalResizeObserver();
       }
 
       this.initialized = false;
@@ -717,6 +719,51 @@
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
       return texture;
+    }
+  }
+
+  /* --------------------------------------------------
+   *  Global Resize Observer
+   * ------------------------------------------------*/
+  function setupGlobalResizeObserver() {
+    if (resizeObserver) return; // Already setup
+
+    const handleResize = () => {
+      // Clear existing timer
+      if (resizeDebounceTimer) {
+        clearTimeout(resizeDebounceTimer);
+      }
+
+      // Set new timer with 250ms debounce
+      resizeDebounceTimer = setTimeout(() => {
+        console.log("particlesGL: Browser resized, reinitializing effects...");
+
+        // Reinitialize all active instances
+        for (const [, instance] of activeInstances) {
+          if (instance && instance.initialized) {
+            instance.cleanup();
+            setTimeout(() => {
+              instance.init();
+            }, 50);
+          }
+        }
+      }, 250);
+    };
+
+    // Setup resize observer
+    window.addEventListener("resize", handleResize);
+    resizeObserver = handleResize;
+  }
+
+  function cleanupGlobalResizeObserver() {
+    if (resizeObserver) {
+      window.removeEventListener("resize", resizeObserver);
+      resizeObserver = null;
+    }
+
+    if (resizeDebounceTimer) {
+      clearTimeout(resizeDebounceTimer);
+      resizeDebounceTimer = null;
     }
   }
 
