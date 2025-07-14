@@ -630,7 +630,7 @@
                             asciiEffect.updateOptions({ returnSpeed: value });
                         });
                         
-                        // Character selection
+                        // Character selection (this will cause reinit)
                         const characterOptions = {
                             character: controls.character,
                             setCharacter: function(newChar) {
@@ -640,6 +640,18 @@
                         
                         folder.add(characterOptions, 'character').name('Particle Character').onChange((value) => {
                             characterOptions.setCharacter(value);
+                        });
+                        
+                        // Add particle color control
+                        const colorOptions = {
+                            particleColor: controls.particleColor,
+                            setColor: function(newColor) {
+                                asciiEffect.updateOptions({ particleColor: newColor });
+                            }
+                        };
+                        
+                        folder.add(colorOptions, 'particleColor').name('Particle Color').onChange((value) => {
+                            colorOptions.setColor(value);
                         });
                         
                         folder.close();

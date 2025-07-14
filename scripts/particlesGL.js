@@ -639,11 +639,84 @@
     }
 
     updateOptions(newOptions) {
+      const oldOptions = { ...this.options };
       this.options = { ...this.options, ...newOptions };
 
-      // Reinitialize with new options
-      this.cleanup();
-      setTimeout(() => this.init(), 100);
+      // Check if we need to reinitialize (geometry/texture changes)
+      const needsReinit = [
+        "character",
+        "stepSize",
+        "particleSpacing",
+        "alphaThreshold",
+        "canvasWidth",
+        "canvasHeight",
+        "target",
+      ].some(
+        (key) =>
+          newOptions[key] !== undefined && newOptions[key] !== oldOptions[key]
+      );
+
+      if (needsReinit) {
+        // Hard reinit for major changes
+        this.cleanup();
+        setTimeout(() => this.init(), 100);
+      } else {
+        // Update properties in real-time
+        this.updateLiveProperties(newOptions);
+      }
+    }
+
+    updateLiveProperties(newOptions) {
+      if (!globalRenderer) return;
+
+      // Update renderer properties for all instances of this particle system
+      for (const element of this.elements) {
+        const instanceId = this.id + "-" + element.id;
+        const systemData = globalRenderer.particleSystems.get(instanceId);
+
+        if (systemData) {
+          // Update system options
+          systemData.options = { ...systemData.options, ...newOptions };
+
+          // Update material properties
+          const material = systemData.system.material;
+          if (material) {
+            if (newOptions.particleSize !== undefined) {
+              material.size = newOptions.particleSize;
+            }
+            if (newOptions.particleColor !== undefined) {
+              // Update character sprite with new color
+              const oldMap = material.map;
+              material.map = createCharacterSprite(
+                this.options.character,
+                this.options
+              );
+              if (oldMap) oldMap.dispose(); // Clean up old texture
+            }
+          }
+        }
+      }
+    }
+
+    createCharacterSprite(character, options) {
+      const canvas = document.createElement("canvas");
+      const size = 64;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = options.particleColor || "#8c8c8c";
+      ctx.font = `${options.fontSize || 48}px ${
+        options.fontFamily || "monospace"
+      }`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(character, size / 2, size / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      return texture;
     }
   }
 
