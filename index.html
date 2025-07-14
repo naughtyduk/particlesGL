@@ -88,7 +88,7 @@
             align-items: center;
             justify-content: center;
             gap: 1rem;
-            z-index: 10;
+            z-index: 999;
             position: relative;
         }
 
@@ -350,7 +350,7 @@
         <!-- Hero Section with ASCII Effect Background -->
         <div class="content-section hero-section">
             <div id="hero">
-                <img src="assets/ND25-Grey-Logo.svg" alt="NaughtyDuk Logo" class="hero-logo" />
+                <img src="assets/ND25-Grey-Logo.svg" alt="NaughtyDuk Logo" class="hero-logo particlesGL" />
             </div>
             <div class="banner-text-container">
                 <div class="banner-text sm hero">Introducing</div>
@@ -533,7 +533,7 @@
             /* Initialize particlesGL Effect immediately */
             if (typeof particlesGL !== 'undefined') {
                 asciiEffect = particlesGL({
-                    target: ".hero-logo",
+                    target: ".particlesGL",
                     character: "•",
                     particleSize: 0.015,
                     particleSpacing: 0.002,

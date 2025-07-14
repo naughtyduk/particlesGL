@@ -88,12 +88,14 @@
       this.updateRendererSize();
     }
 
-    removeParticleSystem(instanceId) {
+    removeParticleSystem(instanceId, keepTargetHidden = false) {
       const systemData = this.particleSystems.get(instanceId);
       if (systemData) {
-        // Restore original target element visibility
-        systemData.element.style.visibility =
-          systemData.originalVisibility || "";
+        // Restore original target element visibility (unless we want to keep it hidden)
+        if (!keepTargetHidden) {
+          systemData.element.style.visibility =
+            systemData.originalVisibility || "";
+        }
 
         // Remove canvas from DOM
         const canvas = document.querySelector(
@@ -620,12 +622,15 @@
       }
     }
 
-    cleanup() {
+    cleanup(keepTargetHidden = false) {
       if (!this.initialized) return;
 
       // Remove all particle systems for this instance
       for (const element of this.elements) {
-        globalRenderer.removeParticleSystem(this.id + "-" + element.id);
+        globalRenderer.removeParticleSystem(
+          this.id + "-" + element.id,
+          keepTargetHidden
+        );
       }
 
       activeInstances.delete(this.id);
@@ -741,7 +746,7 @@
         // Reinitialize all active instances
         for (const [, instance] of activeInstances) {
           if (instance && instance.initialized) {
-            instance.cleanup();
+            instance.cleanup(true); // Keep target hidden during resize reinit
             setTimeout(() => {
               instance.init();
             }, 50);
