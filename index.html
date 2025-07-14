@@ -222,14 +222,25 @@
             visibility: hidden;
         }
 
-        /* ASCII Effect Container - Full Page Background */
-        #ascii-logo-insert {
+        /* Hero Effect Container - Full Page Background */
+        #hero {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+
+        .hero-logo {
+            max-width: 400px;
+            max-height: 200px;
+            pointer-events: none;
         }
 
         .footer-logo {
@@ -338,7 +349,9 @@
     <div class="main-content">
         <!-- Hero Section with ASCII Effect Background -->
         <div class="content-section hero-section">
-            <div id="ascii-logo-insert"></div>
+            <div id="hero">
+                <img src="assets/ND25-Grey-Logo.svg" alt="NaughtyDuk Logo" class="hero-logo" />
+            </div>
             <div class="banner-text-container">
                 <div class="banner-text sm hero">Introducing</div>
                 <div class="banner-text xl hero">particlesGL</div>
@@ -517,11 +530,26 @@
             /* Wait for fonts to be loaded */
             const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
 
-            /* Initialize ASCII Effect immediately */
-            if (typeof ASCIIEffect !== 'undefined') {
-                asciiEffect = ASCIIEffect;
-                asciiEffect.init();
-                console.log("particlesGL initialized immediately!", asciiEffect);
+            /* Initialize particlesGL Effect immediately */
+            if (typeof particlesGL !== 'undefined') {
+                asciiEffect = particlesGL({
+                    target: ".hero-logo",
+                    character: "•",
+                    particleSize: 0.015,
+                    particleSpacing: 0.002,
+                    particleColor: "#8c8c8c",
+                    rotationSensitivity: 0.2,
+                    rotationSpeed: 0.05,
+                    glitchStrength: 0.6,
+                    glitchRadius: 0.1,
+                    velocityInfluence: 0.1,
+                    returnSpeed: 0.05,
+                    on: {
+                        init: function(instance) {
+                            console.log("particlesGL initialized!", instance);
+                        }
+                    }
+                });
             }
 
             fontsReady.then(() => {
@@ -566,23 +594,53 @@
                 });
 
                 /* GUI Controls */
-                if (typeof lil !== 'undefined') {
+                if (typeof lil !== 'undefined' && asciiEffect) {
                     setTimeout(() => {
                         const gui = new lil.GUI();
                         const folder = gui.addFolder("particlesGL Effect");
                         
-                        // Add mouse sensitivity control
-                        const controls = {
-                            mouseSensitivity: 0.2,
-                            glitchStrength: 0.6,
-                            particleSize: 0.015,
-                            rotationSpeed: 0.05
+                        // Use actual options from the effect instance
+                        const controls = asciiEffect.options;
+                        
+                        folder.add(controls, 'rotationSensitivity', 0, 1, 0.01).name('Mouse Sensitivity').onChange((value) => {
+                            asciiEffect.updateOptions({ rotationSensitivity: value });
+                        });
+                        
+                        folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('Glitch Strength').onChange((value) => {
+                            asciiEffect.updateOptions({ glitchStrength: value });
+                        });
+                        
+                        folder.add(controls, 'particleSize', 0.005, 0.1, 0.001).name('Particle Size').onChange((value) => {
+                            asciiEffect.updateOptions({ particleSize: value });
+                        });
+                        
+                        folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('Rotation Speed').onChange((value) => {
+                            asciiEffect.updateOptions({ rotationSpeed: value });
+                        });
+                        
+                        folder.add(controls, 'glitchRadius', 0.01, 0.5, 0.01).name('Glitch Radius').onChange((value) => {
+                            asciiEffect.updateOptions({ glitchRadius: value });
+                        });
+                        
+                        folder.add(controls, 'velocityInfluence', 0, 0.5, 0.01).name('Velocity Influence').onChange((value) => {
+                            asciiEffect.updateOptions({ velocityInfluence: value });
+                        });
+                        
+                        folder.add(controls, 'returnSpeed', 0.01, 0.2, 0.01).name('Return Speed').onChange((value) => {
+                            asciiEffect.updateOptions({ returnSpeed: value });
+                        });
+                        
+                        // Character selection
+                        const characterOptions = {
+                            character: controls.character,
+                            setCharacter: function(newChar) {
+                                asciiEffect.updateOptions({ character: newChar });
+                            }
                         };
                         
-                        folder.add(controls, 'mouseSensitivity', 0, 1, 0.01).name('Mouse Sensitivity');
-                        folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('Glitch Strength');
-                        folder.add(controls, 'particleSize', 0.005, 0.1, 0.001).name('Particle Size');
-                        folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('Rotation Speed');
+                        folder.add(characterOptions, 'character').name('Particle Character').onChange((value) => {
+                            characterOptions.setCharacter(value);
+                        });
                         
                         folder.close();
                     }, 2000);
