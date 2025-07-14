@@ -496,19 +496,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
     
     <!-- ASCII Effect Library -->
     <script src="/scripts/particlesGL.js"></script>
 
     <script>
-        /* Register GSAP plugins */
-        gsap.registerPlugin(ScrollTrigger);
-        if (typeof SplitText !== 'undefined') {
-            gsap.registerPlugin(SplitText);
-        }
+        /* GSAP plugins are registered in initLenis() */
 
         /* Global ASCII effect variable */
         let asciiEffect;
+        
+        /**
+         * Helper functions for locking/unlocking scroll
+         */
+
+        // Init Lenis
+        let lenisInstance;
+        let lenisEnabled = true;
 
         /* DOM Content Loaded */
         document.addEventListener("DOMContentLoaded", () => {
@@ -552,6 +557,56 @@
                 });
             }
 
+            function initLenis() {
+                if (!lenisInstance) {
+                    lenisInstance = new Lenis({
+                        lerp: 0.15,
+                        wheelMultiplier: 0.7,
+                        gestureOrientation: "vertical",
+                        normalizeWheel: true,
+                        smoothWheel: true,
+                        smoothTouch: false,
+                        touchMultiplier: 1,
+                        touchInertiaMultiplier: 35,
+                        infinite: false,
+                        orientation: "vertical",
+                    });
+
+                    gsap.registerPlugin(ScrollTrigger);
+                    gsap.registerPlugin(SplitText);
+
+                    ScrollTrigger.scrollerProxy(document.body, {
+                        scrollTop(value) {
+                            if (arguments.length) {
+                                lenisInstance.scrollTo(value, { immediate: true });
+                            }
+                            return lenisInstance.animatedScroll || 0;
+                        },
+                        getBoundingClientRect() {
+                            return {
+                                top: 0,
+                                left: 0,
+                                width: window.innerWidth,
+                                height: window.innerHeight,
+                            };
+                        },
+                        pinType: document.body.style.transform ? "transform" : "fixed",
+                    });
+
+                    function raf(time) {
+                        if (lenisEnabled) {
+                            lenisInstance.raf(time);
+                            ScrollTrigger.update();
+                        }
+                        requestAnimationFrame(raf);
+                    }
+
+                    requestAnimationFrame(raf);
+                }
+            }
+
+            initLenis();
+
             fontsReady.then(() => {
                 /* Prepare split text animations */
                 gsap.set(".split", { visibility: "visible" });
@@ -589,6 +644,8 @@
                         ease: "expo.inOut",
                         onComplete: () => {
                             preloader.style.display = "none";
+                            // Refresh ScrollTrigger after preloader is hidden
+                            ScrollTrigger.refresh();
                         },
                     });
                 });
@@ -666,6 +723,9 @@
         window.addEventListener('beforeunload', () => {
             if (asciiEffect && typeof asciiEffect.cleanup === 'function') {
                 asciiEffect.cleanup();
+            }
+            if (lenisInstance && typeof lenisInstance.destroy === 'function') {
+                lenisInstance.destroy();
             }
         });
     </script>

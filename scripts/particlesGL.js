@@ -253,11 +253,11 @@
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(rect.width, rect.height);
 
-        // Position canvas to match target element exactly
+        // Position canvas to match target element exactly (accounting for scroll)
         const canvas = this.renderer.domElement;
         canvas.style.position = "absolute";
-        canvas.style.top = rect.top + "px";
-        canvas.style.left = rect.left + "px";
+        canvas.style.top = rect.top + window.scrollY + "px";
+        canvas.style.left = rect.left + window.scrollX + "px";
         canvas.style.width = rect.width + "px";
         canvas.style.height = rect.height + "px";
         canvas.style.zIndex = "10";
