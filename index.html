@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII Effect Library - Test Page</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Arial", sans-serif;
+        background: #f0f0f0;
+        color: #333;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding: 40px 0;
+      }
+
+      .header h1 {
+        font-size: 3em;
+        margin: 0;
+        color: #2c3e50;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .header p {
+        font-size: 1.2em;
+        color: #7f8c8d;
+        margin-top: 10px;
+      }
+
+      .demo-section {
+        margin: 60px 0;
+        padding: 40px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .demo-section h2 {
+        color: #34495e;
+        margin-bottom: 20px;
+        font-size: 2em;
+      }
+
+      .demo-section p {
+        line-height: 1.6;
+        color: #555;
+        margin-bottom: 30px;
+      }
+
+      /* Main effect container */
+      #ascii-logo-insert {
+        width: 100%;
+        height: 400px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        position: relative;
+        background: #eaeaec;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .instructions {
+        background: #e8f4f8;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid #3498db;
+      }
+
+      .instructions h3 {
+        color: #2980b9;
+        margin-top: 0;
+      }
+
+      .instructions ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+
+      .instructions li {
+        margin: 5px 0;
+        color: #2c3e50;
+      }
+
+      .controls {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .btn {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: background 0.3s ease;
+      }
+
+      .btn:hover {
+        background: #2980b9;
+      }
+
+      .btn:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+      }
+
+      .status {
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .code-section {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        font-family: "Courier New", monospace;
+        overflow-x: auto;
+      }
+
+      .code-section h3 {
+        color: #3498db;
+        margin-top: 0;
+      }
+
+      .spacer {
+        height: 100px;
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2em;
+        }
+
+        #ascii-logo-insert {
+          height: 300px;
+        }
+
+        .demo-section {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>ASCII Effect Library</h1>
+        <p>Interactive Three.js Particle System with Mouse Glitch Effects</p>
+      </div>
+
+      <div class="demo-section">
+        <h2>Live Demo</h2>
+        <p>
+          Move your mouse over the canvas below to see the interactive ASCII
+          logo effect in action. The particles will respond to your mouse
+          movement with a glitch effect and smooth rotations.
+        </p>
+
+        <!-- This is the element that the effect targets -->
+        <div id="ascii-logo-insert"></div>
+
+        <div class="instructions">
+          <h3>How to interact:</h3>
+          <ul>
+            <li>Move your mouse over the canvas to see the logo rotate</li>
+            <li>
+              The particles will scatter and glitch around your mouse cursor
+            </li>
+            <li>Move your mouse quickly for more dramatic effects</li>
+            <li>
+              The animation pauses when not in view for better performance
+            </li>
+          </ul>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="init-btn">Initialize Effect</button>
+          <button class="btn" id="cleanup-btn">Cleanup Effect</button>
+          <button class="btn" id="reinit-btn">Reinitialize</button>
+        </div>
+
+        <div id="status" class="status" style="display: none"></div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Usage Example</h2>
+        <div class="code-section">
+          <h3>HTML Setup:</h3>
+          <pre>
+&lt;!-- Include Three.js --&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- Create target element --&gt;
+&lt;div id="ascii-logo-insert"&gt;&lt;/div&gt;
+
+&lt;!-- Include the ASCII Effect library --&gt;
+&lt;script src="your-ascii-effect-library.js"&gt;&lt;/script&gt;</pre
+          >
+        </div>
+
+        <div class="code-section">
+          <h3>JavaScript Initialization:</h3>
+          <pre>
+// Initialize the effect
+ASCIIEffect.init();
+
+// Clean up when needed
+ASCIIEffect.cleanup();</pre
+          >
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Your ASCII Effect Library -->
+    <script src="index.js"></script>
+
+    <script>
+      // Demo page controls
+      const initBtn = document.getElementById("init-btn");
+      const cleanupBtn = document.getElementById("cleanup-btn");
+      const reinitBtn = document.getElementById("reinit-btn");
+      const status = document.getElementById("status");
+
+      function showStatus(message, isError = false) {
+        status.textContent = message;
+        status.className = `status ${isError ? "error" : "success"}`;
+        status.style.display = "block";
+        setTimeout(() => {
+          status.style.display = "none";
+        }, 3000);
+      }
+
+      initBtn.addEventListener("click", () => {
+        try {
+          ASCIIEffect.init();
+          showStatus("ASCII Effect initialized successfully!");
+        } catch (error) {
+          showStatus(`Error initializing effect: ${error.message}`, true);
+        }
+      });
+
+      cleanupBtn.addEventListener("click", () => {
+        try {
+          ASCIIEffect.cleanup();
+          showStatus("ASCII Effect cleaned up successfully!");
+        } catch (error) {
+          showStatus(`Error cleaning up effect: ${error.message}`, true);
+        }
+      });
+
+      reinitBtn.addEventListener("click", () => {
+        try {
+          ASCIIEffect.cleanup();
+          setTimeout(() => {
+            ASCIIEffect.init();
+            showStatus("ASCII Effect reinitialized successfully!");
+          }, 100);
+        } catch (error) {
+          showStatus(`Error reinitializing effect: ${error.message}`, true);
+        }
+      });
+
+      // Auto-initialize on page load
+      window.addEventListener("load", () => {
+        try {
+          ASCIIEffect.init();
+          showStatus("ASCII Effect auto-initialized on page load!");
+        } catch (error) {
+          showStatus(`Error auto-initializing effect: ${error.message}`, true);
+        }
+      });
+
+      // Clean up on page unload
+      window.addEventListener("beforeunload", () => {
+        ASCIIEffect.cleanup();
+      });
+    </script>
+  </body>
+</html>
