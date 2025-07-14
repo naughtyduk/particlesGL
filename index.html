@@ -484,8 +484,8 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
     
-    <!-- Your ASCII Effect Library -->
-    <script src="index.js"></script>
+    <!-- ASCII Effect Library -->
+    <script src="/scripts/particlesGL.js"></script>
 
     <script>
         /* Register GSAP plugins */
@@ -517,6 +517,13 @@
             /* Wait for fonts to be loaded */
             const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
 
+            /* Initialize ASCII Effect immediately */
+            if (typeof ASCIIEffect !== 'undefined') {
+                asciiEffect = ASCIIEffect;
+                asciiEffect.init();
+                console.log("particlesGL initialized immediately!", asciiEffect);
+            }
+
             fontsReady.then(() => {
                 /* Prepare split text animations */
                 gsap.set(".split", { visibility: "visible" });
@@ -546,49 +553,42 @@
                     });
                 }
 
-                /* Initialize ASCII Effect */
-                if (typeof ASCIIEffect !== 'undefined') {
-                    asciiEffect = ASCIIEffect;
-                    
-                    /* Complete preloader and initialize effect */
-                    loadingTl.then(() => {
-                        gsap.to(preloader, {
-                            yPercent: -100,
-                            duration: 1,
-                            ease: "expo.inOut",
-                            onComplete: () => {
-                                preloader.style.display = "none";
-                                /* Initialize the ASCII effect after preloader */
-                                asciiEffect.init();
-                            },
-                        });
+                /* Complete preloader animation */
+                loadingTl.then(() => {
+                    gsap.to(preloader, {
+                        yPercent: -100,
+                        duration: 1,
+                        ease: "expo.inOut",
+                        onComplete: () => {
+                            preloader.style.display = "none";
+                        },
                     });
+                });
 
-                    /* GUI Controls */
-                    if (typeof lil !== 'undefined') {
-                        setTimeout(() => {
-                            const gui = new lil.GUI();
-                            const folder = gui.addFolder("particlesGL Effect");
-                            
-                            // Add mouse sensitivity control
-                            const controls = {
-                                mouseSensitivity: 0.2,
-                                glitchStrength: 0.6,
-                                particleSize: 0.015,
-                                rotationSpeed: 0.05
-                            };
-                            
-                            folder.add(controls, 'mouseSensitivity', 0, 1, 0.01).name('Mouse Sensitivity');
-                            folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('Glitch Strength');
-                            folder.add(controls, 'particleSize', 0.005, 0.1, 0.001).name('Particle Size');
-                            folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('Rotation Speed');
-                            
-                            folder.close();
-                        }, 2000);
-                    }
+                /* GUI Controls */
+                if (typeof lil !== 'undefined') {
+                    setTimeout(() => {
+                        const gui = new lil.GUI();
+                        const folder = gui.addFolder("particlesGL Effect");
+                        
+                        // Add mouse sensitivity control
+                        const controls = {
+                            mouseSensitivity: 0.2,
+                            glitchStrength: 0.6,
+                            particleSize: 0.015,
+                            rotationSpeed: 0.05
+                        };
+                        
+                        folder.add(controls, 'mouseSensitivity', 0, 1, 0.01).name('Mouse Sensitivity');
+                        folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('Glitch Strength');
+                        folder.add(controls, 'particleSize', 0.005, 0.1, 0.001).name('Particle Size');
+                        folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('Rotation Speed');
+                        
+                        folder.close();
+                    }, 2000);
                 }
 
-                console.log("particlesGL ready!", asciiEffect);
+                console.log("particlesGL page ready!", asciiEffect);
             });
         });
 
