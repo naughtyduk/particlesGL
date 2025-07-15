@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      particlesGL - Interactive WebGL Particle Effects - NaughtyDuk©
+      particlesGL Fire Demo - Real-time Video Particle Effects - NaughtyDuk©
     </title>
     <link rel="icon" href="/assets/favicon.ico" />
     <meta
       name="description"
-      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
+      content="particlesGL Fire Demo - Real-time video particle effects with fire elements. Interactive WebGL particle system with mouse displacement. Built with love by NaughtyDuk©"
     />
     <meta
       name="keywords"
-      content="particlesGL, webGL, particles, interactive, glitch effects, three.js, NaughtyDuk©"
+      content="particlesGL, webGL, particles, interactive, fire effects, real-time video, three.js, NaughtyDuk©"
     />
     <meta name="author" content="NaughtyDuk©" />
     <meta name="robots" content="index, follow" />
@@ -76,8 +76,9 @@
         justify-content: center;
         height: 100svh;
         gap: 2vw;
-        background: #eaeaec;
+        background: #000;
         position: relative;
+        overflow: hidden;
       }
 
       /* Hero Effect Container - Full Page Background */
@@ -93,11 +94,34 @@
         justify-content: center;
       }
 
-      .hero-logo {
+      /* Ensure particles appear above video */
+      canvas[data-particles-target] {
+        z-index: 5 !important;
+      }
+
+      .fire-video {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        opacity: 1;
+        filter: saturate(1.5) grayscale(0.5) brightness(0.5);
+      }
+
+      /* Dark overlay to make fire particles more visible */
+      .hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 2;
         pointer-events: none;
-        opacity: 0;
       }
 
       .lil-gui {
@@ -109,27 +133,155 @@
         z-index: 10000;
       }
 
-      /* Honey Pot Cursor Follower */
-      .honey-pot-cursor {
+      .hero-text {
         position: absolute;
-        width: 60px;
-        height: 60px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+        font-size: 10vw;
+        font-weight: 900;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        color: #1f1f1f;
+        mix-blend-mode: difference;
+        text-align: center;
+        line-height: 0.9;
+        white-space: nowrap;
+        overflow: clip;
         pointer-events: none;
-        z-index: 15;
+        mix-blend-mode: difference;
+      }
+
+      /* Toggle Controls */
+      .toggle-controls {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        display: flex;
+        gap: 2rem;
+        background: rgba(0, 0, 0, 0.05);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        pointer-events: auto;
+      }
+
+      .toggle-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        pointer-events: auto;
+      }
+
+      .toggle-checkbox {
+        position: relative;
+        width: 32px;
+        height: 18px;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      .toggle-checkbox input[type="checkbox"] {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-        transition: opacity 0.2s ease, transform 0.15s ease;
-        object-fit: contain;
-        will-change: transform, opacity;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 20;
+        pointer-events: auto;
       }
 
-      .honey-pot-cursor.active {
-        opacity: 0.9;
-        transform: translate(-50%, -50%) scale(0);
+      .checkbox-display {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.3);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
       }
 
-      .honey-pot-cursor.moving {
-        transform: translate(-50%, -50%) scale(1.3);
+      .checkbox-display::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .toggle-checkbox input[type="checkbox"]:checked + .checkbox-display {
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .toggle-checkbox
+        input[type="checkbox"]:checked
+        + .checkbox-display::after {
+        transform: translateX(14px);
+      }
+
+      .toggle-checkbox:hover .checkbox-display {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .toggle-checkbox:hover
+        input[type="checkbox"]:checked
+        + .checkbox-display {
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .toggle-label {
+        color: rgba(219, 219, 219, 0.9);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .toggle-controls {
+          flex-direction: row;
+          gap: 3rem;
+          padding: 0.5rem 1rem;
+          width: calc(100% - 2rem);
+          justify-content: space-between;
+        }
+
+        .toggle-item {
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .toggle-checkbox {
+          width: 28px;
+          height: 16px;
+        }
+
+        .checkbox-display::after {
+          width: 12px;
+          height: 12px;
+        }
+
+        .toggle-checkbox
+          input[type="checkbox"]:checked
+          + .checkbox-display::after {
+          transform: translateX(12px);
+        }
+
+        .toggle-label {
+          font-size: 12px;
+        }
       }
     </style>
   </head>
@@ -138,18 +290,81 @@
       <!-- Hero Section with ASCII Effect Background -->
       <div class="content-section hero-section">
         <div id="hero">
-          <img
-            src="../assets/ND25-Grey-Logo.svg"
-            alt="NaughtyDuk Logo"
-            class="hero-logo particlesGL"
-          />
-          <!-- Honey Pot Cursor Follower -->
-          <img
-            src="../assets/honey-pot.webp"
-            alt="Honey Pot"
-            class="honey-pot-cursor"
-            id="honeyPot"
-          />
+          <!-- Background video (visible) -->
+          <video
+            class="fire-video"
+            autoplay
+            loop
+            muted
+            playsinline
+            id="backgroundVideo"
+          >
+            <source src="../assets/fire.webm" type="video/webm" />
+            <source src="../assets/fire.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+
+          <!-- Hidden video for particle generation -->
+          <video
+            class="particlesGL"
+            autoplay
+            loop
+            muted
+            playsinline
+            id="fireVideo"
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              opacity: 0;
+              pointer-events: none;
+            "
+          >
+            <source src="../assets/fire.webm" type="video/webm" />
+            <source src="../assets/fire.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <!-- Hero Text Overlay -->
+        <div class="hero-text">
+          FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE
+          REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />
+        </div>
+
+        <!-- Toggle Controls -->
+        <div class="toggle-controls">
+          <div class="toggle-item">
+            <div class="toggle-checkbox">
+              <input type="checkbox" id="sourceToggle" checked />
+              <div class="checkbox-display"></div>
+            </div>
+            <label for="sourceToggle" class="toggle-label">SOURCE</label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-checkbox">
+              <input type="checkbox" id="textToggle" checked />
+              <div class="checkbox-display"></div>
+            </div>
+            <label for="textToggle" class="toggle-label">TEXT</label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-checkbox">
+              <input type="checkbox" id="particlesToggle" checked />
+              <div class="checkbox-display"></div>
+            </div>
+            <label for="particlesToggle" class="toggle-label">PARTICLES</label>
+          </div>
         </div>
       </div>
     </div>
@@ -171,9 +386,6 @@
       /* Global ASCII effect variable */
       let asciiEffect;
 
-      /* Global honey pot variables */
-      let honeyPotHandlers = null;
-
       /**
        * Helper functions for locking/unlocking scroll
        */
@@ -190,84 +402,81 @@
             ? document.fonts.ready
             : Promise.resolve();
 
-        /* Honey Pot Cursor Follower - Simplified */
-        const honeyPot = document.getElementById("honeyPot");
-        const heroSection = document.querySelector(".hero-section");
-        let isMouseInHero = false;
-        let velocityTimeout;
-
-        function handleGlobalMouseMove(e) {
-          const rect = heroSection.getBoundingClientRect();
-          const isInBounds =
-            e.clientX >= rect.left &&
-            e.clientX <= rect.right &&
-            e.clientY >= rect.top &&
-            e.clientY <= rect.bottom;
-
-          if (isInBounds) {
-            // Show honey pot
-            if (!isMouseInHero) {
-              isMouseInHero = true;
-              honeyPot.classList.add("active");
-            }
-
-            // Position relative to hero section
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            honeyPot.style.left = x + "px";
-            honeyPot.style.top = y + "px";
-
-            // Add moving class for scaling
-            honeyPot.classList.add("moving");
-
-            // Remove moving class after delay
-            clearTimeout(velocityTimeout);
-            velocityTimeout = setTimeout(() => {
-              honeyPot.classList.remove("moving");
-            }, 150);
-          } else {
-            // Hide honey pot
-            if (isMouseInHero) {
-              isMouseInHero = false;
-              honeyPot.classList.remove("active", "moving");
-              clearTimeout(velocityTimeout);
-            }
-          }
-        }
-
-        // Store handlers globally for cleanup
-        honeyPotHandlers = {
-          handleGlobalMouseMove,
-          heroSection,
-        };
-
-        // Add single global mouse move listener
-        document.addEventListener("mousemove", handleGlobalMouseMove);
-
         /* Initialize particlesGL Effect immediately */
         if (typeof particlesGL !== "undefined") {
-          asciiEffect = particlesGL({
-            target: ".particlesGL",
-            character: "🐝",
-            particleSize: 0.035,
-            particleSpacing: 0.005,
-            particleColor: "#8c8c8c",
-            tilt: true,
-            tiltFactor: 0.19,
-            tiltSpeed: 0.06,
-            displaceStrength: 1.1,
-            displaceRadius: 0.33,
-            velocityInfluence: 2,
-            returnSpeed: 0.01,
-            sampling: 4,
-            fontSize: 48,
-            fontFamily: "monospace",
-            on: {
-              init: function (instance) {
-                console.log("particlesGL initialized!", instance);
-              },
-            },
+          const fireVideo = document.getElementById("fireVideo");
+          const backgroundVideo = document.getElementById("backgroundVideo");
+
+          // Sync videos to play together
+          function syncVideos() {
+            if (
+              Math.abs(fireVideo.currentTime - backgroundVideo.currentTime) >
+              0.1
+            ) {
+              fireVideo.currentTime = backgroundVideo.currentTime;
+            }
+          }
+
+          backgroundVideo.addEventListener("play", () => {
+            fireVideo.play();
+            setInterval(syncVideos, 200);
           });
+
+          // Wait for video to load before initializing particles
+          fireVideo.addEventListener("loadeddata", function () {
+            console.log("Fire video loaded, initializing particles...");
+
+            asciiEffect = particlesGL({
+              target: ".particlesGL",
+              character: "🔥",
+              particleSize: 0.07,
+              particleSpacing: 0.0024,
+              particleColor: "#ff6b00",
+              tilt: false,
+              tiltFactor: 0.2,
+              tiltSpeed: 0.05,
+              displaceStrength: 1.3,
+              displaceRadius: 0.03,
+              velocityInfluence: 1.2,
+              returnSpeed: 0.03,
+              sampling: 10,
+              fontSize: 40,
+              fontFamily: "monospace",
+              videoUpdateRate: 150,
+              on: {
+                init: function (instance) {
+                  console.log("particlesGL fire effect initialized!", instance);
+                },
+              },
+            });
+          });
+
+          // Fallback if video is already loaded
+          if (fireVideo.readyState >= 2) {
+            asciiEffect = particlesGL({
+              target: ".particlesGL",
+              character: "🔥",
+              particleSize: 0.07,
+              particleSpacing: 0.0024,
+              particleColor: "#ff6b00",
+              tilt: false,
+              tiltFactor: 0.2,
+              tiltSpeed: 0.05,
+              displaceStrength: 1.3,
+              displaceRadius: 0.03,
+              velocityInfluence: 1.2,
+              returnSpeed: 0.03,
+              sampling: 10,
+              fontSize: 40,
+              fontFamily: "monospace",
+              videoUpdateRate: 150,
+              on: {
+                init: function (instance) {
+                  console.log("particlesGL fire effect initialized!", instance);
+                },
+              },
+            });
+          }
         }
 
         function initLenis() {
@@ -317,9 +526,58 @@
           }
         }
 
+        function setupToggleControls() {
+          const sourceToggle = document.getElementById("sourceToggle");
+          const textToggle = document.getElementById("textToggle");
+          const particlesToggle = document.getElementById("particlesToggle");
+
+          if (!sourceToggle || !textToggle || !particlesToggle) {
+            return;
+          }
+
+          // Toggle source video
+          sourceToggle.addEventListener("change", function () {
+            const fireVideo = document.querySelector(".fire-video");
+            if (fireVideo) {
+              fireVideo.style.transition = "opacity 0.3s ease";
+              fireVideo.style.opacity = this.checked ? "1" : "0";
+            }
+          });
+
+          // Toggle hero text
+          textToggle.addEventListener("change", function () {
+            const heroText = document.querySelector(".hero-text");
+            if (heroText) {
+              heroText.style.transition = "opacity 0.3s ease";
+              heroText.style.opacity = this.checked ? "1" : "0";
+            }
+          });
+
+          // Toggle particles
+          particlesToggle.addEventListener("change", function () {
+            const particlesCanvas = document.querySelector(
+              "canvas[data-particles-target]"
+            );
+            if (particlesCanvas) {
+              particlesCanvas.style.transition = "opacity 0.3s ease";
+              particlesCanvas.style.opacity = this.checked ? "1" : "0";
+            }
+
+            const particlesVideo = document.querySelector(".particlesGL");
+            if (particlesVideo) {
+              particlesVideo.style.transition = "opacity 0.3s ease";
+              particlesVideo.style.opacity = this.checked ? "1" : "0";
+            }
+          });
+        }
+
         initLenis();
 
         fontsReady.then(() => {
+          // Setup toggle controls after DOM is fully ready
+          setTimeout(() => {
+            setupToggleControls();
+          }, 100);
           /* GUI Controls */
           if (typeof lil !== "undefined" && asciiEffect) {
             setTimeout(() => {
@@ -476,14 +734,6 @@
         }
         if (lenisInstance && typeof lenisInstance.destroy === "function") {
           lenisInstance.destroy();
-        }
-
-        // Cleanup honey pot event listeners
-        if (honeyPotHandlers) {
-          document.removeEventListener(
-            "mousemove",
-            honeyPotHandlers.handleGlobalMouseMove
-          );
         }
       });
     </script>
