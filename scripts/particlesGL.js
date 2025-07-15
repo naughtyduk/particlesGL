@@ -63,10 +63,7 @@
         document.body.appendChild(canvas);
       } else {
         // For standard contexts, insert as a sibling to respect the natural DOM order
-        targetElement.parentNode.insertBefore(
-          canvas,
-          targetElement.nextSibling
-        );
+        targetElement.parentNode.insertBefore(canvas, targetElement);
       }
 
       this.renderers.set(instanceId, { renderer, scene, camera });
@@ -344,19 +341,22 @@
         const stacking = systemData.stacking;
         canvas.style.position = stacking.position;
 
-        // Use offset coordinates for 'absolute' positioning relative to the parent,
-        // and viewport-based coordinates for 'fixed' positioning.
         if (stacking.position === "fixed") {
           canvas.style.top = `${rect.top}px`;
           canvas.style.left = `${rect.left}px`;
+          // For fixed elements, we need to use the calculated effective z-index of the container
+          canvas.style.zIndex = stacking.zIndex + 1;
         } else {
           canvas.style.top = `${systemData.element.offsetTop}px`;
           canvas.style.left = `${systemData.element.offsetLeft}px`;
+          // For absolute elements, just use the target's own z-index
+          const targetStyle = window.getComputedStyle(systemData.element);
+          canvas.style.zIndex =
+            targetStyle.zIndex === "auto" ? "0" : targetStyle.zIndex;
         }
 
         canvas.style.width = `${rect.width}px`;
         canvas.style.height = `${rect.height}px`;
-        canvas.style.zIndex = stacking.zIndex; // Use the target's actual z-index
         canvas.style.pointerEvents = "none";
 
         renderer.render(scene, camera);
@@ -765,17 +765,31 @@
    *  DOM Analysis Helper
    * ------------------------------------------------*/
   function getStackingProperties(element) {
-    const style = window.getComputedStyle(element);
-    const zIndex = style.zIndex === "auto" ? 0 : parseInt(style.zIndex, 10);
-
+    let zIndex = 0;
     let isFixed = false;
     let el = element;
+
     while (el && el !== document.body) {
-      if (window.getComputedStyle(el).position === "fixed") {
+      const style = window.getComputedStyle(el);
+      const currentPosition = style.position;
+      const currentZIndex = parseInt(style.zIndex, 10);
+
+      if (currentPosition === "fixed") {
         isFixed = true;
-        break;
       }
+
+      if (currentPosition !== "static" && !isNaN(currentZIndex)) {
+        zIndex = Math.max(zIndex, currentZIndex);
+      }
+
       el = el.parentElement;
+    }
+
+    // Finally, check the element itself
+    const style = window.getComputedStyle(element);
+    const elementZIndex = parseInt(style.zIndex, 10);
+    if (style.position !== "static" && !isNaN(elementZIndex)) {
+      zIndex = Math.max(zIndex, elementZIndex);
     }
 
     return {
