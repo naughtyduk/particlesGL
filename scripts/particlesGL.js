@@ -26,11 +26,8 @@
 
       // Mouse tracking
       this.mouse = new THREE.Vector2();
-      this.targetRotation = new THREE.Vector2();
       this.lastMousePos = new THREE.Vector2();
       this.mouseVelocity = new THREE.Vector2();
-      this.isMouseOverTarget = false;
-      this.resetAnimation = { x: 0, y: 0 };
 
       // Bind events
       this.onMouseMove = this.onMouseMove.bind(this);
@@ -65,6 +62,11 @@
         inView: false,
         observer: null,
         originalVisibility: targetElement.style.visibility,
+        targetRotation: new THREE.Vector2(),
+        isMouseOver: false,
+        resetAnimation: { x: 0, y: 0 },
+        currentMouse: new THREE.Vector2(),
+        lastMousePos: new THREE.Vector2(),
       });
 
       this.targetElements.set(instanceId, targetElement);
@@ -138,48 +140,41 @@
     }
 
     onMouseMove(event) {
-      // Find which element the mouse is over
-      let activeSystem = null;
-      let activeOptions = null;
-      let mouseOverAnyTarget = false;
-
+      // Check each particle system for mouse interaction
       for (const [instanceId, systemData] of this.particleSystems) {
         const rect = systemData.element.getBoundingClientRect();
-        if (
+        const isMouseOver =
           event.clientX >= rect.left &&
           event.clientX <= rect.right &&
           event.clientY >= rect.top &&
-          event.clientY <= rect.bottom
-        ) {
-          activeSystem = systemData.system;
-          activeOptions = systemData.options;
-          mouseOverAnyTarget = true;
+          event.clientY <= rect.bottom;
 
+        // Handle mouse enter/leave for this specific system
+        if (isMouseOver && !systemData.isMouseOver) {
+          // Mouse entered this target
+          systemData.isMouseOver = true;
+        } else if (!isMouseOver && systemData.isMouseOver) {
+          // Mouse left this target - start reset animation
+          systemData.isMouseOver = false;
+          this.startResetAnimation(instanceId);
+        }
+
+        // Update rotation and mouse position only for the hovered system
+        if (isMouseOver) {
           const relativeX = event.clientX - rect.left;
           const relativeY = event.clientY - rect.top;
 
-          this.mouse.x = (relativeX / rect.width) * 2 - 1;
-          this.mouse.y = -(relativeY / rect.height) * 2 + 1;
-          break;
+          const mouseX = (relativeX / rect.width) * 2 - 1;
+          const mouseY = -(relativeY / rect.height) * 2 + 1;
+
+          systemData.targetRotation.x =
+            mouseY * systemData.options.rotationSensitivity;
+          systemData.targetRotation.y =
+            mouseX * systemData.options.rotationSensitivity;
+
+          // Store mouse position for glitch effect
+          systemData.currentMouse.set(mouseX, mouseY);
         }
-      }
-
-      // Handle mouse enter/leave
-      if (mouseOverAnyTarget && !this.isMouseOverTarget) {
-        // Mouse entered target
-        this.isMouseOverTarget = true;
-      } else if (!mouseOverAnyTarget && this.isMouseOverTarget) {
-        // Mouse left target - start reset animation
-        this.isMouseOverTarget = false;
-        this.startResetAnimation();
-      }
-
-      // Update rotation only when mouse is over target
-      if (mouseOverAnyTarget && activeOptions) {
-        this.targetRotation.x =
-          this.mouse.y * activeOptions.rotationSensitivity;
-        this.targetRotation.y =
-          this.mouse.x * activeOptions.rotationSensitivity;
       }
     }
 
@@ -187,32 +182,37 @@
       this.updateRendererSize();
     }
 
-    startResetAnimation() {
+    startResetAnimation(instanceId) {
+      const systemData = this.particleSystems.get(instanceId);
+      if (!systemData) return;
+
       // Animate back to center (0, 0) with easing
-      this.resetAnimation.x = this.targetRotation.x;
-      this.resetAnimation.y = this.targetRotation.y;
+      systemData.resetAnimation.x = systemData.targetRotation.x;
+      systemData.resetAnimation.y = systemData.targetRotation.y;
 
       const animate = () => {
         const easeSpeed = 0.08; // Adjust for faster/slower easing
 
-        this.resetAnimation.x += (0 - this.resetAnimation.x) * easeSpeed;
-        this.resetAnimation.y += (0 - this.resetAnimation.y) * easeSpeed;
+        systemData.resetAnimation.x +=
+          (0 - systemData.resetAnimation.x) * easeSpeed;
+        systemData.resetAnimation.y +=
+          (0 - systemData.resetAnimation.y) * easeSpeed;
 
-        this.targetRotation.x = this.resetAnimation.x;
-        this.targetRotation.y = this.resetAnimation.y;
+        systemData.targetRotation.x = systemData.resetAnimation.x;
+        systemData.targetRotation.y = systemData.resetAnimation.y;
 
         // Continue animation until close to center
         if (
-          Math.abs(this.resetAnimation.x) > 0.001 ||
-          Math.abs(this.resetAnimation.y) > 0.001
+          Math.abs(systemData.resetAnimation.x) > 0.001 ||
+          Math.abs(systemData.resetAnimation.y) > 0.001
         ) {
           requestAnimationFrame(animate);
         } else {
           // Snap to exact center
-          this.targetRotation.x = 0;
-          this.targetRotation.y = 0;
-          this.resetAnimation.x = 0;
-          this.resetAnimation.y = 0;
+          systemData.targetRotation.x = 0;
+          systemData.targetRotation.y = 0;
+          systemData.resetAnimation.x = 0;
+          systemData.resetAnimation.y = 0;
         }
       };
 
@@ -233,16 +233,18 @@
 
         const { renderer, scene, camera } = rendererData;
 
-        // Update rotation
+        // Update rotation using per-system rotation state
         if (system.rotation) {
           system.rotation.x +=
-            (this.targetRotation.x - system.rotation.x) * options.rotationSpeed;
+            (systemData.targetRotation.x - system.rotation.x) *
+            options.rotationSpeed;
           system.rotation.y +=
-            (this.targetRotation.y - system.rotation.y) * options.rotationSpeed;
+            (systemData.targetRotation.y - system.rotation.y) *
+            options.rotationSpeed;
         }
 
-        // Apply glitch effect
-        this.applyGlitchEffect(system, options);
+        // Apply glitch effect with system-specific mouse position
+        this.applyGlitchEffect(system, options, systemData);
 
         // Update renderer size and render for this element
         const rect = systemData.element.getBoundingClientRect();
@@ -276,7 +278,7 @@
       animationFrameId = requestAnimationFrame(() => this.animate());
     }
 
-    applyGlitchEffect(particleSystem, options) {
+    applyGlitchEffect(particleSystem, options, systemData) {
       if (!particleSystem || !particleSystem.geometry) return;
 
       const posAttr = particleSystem.geometry.attributes.position;
@@ -288,17 +290,16 @@
       const positions = posAttr.array;
       const originalPositions = originalPosAttr.array;
 
-      this.mouseVelocity.copy(this.mouse).sub(this.lastMousePos);
-      this.lastMousePos.copy(this.mouse);
+      // Use stored mouse position for this specific system
+      const currentMouse = systemData.currentMouse;
+      const mouseVelocity = currentMouse.clone().sub(systemData.lastMousePos);
+      systemData.lastMousePos.copy(currentMouse);
 
       const mouseWorld = new THREE.Vector2(
-        this.mouse.x * 1.5,
-        this.mouse.y * 1.5
+        currentMouse.x * 1.5,
+        currentMouse.y * 1.5
       );
-      const velocityAngle = Math.atan2(
-        this.mouseVelocity.y,
-        this.mouseVelocity.x
-      );
+      const velocityAngle = Math.atan2(mouseVelocity.y, mouseVelocity.x);
 
       for (let i = 0; i < positions.length; i += 3) {
         const tempVec = new THREE.Vector2(positions[i], positions[i + 1]);
