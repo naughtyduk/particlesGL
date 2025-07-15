@@ -108,6 +108,29 @@
       .lil-gui.autoPlace {
         z-index: 10000;
       }
+
+      /* Honey Pot Cursor Follower */
+      .honey-pot-cursor {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        pointer-events: none;
+        z-index: 15;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+        transition: opacity 0.2s ease, transform 0.15s ease;
+        object-fit: contain;
+        will-change: transform, opacity;
+      }
+
+      .honey-pot-cursor.active {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0);
+      }
+
+      .honey-pot-cursor.moving {
+        transform: translate(-50%, -50%) scale(1.3);
+      }
     </style>
   </head>
   <body>
@@ -119,6 +142,13 @@
             src="../assets/ND25-Grey-Logo.svg"
             alt="NaughtyDuk Logo"
             class="hero-logo particlesGL"
+          />
+          <!-- Honey Pot Cursor Follower -->
+          <img
+            src="../assets/honey-pot.webp"
+            alt="Honey Pot"
+            class="honey-pot-cursor"
+            id="honeyPot"
           />
         </div>
       </div>
@@ -141,6 +171,9 @@
       /* Global ASCII effect variable */
       let asciiEffect;
 
+      /* Global honey pot variables */
+      let honeyPotHandlers = null;
+
       /**
        * Helper functions for locking/unlocking scroll
        */
@@ -156,6 +189,60 @@
           document.fonts && document.fonts.ready
             ? document.fonts.ready
             : Promise.resolve();
+
+        /* Honey Pot Cursor Follower - Simplified */
+        const honeyPot = document.getElementById("honeyPot");
+        const heroSection = document.querySelector(".hero-section");
+        let isMouseInHero = false;
+        let velocityTimeout;
+
+        function handleGlobalMouseMove(e) {
+          const rect = heroSection.getBoundingClientRect();
+          const isInBounds =
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom;
+
+          if (isInBounds) {
+            // Show honey pot
+            if (!isMouseInHero) {
+              isMouseInHero = true;
+              honeyPot.classList.add("active");
+            }
+
+            // Position relative to hero section
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            honeyPot.style.left = x + "px";
+            honeyPot.style.top = y + "px";
+
+            // Add moving class for scaling
+            honeyPot.classList.add("moving");
+
+            // Remove moving class after delay
+            clearTimeout(velocityTimeout);
+            velocityTimeout = setTimeout(() => {
+              honeyPot.classList.remove("moving");
+            }, 150);
+          } else {
+            // Hide honey pot
+            if (isMouseInHero) {
+              isMouseInHero = false;
+              honeyPot.classList.remove("active", "moving");
+              clearTimeout(velocityTimeout);
+            }
+          }
+        }
+
+        // Store handlers globally for cleanup
+        honeyPotHandlers = {
+          handleGlobalMouseMove,
+          heroSection,
+        };
+
+        // Add single global mouse move listener
+        document.addEventListener("mousemove", handleGlobalMouseMove);
 
         /* Initialize particlesGL Effect immediately */
         if (typeof particlesGL !== "undefined") {
@@ -389,6 +476,14 @@
         }
         if (lenisInstance && typeof lenisInstance.destroy === "function") {
           lenisInstance.destroy();
+        }
+
+        // Cleanup honey pot event listeners
+        if (honeyPotHandlers) {
+          document.removeEventListener(
+            "mousemove",
+            honeyPotHandlers.handleGlobalMouseMove
+          );
         }
       });
     </script>
