@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      particlesGL Digital Art Gallery - Multi-Target Particle Effects -
+      NaughtyDuk©
+    </title>
+    <link rel="icon" href="/assets/favicon.ico" />
+    <meta
+      name="description"
+      content="particlesGL Digital Art Gallery - Multi-target particle effects showcasing individual artwork interactions. Interactive WebGL particle system with independent mouse displacement zones. Built with love by NaughtyDuk©"
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, webGL, particles, interactive, art gallery, multi-target, three.js, NaughtyDuk©"
+    />
+    <meta name="author" content="NaughtyDuk©" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta
+      property="og:title"
+      content="particlesGL Digital Art Gallery - Multi-Target Particle Effects"
+    />
+    <meta
+      property="og:description"
+      content="particlesGL Digital Art Gallery showcasing multi-target particle effects with individual artwork interactions. Built with love by NaughtyDuk©"
+    />
+    <meta property="og:url" content="https://particlesgl.naughtyduk.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="particlesGL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="particlesGL Digital Art Gallery - Multi-Target Particle Effects"
+    />
+    <meta
+      name="twitter:description"
+      content="particlesGL Digital Art Gallery showcasing multi-target particle effects with individual artwork interactions. Built with love by NaughtyDuk©"
+    />
+    <meta name="twitter:url" content="https://particlesgl.naughtyduk.com" />
+    <style>
+      :root {
+        --gallery-bg: #fafafa;
+        --gallery-white: #ffffff;
+        --gallery-shadow: rgba(0, 0, 0, 0.1);
+        --gallery-text: #2c3e50;
+        --gallery-accent: #34495e;
+        --plaque-bg: #f8f9fa;
+        --plaque-border: #e9ecef;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Playfair Display", "Georgia", serif;
+        background: var(--gallery-bg);
+        color: var(--gallery-text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .gallery-container {
+        min-height: 100vh;
+        padding: 4rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4rem;
+      }
+
+      .gallery-title {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .gallery-title h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--gallery-text);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+      }
+
+      .gallery-title .subtitle {
+        font-size: 1.2rem;
+        color: var(--gallery-accent);
+        font-weight: 400;
+        font-style: italic;
+        letter-spacing: 0.02em;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3rem;
+        max-width: 1400px;
+        width: 100%;
+      }
+
+      .artwork-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+      }
+
+      .artwork-frame {
+        position: relative;
+        background: var(--gallery-white);
+        padding: 2rem;
+        box-shadow: 0 10px 30px var(--gallery-shadow),
+          0 4px 8px rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 1.5rem;
+      }
+
+      .artwork-frame:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px var(--gallery-shadow),
+          0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .artwork-image {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        border-radius: 2px;
+        display: block;
+      }
+
+      .artwork-plaque {
+        background: var(--plaque-bg);
+        border: 2px solid var(--plaque-border);
+        border-radius: 4px;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 280px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .artwork-plaque:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .artwork-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gallery-text);
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.02em;
+      }
+
+      .artwork-artist {
+        font-size: 0.9rem;
+        color: var(--gallery-accent);
+        font-style: italic;
+        margin-bottom: 0.75rem;
+      }
+
+      .artwork-description {
+        font-size: 0.85rem;
+        color: var(--gallery-accent);
+        line-height: 1.5;
+        font-family: "Inter", sans-serif;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1200px) {
+        .gallery-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 2.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .gallery-container {
+          padding: 2rem 1rem;
+          gap: 2rem;
+        }
+
+        .gallery-title h1 {
+          font-size: 2.5rem;
+        }
+
+        .gallery-title .subtitle {
+          font-size: 1rem;
+        }
+
+        .gallery-grid {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        .artwork-frame {
+          padding: 1.5rem;
+        }
+
+        .artwork-image {
+          height: 240px;
+        }
+
+        .artwork-plaque {
+          padding: 1.25rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .gallery-container {
+          padding: 1.5rem 0.75rem;
+        }
+
+        .gallery-title h1 {
+          font-size: 2rem;
+        }
+
+        .artwork-frame {
+          padding: 1rem;
+        }
+
+        .artwork-image {
+          height: 200px;
+        }
+      }
+
+      /* Entrance animations */
+      .artwork-container {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+      }
+
+      .artwork-container:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .artwork-container:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .artwork-container:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .artwork-container:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .gallery-title {
+        opacity: 0;
+        animation: fadeIn 1s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="gallery-container">
+      <!-- Gallery Title -->
+      <div class="gallery-title">
+        <h1 class="gallery-title-text particlesGL">Naughty Duk Gallery</h1>
+        <p class="subtitle">Contemporary Digital Art Collection</p>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid">
+        <!-- Artwork 1 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/NDAG-_0000_Lucaspezeta.webp"
+              alt="Digital artwork by Lucaspezeta"
+              class="artwork-image gallery-artwork"
+              id="artwork-1"
+            />
+          </div>
+          <div class="artwork-plaque">
+            <h3 class="artwork-title">Neon Dreams</h3>
+            <p class="artwork-artist">by Lucaspezeta</p>
+            <p class="artwork-description">
+              A vibrant exploration of digital consciousness, where electric
+              currents dance through synthetic landscapes. This piece captures
+              the essence of our interconnected digital age.
+            </p>
+          </div>
+        </div>
+
+        <!-- Artwork 2 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/NDAG-_0001_Zaksheuskaya.webp"
+              alt="Digital artwork by Zaksheuskaya"
+              class="artwork-image gallery-artwork"
+              id="artwork-2"
+            />
+          </div>
+          <div class="artwork-plaque">
+            <h3 class="artwork-title">Fractured Reality</h3>
+            <p class="artwork-artist">by Zaksheuskaya</p>
+            <p class="artwork-description">
+              An abstract meditation on perception and reality, where geometric
+              forms dissolve into organic chaos. A testament to the beauty found
+              in digital imperfection.
+            </p>
+          </div>
+        </div>
+
+        <!-- Artwork 3 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/NDAG-_0002_Anniroenkae.webp"
+              alt="Digital artwork by Anniroenkae"
+              class="artwork-image gallery-artwork"
+              id="artwork-3"
+            />
+          </div>
+          <div class="artwork-plaque">
+            <h3 class="artwork-title">Ethereal Visions</h3>
+            <p class="artwork-artist">by Anniroenkae</p>
+            <p class="artwork-description">
+              A dreamlike journey through digital landscapes, where soft
+              gradients merge with sharp contrasts. This piece invites
+              contemplation on the nature of virtual beauty.
+            </p>
+          </div>
+        </div>
+
+        <!-- Artwork 4 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/NDAG-_0003_Steve.webp"
+              alt="Digital artwork by Steve"
+              class="artwork-image gallery-artwork"
+              id="artwork-4"
+            />
+          </div>
+          <div class="artwork-plaque">
+            <h3 class="artwork-title">Data Streams</h3>
+            <p class="artwork-artist">by Steve</p>
+            <p class="artwork-description">
+              A bold statement on information flow in the digital age. Raw data
+              transforms into artistic expression, challenging our perception of
+              what constitutes contemporary art.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
+
+    <!-- ASCII Effect Library -->
+    <script src="/scripts/particlesGL.js"></script>
+
+    <script>
+      /* Global particle effect variables */
+      let titleEffect;
+      let artworkEffects = [];
+
+      /* DOM Content Loaded */
+      document.addEventListener("DOMContentLoaded", () => {
+        /* Wait for fonts to be loaded */
+        const fontsReady =
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready
+            : Promise.resolve();
+
+        fontsReady.then(() => {
+          /* Initialize Gallery Title Effect */
+          if (typeof particlesGL !== "undefined") {
+            titleEffect = particlesGL({
+              target: ".gallery-title-text",
+              character: "•",
+              particleSize: 0.025,
+              particleSpacing: 0.003,
+              particleColor: "#2c3e50",
+              tilt: false,
+              displaceStrength: 0.8,
+              displaceRadius: 0.15,
+              velocityInfluence: 0.5,
+              returnSpeed: 0.04,
+              sampling: 3,
+              fontSize: 52,
+              fontFamily: "Playfair Display",
+              on: {
+                init: function (instance) {
+                  console.log("Gallery title particles initialized!", instance);
+                },
+              },
+            });
+          }
+
+          /* Initialize Individual Artwork Effects */
+          setTimeout(() => {
+            if (typeof particlesGL !== "undefined") {
+              // Artwork 1 - Neon Dreams by Lucaspezeta
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-1",
+                  character: "+",
+                  particleSize: 0.075,
+                  particleSpacing: 0.004,
+                  particleColor: "#ff6b9d",
+                  tilt: true,
+                  tiltFactor: 0.3,
+                  tiltSpeed: 0.08,
+                  displaceStrength: 1.2,
+                  displaceRadius: 0.2,
+                  velocityInfluence: 0.8,
+                  returnSpeed: 0.03,
+                  sampling: 6,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 1 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+
+              // Artwork 2 - Fractured Reality by Zaksheuskaya
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-2",
+                  character: "+",
+                  particleSize: 0.075,
+                  particleSpacing: 0.0035,
+                  particleColor: "#4ecdc4",
+                  tilt: true,
+                  tiltFactor: 0.25,
+                  tiltSpeed: 0.06,
+                  displaceStrength: 1.5,
+                  displaceRadius: 0.18,
+                  velocityInfluence: 1.0,
+                  returnSpeed: 0.025,
+                  sampling: 5,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 2 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+
+              // Artwork 3 - Ethereal Visions by Anniroenkae
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-3",
+                  character: "+",
+                  particleSize: 0.075,
+                  particleSpacing: 0.003,
+                  particleColor: "#45b7d1",
+                  tilt: true,
+                  tiltFactor: 0.2,
+                  tiltSpeed: 0.05,
+                  displaceStrength: 0.9,
+                  displaceRadius: 0.12,
+                  velocityInfluence: 0.6,
+                  returnSpeed: 0.05,
+                  sampling: 4,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 3 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+
+              // Artwork 4 - Data Streams by Steve
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-4",
+                  character: "+",
+                  particleSize: 0.075,
+                  particleSpacing: 0.0038,
+                  particleColor: "#96ceb4",
+                  tilt: true,
+                  tiltFactor: 0.35,
+                  tiltSpeed: 0.07,
+                  displaceStrength: 1.1,
+                  displaceRadius: 0.22,
+                  velocityInfluence: 0.7,
+                  returnSpeed: 0.06,
+                  sampling: 5,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 4 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+            }
+          }, 500);
+
+          /* GUI Controls */
+          if (typeof lil !== "undefined") {
+            setTimeout(() => {
+              const gui = new lil.GUI();
+              const folder = gui.addFolder("Gallery Particle Effects");
+
+              // Title Effect Controls
+              if (titleEffect) {
+                const titleFolder = folder.addFolder("Gallery Title");
+                const titleControls = titleEffect.options;
+
+                titleFolder
+                  .add(titleControls, "particleSize", 0.01, 0.05, 0.001)
+                  .name("Title Particle Size")
+                  .onChange((value) => {
+                    titleEffect.updateOptions({ particleSize: value });
+                  });
+
+                titleFolder
+                  .add(titleControls, "displaceStrength", 0, 2, 0.1)
+                  .name("Title Displacement")
+                  .onChange((value) => {
+                    titleEffect.updateOptions({ displaceStrength: value });
+                  });
+
+                titleFolder.close();
+              }
+
+              // Artwork Effects Controls
+              artworkEffects.forEach((effect, index) => {
+                if (effect) {
+                  const artworkFolder = folder.addFolder(
+                    `Artwork ${index + 1}`
+                  );
+                  const controls = effect.options;
+
+                  artworkFolder
+                    .add(controls, "particleSize", 0.01, 0.08, 0.001)
+                    .name("Particle Size")
+                    .onChange((value) => {
+                      effect.updateOptions({ particleSize: value });
+                    });
+
+                  artworkFolder
+                    .add(controls, "displaceStrength", 0, 2, 0.1)
+                    .name("Displacement")
+                    .onChange((value) => {
+                      effect.updateOptions({ displaceStrength: value });
+                    });
+
+                  artworkFolder
+                    .add(controls, "tiltFactor", 0, 0.5, 0.01)
+                    .name("Tilt Factor")
+                    .onChange((value) => {
+                      effect.updateOptions({ tiltFactor: value });
+                    });
+
+                  const colorOptions = {
+                    particleColor: controls.particleColor,
+                    setColor: function (newColor) {
+                      effect.updateOptions({ particleColor: newColor });
+                    },
+                  };
+
+                  artworkFolder
+                    .addColor(colorOptions, "particleColor")
+                    .name("Particle Color")
+                    .onChange((value) => {
+                      colorOptions.setColor(value);
+                    });
+
+                  artworkFolder.close();
+                }
+              });
+
+              folder.close();
+            }, 3000);
+          }
+
+          console.log("Digital Art Gallery ready!", {
+            titleEffect,
+            artworkEffects,
+          });
+        });
+      });
+
+      /* Cleanup on page unload */
+      window.addEventListener("beforeunload", () => {
+        if (titleEffect && typeof titleEffect.cleanup === "function") {
+          titleEffect.cleanup();
+        }
+
+        artworkEffects.forEach((effect) => {
+          if (effect && typeof effect.cleanup === "function") {
+            effect.cleanup();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
