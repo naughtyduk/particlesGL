@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      particlesGL - Interactive WebGL Particle Effects - NaughtyDuk©
+    </title>
+    <link rel="icon" href="/assets/favicon.ico" />
+    <meta
+      name="description"
+      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, webGL, particles, interactive, glitch effects, three.js, NaughtyDuk©"
+    />
+    <meta name="author" content="NaughtyDuk©" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta
+      property="og:title"
+      content="particlesGL - Interactive WebGL Particle Effects"
+    />
+    <meta
+      property="og:description"
+      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
+    />
+    <meta property="og:url" content="https://particlesgl.naughtyduk.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="particlesGL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="particlesGL - Interactive WebGL Particle Effects"
+    />
+    <meta
+      name="twitter:description"
+      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
+    />
+    <meta name="twitter:url" content="https://particlesgl.naughtyduk.com" />
+    <style>
+      :root {
+        --bg: #f0f0f0;
+        --fg: #333;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .content-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        padding: 0 10vw;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        gap: 2vw;
+        background: #eaeaec;
+        position: relative;
+      }
+
+      /* Hero Effect Container - Full Page Background */
+      #hero {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-logo {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-content">
+      <!-- Hero Section with ASCII Effect Background -->
+      <div class="content-section hero-section">
+        <div id="hero">
+          <img
+            src="../assets/ND25-Grey-Logo.svg"
+            alt="NaughtyDuk Logo"
+            class="hero-logo particlesGL"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
+
+    <!-- ASCII Effect Library -->
+    <script src="/scripts/particlesGL.js"></script>
+
+    <script>
+      /* GSAP plugins are registered in initLenis() */
+
+      /* Global ASCII effect variable */
+      let asciiEffect;
+
+      /**
+       * Helper functions for locking/unlocking scroll
+       */
+
+      // Init Lenis
+      let lenisInstance;
+      let lenisEnabled = true;
+
+      /* DOM Content Loaded */
+      document.addEventListener("DOMContentLoaded", () => {
+        /* Wait for fonts to be loaded */
+        const fontsReady =
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready
+            : Promise.resolve();
+
+        /* Initialize particlesGL Effect immediately */
+        if (typeof particlesGL !== "undefined") {
+          asciiEffect = particlesGL({
+            target: ".particlesGL",
+            character: "🐝",
+            particleSize: 0.035,
+            particleSpacing: 0.005,
+            particleColor: "#8c8c8c",
+            tilt: true,
+            tiltFactor: 0.19,
+            tiltSpeed: 0.06,
+            displaceStrength: 1.1,
+            displaceRadius: 0.33,
+            velocityInfluence: 2,
+            returnSpeed: 0.01,
+            sampling: 4,
+            fontSize: 48,
+            fontFamily: "monospace",
+            on: {
+              init: function (instance) {
+                console.log("particlesGL initialized!", instance);
+              },
+            },
+          });
+        }
+
+        function initLenis() {
+          if (!lenisInstance) {
+            lenisInstance = new Lenis({
+              lerp: 0.15,
+              wheelMultiplier: 0.7,
+              gestureOrientation: "vertical",
+              normalizeWheel: true,
+              smoothWheel: true,
+              smoothTouch: false,
+              touchMultiplier: 1,
+              touchInertiaMultiplier: 35,
+              infinite: false,
+              orientation: "vertical",
+            });
+
+            gsap.registerPlugin(ScrollTrigger);
+
+            ScrollTrigger.scrollerProxy(document.body, {
+              scrollTop(value) {
+                if (arguments.length) {
+                  lenisInstance.scrollTo(value, { immediate: true });
+                }
+                return lenisInstance.animatedScroll || 0;
+              },
+              getBoundingClientRect() {
+                return {
+                  top: 0,
+                  left: 0,
+                  width: window.innerWidth,
+                  height: window.innerHeight,
+                };
+              },
+              pinType: document.body.style.transform ? "transform" : "fixed",
+            });
+
+            function raf(time) {
+              if (lenisEnabled) {
+                lenisInstance.raf(time);
+                ScrollTrigger.update();
+              }
+              requestAnimationFrame(raf);
+            }
+
+            requestAnimationFrame(raf);
+          }
+        }
+
+        initLenis();
+
+        fontsReady.then(() => {
+          /* GUI Controls */
+          if (typeof lil !== "undefined" && asciiEffect) {
+            setTimeout(() => {
+              const gui = new lil.GUI();
+              const folder = gui.addFolder("particlesGL Effect");
+
+              // Use actual options from the effect instance
+              const controls = asciiEffect.options;
+
+              // Tilt Controls
+              folder
+                .add(controls, "tilt")
+                .name("tilt")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ tilt: value });
+                });
+
+              folder
+                .add(controls, "tiltFactor", 0, 1, 0.01)
+                .name("tiltFactor")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ tiltFactor: value });
+                });
+
+              folder
+                .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+                .name("tiltSpeed")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ tiltSpeed: value });
+                });
+
+              // Particle Controls
+              folder
+                .add(controls, "particleSize", 0.005, 0.1, 0.001)
+                .name("particleSize")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ particleSize: value });
+                });
+
+              folder
+                .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+                .name("particleSpacing")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ particleSpacing: value });
+                });
+
+              // Displace Controls
+              folder
+                .add(controls, "displaceStrength", 0, 2, 0.1)
+                .name("displaceStrength")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ displaceStrength: value });
+                });
+
+              folder
+                .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+                .name("displaceRadius")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ displaceRadius: value });
+                });
+
+              folder
+                .add(controls, "velocityInfluence", 0, 2, 0.01)
+                .name("velocityInfluence")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ velocityInfluence: value });
+                });
+
+              folder
+                .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+                .name("returnSpeed")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ returnSpeed: value });
+                });
+
+              // Rendering Controls
+              folder
+                .add(controls, "sampling", 1, 10, 1)
+                .name("sampling")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ sampling: value });
+                });
+
+              // Character selection (this will cause reinit)
+              const characterOptions = {
+                character: controls.character,
+                setCharacter: function (newChar) {
+                  asciiEffect.updateOptions({ character: newChar });
+                },
+              };
+
+              folder
+                .add(characterOptions, "character")
+                .name("character")
+                .onChange((value) => {
+                  characterOptions.setCharacter(value);
+                });
+
+              // Add particle color control
+              const colorOptions = {
+                particleColor: controls.particleColor,
+                setColor: function (newColor) {
+                  asciiEffect.updateOptions({ particleColor: newColor });
+                },
+              };
+
+              folder
+                .addColor(colorOptions, "particleColor")
+                .name("particleColor")
+                .onChange((value) => {
+                  colorOptions.setColor(value);
+                });
+
+              // Font Controls
+              folder
+                .add(controls, "fontSize", 12, 72, 1)
+                .name("fontSize")
+                .onChange((value) => {
+                  asciiEffect.updateOptions({ fontSize: value });
+                });
+
+              const fontOptions = {
+                fontFamily: controls.fontFamily,
+                setFont: function (newFont) {
+                  asciiEffect.updateOptions({ fontFamily: newFont });
+                },
+              };
+
+              folder
+                .add(fontOptions, "fontFamily", [
+                  "monospace",
+                  "Arial",
+                  "Helvetica",
+                  "Georgia",
+                  "Times New Roman",
+                ])
+                .name("fontFamily")
+                .onChange((value) => {
+                  fontOptions.setFont(value);
+                });
+
+              folder.close();
+            }, 2000);
+          }
+
+          console.log("particlesGL page ready!", asciiEffect);
+        });
+      });
+
+      /* Cleanup on page unload */
+      window.addEventListener("beforeunload", () => {
+        if (asciiEffect && typeof asciiEffect.cleanup === "function") {
+          asciiEffect.cleanup();
+        }
+        if (lenisInstance && typeof lenisInstance.destroy === "function") {
+          lenisInstance.destroy();
+        }
+      });
+    </script>
+  </body>
+</html>
