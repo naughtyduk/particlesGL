@@ -51,6 +51,11 @@
 
       scene.add(particleSystem);
 
+      // Append the canvas to the body once on creation
+      const canvas = renderer.domElement;
+      canvas.setAttribute("data-particles-target", instanceId);
+      document.body.appendChild(canvas);
+
       this.renderers.set(instanceId, { renderer, scene, camera });
 
       this.particleSystems.set(instanceId, {
@@ -65,6 +70,8 @@
         resetAnimation: { x: 0, y: 0 },
         currentMouse: new THREE.Vector2(),
         lastMousePos: new THREE.Vector2(),
+        // Internal flag to prevent the animate loop from repositioning the canvas
+        isFixedPosition: !!options._isModal,
         // Internal velocity-based effect control (not user-controllable)
         mouseVelocity: 0,
         isMoving: false,
@@ -319,26 +326,19 @@
         camera.updateProjectionMatrix();
         renderer.setSize(rect.width, rect.height);
 
-        // Position canvas to match target element exactly (accounting for scroll)
-        const canvas = renderer.domElement;
-        canvas.style.position = "absolute";
-        canvas.style.top = rect.top + window.scrollY + "px";
-        canvas.style.left = rect.left + window.scrollX + "px";
-        canvas.style.width = rect.width + "px";
-        canvas.style.height = rect.height + "px";
-        canvas.style.zIndex = "10";
-        canvas.style.pointerEvents = "none";
-
-        // Clear previous canvas and append to document body
-        const existingCanvas = document.querySelector(
-          `canvas[data-particles-target="${instanceId}"]`
-        );
-        if (existingCanvas) {
-          existingCanvas.remove();
+        // For standard elements, position the canvas to match the target element exactly.
+        // For fixed elements (like modals), this step is skipped.
+        if (!systemData.isFixedPosition) {
+          const canvas = renderer.domElement;
+          canvas.style.position = "absolute";
+          canvas.style.top = rect.top + window.scrollY + "px";
+          canvas.style.left = rect.left + window.scrollX + "px";
+          canvas.style.width = rect.width + "px";
+          canvas.style.height = rect.height + "px";
+          canvas.style.zIndex = "10";
+          canvas.style.pointerEvents = "none";
         }
 
-        canvas.setAttribute("data-particles-target", instanceId);
-        document.body.appendChild(canvas);
         renderer.render(scene, camera);
       }
 
