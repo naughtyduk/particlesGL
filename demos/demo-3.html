@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      particlesGL portal Demo - Real-time Video Particle Effects - NaughtyDuk©
+      particlesGL girls Demo - Real-time Video Particle Effects - NaughtyDuk©
     </title>
     <link rel="icon" href="/assets/favicon.ico" />
     <meta
       name="description"
-      content="particlesGL portal Demo - Real-time video particle effects with portal elements. Interactive WebGL particle system with mouse displacement. Built with love by NaughtyDuk©"
+      content="particlesGL girls Demo - Real-time video particle effects with girls elements. Interactive WebGL particle system with mouse displacement. Built with love by NaughtyDuk©"
     />
     <meta
       name="keywords"
-      content="particlesGL, webGL, particles, interactive, portal effects, real-time video, three.js, NaughtyDuk©"
+      content="particlesGL, webGL, particles, interactive, girls effects, real-time video, three.js, NaughtyDuk©"
     />
     <meta name="author" content="NaughtyDuk©" />
     <meta name="robots" content="index, follow" />
@@ -92,7 +92,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #fac2ff;
+        background: #671f48;
       }
 
       /* Ensure particles appear above video */
@@ -100,7 +100,7 @@
         z-index: 5 !important;
       }
 
-      .portal-video {
+      .girls-video {
         position: absolute;
         top: 0;
         left: 0;
@@ -109,10 +109,10 @@
         object-fit: cover;
         z-index: 1;
         opacity: 1;
-        filter: saturate(1.5) grayscale(0.5) brightness(0.5);
+        filter: grayscale(1);
       }
 
-      /* Dark overlay to make portal particles more visible */
+      /* Dark overlay to make girls particles more visible */
       .hero-section::before {
         content: "";
         position: absolute;
@@ -144,13 +144,13 @@
         font-weight: 900;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
-        color: #f5f5f5;
+        color: #ca889f;
         text-align: center;
         line-height: 0.9;
         white-space: nowrap;
         overflow: clip;
         pointer-events: none;
-        mix-blend-mode: color-dodge;
+        mix-blend-mode: difference;
       }
 
       /* Toggle Controls */
@@ -292,15 +292,15 @@
         <div id="hero">
           <!-- Background video (visible) -->
           <video
-            class="portal-video"
+            class="girls-video"
             autoplay
             loop
             muted
             playsinline
             id="backgroundVideo"
           >
-            <source src="../assets/portal.webm" type="video/webm" />
-            <source src="../assets/portal.mp4" type="video/mp4" />
+            <source src="../assets/girls.webm" type="video/webm" />
+            <source src="../assets/girls.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
@@ -311,7 +311,7 @@
             loop
             muted
             playsinline
-            id="portalVideo"
+            id="girlsVideo"
             style="
               position: absolute;
               top: 0;
@@ -322,26 +322,26 @@
               pointer-events: none;
             "
           >
-            <source src="../assets/portal.webm" type="video/webm" />
-            <source src="../assets/portal.mp4" type="video/mp4" />
+            <source src="../assets/girls.webm" type="video/webm" />
+            <source src="../assets/girls.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
 
         <!-- Hero Text Overlay -->
         <div class="hero-text">
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
-          PORTAL TO ANOTHER DIMENSION<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
+          GIRLS JUST WANNA HAVE FUN<br />
         </div>
 
         <!-- Toggle Controls -->
@@ -408,31 +408,31 @@
 
         /* Initialize particlesGL Effect immediately */
         if (typeof particlesGL !== "undefined") {
-          const portalVideo = document.getElementById("portalVideo");
+          const girlsVideo = document.getElementById("girlsVideo");
           const backgroundVideo = document.getElementById("backgroundVideo");
 
           // Sync videos to play together
           function syncVideos() {
             if (
-              Math.abs(portalVideo.currentTime - backgroundVideo.currentTime) >
+              Math.abs(girlsVideo.currentTime - backgroundVideo.currentTime) >
               0.1
             ) {
-              portalVideo.currentTime = backgroundVideo.currentTime;
+              girlsVideo.currentTime = backgroundVideo.currentTime;
             }
           }
 
           backgroundVideo.addEventListener("play", () => {
-            portalVideo.play();
+            girlsVideo.play();
             setInterval(syncVideos, 200);
           });
 
           // Wait for video to load before initializing particles
-          portalVideo.addEventListener("loadeddata", function () {
-            console.log("portal video loaded, initializing particles...");
+          girlsVideo.addEventListener("loadeddata", function () {
+            console.log("girls video loaded, initializing particles...");
 
             asciiEffect = particlesGL({
               target: ".particlesGL",
-              character: "🔮",
+              character: "🫦",
               particleSize: 0.07,
               particleSpacing: 0.0024,
               particleColor: "#ff6b00",
@@ -450,7 +450,7 @@
               on: {
                 init: function (instance) {
                   console.log(
-                    "particlesGL portal effect initialized!",
+                    "particlesGL girls effect initialized!",
                     instance
                   );
                 },
@@ -459,10 +459,10 @@
           });
 
           // Fallback if video is already loaded
-          if (portalVideo.readyState >= 2) {
+          if (girlsVideo.readyState >= 2) {
             asciiEffect = particlesGL({
               target: ".particlesGL",
-              character: "🔮",
+              character: "🫦",
               particleSize: 0.07,
               particleSpacing: 0.0024,
               particleColor: "#ff6b00",
@@ -476,11 +476,11 @@
               sampling: 10,
               fontSize: 40,
               fontFamily: "monospace",
-              videoUpdateRate: 150,
+              videoUpdateRate: 10,
               on: {
                 init: function (instance) {
                   console.log(
-                    "particlesGL portal effect initialized!",
+                    "particlesGL girls effect initialized!",
                     instance
                   );
                 },
@@ -547,10 +547,10 @@
 
           // Toggle source video
           sourceToggle.addEventListener("change", function () {
-            const portalVideo = document.querySelector(".portal-video");
-            if (portalVideo) {
-              portalVideo.style.transition = "opacity 0.3s ease";
-              portalVideo.style.opacity = this.checked ? "1" : "0";
+            const girlsVideo = document.querySelector(".girls-video");
+            if (girlsVideo) {
+              girlsVideo.style.transition = "opacity 0.3s ease";
+              girlsVideo.style.opacity = this.checked ? "1" : "0";
             }
           });
 
