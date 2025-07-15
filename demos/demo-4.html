@@ -849,21 +849,21 @@
                   .add(titleControls, "tilt")
                   .name("tilt")
                   .onChange((value) => {
-                    updateBothEffects(0, { tilt: value });
+                    titleEffect.updateOptions({ tilt: value });
                   });
 
                 titleFolder
                   .add(titleControls, "tiltFactor", 0, 1, 0.01)
                   .name("tiltFactor")
                   .onChange((value) => {
-                    updateBothEffects(0, { tiltFactor: value });
+                    titleEffect.updateOptions({ tiltFactor: value });
                   });
 
                 titleFolder
                   .add(titleControls, "tiltSpeed", 0.01, 0.2, 0.01)
                   .name("tiltSpeed")
                   .onChange((value) => {
-                    updateBothEffects(0, { tiltSpeed: value });
+                    titleEffect.updateOptions({ tiltSpeed: value });
                   });
 
                 // Particle Controls
@@ -871,14 +871,14 @@
                   .add(titleControls, "particleSize", 0.005, 0.1, 0.001)
                   .name("particleSize")
                   .onChange((value) => {
-                    updateBothEffects(0, { particleSize: value });
+                    titleEffect.updateOptions({ particleSize: value });
                   });
 
                 titleFolder
                   .add(titleControls, "particleSpacing", 0.001, 0.01, 0.0001)
                   .name("particleSpacing")
                   .onChange((value) => {
-                    updateBothEffects(0, { particleSpacing: value });
+                    titleEffect.updateOptions({ particleSpacing: value });
                   });
 
                 // Displace Controls
@@ -886,28 +886,28 @@
                   .add(titleControls, "displaceStrength", 0, 2, 0.1)
                   .name("displaceStrength")
                   .onChange((value) => {
-                    updateBothEffects(0, { displaceStrength: value });
+                    titleEffect.updateOptions({ displaceStrength: value });
                   });
 
                 titleFolder
                   .add(titleControls, "displaceRadius", 0.01, 0.5, 0.01)
                   .name("displaceRadius")
                   .onChange((value) => {
-                    updateBothEffects(0, { displaceRadius: value });
+                    titleEffect.updateOptions({ displaceRadius: value });
                   });
 
                 titleFolder
                   .add(titleControls, "velocityInfluence", 0, 2, 0.01)
                   .name("velocityInfluence")
                   .onChange((value) => {
-                    updateBothEffects(0, { velocityInfluence: value });
+                    titleEffect.updateOptions({ velocityInfluence: value });
                   });
 
                 titleFolder
                   .add(titleControls, "returnSpeed", 0.01, 0.2, 0.01)
                   .name("returnSpeed")
                   .onChange((value) => {
-                    updateBothEffects(0, { returnSpeed: value });
+                    titleEffect.updateOptions({ returnSpeed: value });
                   });
 
                 // Rendering Controls
@@ -915,14 +915,14 @@
                   .add(titleControls, "sampling", 1, 10, 1)
                   .name("sampling")
                   .onChange((value) => {
-                    updateBothEffects(0, { sampling: value });
+                    titleEffect.updateOptions({ sampling: value });
                   });
 
                 // Character selection
                 const titleCharacterOptions = {
                   character: titleControls.character,
                   setCharacter: function (newChar) {
-                    updateBothEffects(0, { character: newChar });
+                    titleEffect.updateOptions({ character: newChar });
                   },
                 };
 
@@ -937,7 +937,7 @@
                 const titleColorOptions = {
                   particleColor: titleControls.particleColor,
                   setColor: function (newColor) {
-                    updateBothEffects(0, { particleColor: newColor });
+                    titleEffect.updateOptions({ particleColor: newColor });
                   },
                 };
 
@@ -953,13 +953,13 @@
                   .add(titleControls, "fontSize", 12, 72, 1)
                   .name("fontSize")
                   .onChange((value) => {
-                    updateBothEffects(0, { fontSize: value });
+                    titleEffect.updateOptions({ fontSize: value });
                   });
 
                 const titleFontOptions = {
                   fontFamily: titleControls.fontFamily,
                   setFont: function (newFont) {
-                    updateBothEffects(0, { fontFamily: newFont });
+                    titleEffect.updateOptions({ fontFamily: newFont });
                   },
                 };
 
