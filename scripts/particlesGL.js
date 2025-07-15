@@ -51,14 +51,23 @@
 
       scene.add(particleSystem);
 
-      // Append the canvas to the body once on creation
+      // Analyze DOM for positioning context
+      const stacking = getStackingProperties(targetElement);
+
+      // Smartly insert the canvas into the DOM
       const canvas = renderer.domElement;
       canvas.setAttribute("data-particles-target", instanceId);
-      document.body.appendChild(canvas);
 
-      // Analyze DOM for positioning context
-      const positioningContext = getPositioningContext(targetElement);
-      const effectiveZIndex = getEffectiveZIndex(targetElement);
+      if (stacking.isFixedContext) {
+        // For fixed contexts (modals), append to body to escape stacking issues
+        document.body.appendChild(canvas);
+      } else {
+        // For standard contexts, insert as a sibling to respect the natural DOM order
+        targetElement.parentNode.insertBefore(
+          canvas,
+          targetElement.nextSibling
+        );
+      }
 
       this.renderers.set(instanceId, { renderer, scene, camera });
 
@@ -75,8 +84,7 @@
         currentMouse: new THREE.Vector2(),
         lastMousePos: new THREE.Vector2(),
         // Store calculated positioning values
-        positioningContext: positioningContext,
-        effectiveZIndex: effectiveZIndex,
+        stacking: stacking,
         // Internal velocity-based effect control (not user-controllable)
         mouseVelocity: 0,
         isMoving: false,
@@ -331,22 +339,24 @@
         camera.updateProjectionMatrix();
         renderer.setSize(rect.width, rect.height);
 
-        // Automatically determine canvas positioning based on context
+        // Automatically determine canvas positioning based on its context
         const canvas = renderer.domElement;
-        const position = systemData.positioningContext;
-        canvas.style.position = position;
+        const stacking = systemData.stacking;
+        canvas.style.position = stacking.position;
 
-        if (position === "fixed") {
+        // Use offset coordinates for 'absolute' positioning relative to the parent,
+        // and viewport-based coordinates for 'fixed' positioning.
+        if (stacking.position === "fixed") {
           canvas.style.top = `${rect.top}px`;
           canvas.style.left = `${rect.left}px`;
         } else {
-          canvas.style.top = `${rect.top + window.scrollY}px`;
-          canvas.style.left = `${rect.left + window.scrollX}px`;
+          canvas.style.top = `${systemData.element.offsetTop}px`;
+          canvas.style.left = `${systemData.element.offsetLeft}px`;
         }
 
         canvas.style.width = `${rect.width}px`;
         canvas.style.height = `${rect.height}px`;
-        canvas.style.zIndex = systemData.effectiveZIndex + 1; // Always on top
+        canvas.style.zIndex = stacking.zIndex; // Use the target's actual z-index
         canvas.style.pointerEvents = "none";
 
         renderer.render(scene, camera);
@@ -752,32 +762,27 @@
   }
 
   /* --------------------------------------------------
-   *  DOM Analysis Helpers
+   *  DOM Analysis Helper
    * ------------------------------------------------*/
-  function getPositioningContext(element) {
-    let el = element;
-    while (el && el !== document.body) {
-      const style = window.getComputedStyle(el);
-      if (style.position === "fixed") {
-        return "fixed";
-      }
-      el = el.parentElement;
-    }
-    return "absolute";
-  }
+  function getStackingProperties(element) {
+    const style = window.getComputedStyle(element);
+    const zIndex = style.zIndex === "auto" ? 0 : parseInt(style.zIndex, 10);
 
-  function getEffectiveZIndex(element) {
+    let isFixed = false;
     let el = element;
-    let zIndex = 0;
     while (el && el !== document.body) {
-      const style = window.getComputedStyle(el);
-      const currentZIndex = parseInt(style.zIndex, 10);
-      if (!isNaN(currentZIndex) && style.position !== "static") {
-        zIndex = Math.max(zIndex, currentZIndex);
+      if (window.getComputedStyle(el).position === "fixed") {
+        isFixed = true;
+        break;
       }
       el = el.parentElement;
     }
-    return zIndex;
+
+    return {
+      position: isFixed ? "fixed" : "absolute",
+      zIndex: zIndex,
+      isFixedContext: isFixed,
+    };
   }
 
   async function createParticleSystem(element, options) {

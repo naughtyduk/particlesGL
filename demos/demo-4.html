@@ -1227,7 +1227,8 @@
         modal.classList.add("active");
         document.body.style.overflow = "hidden";
 
-        // Initialize particles for the modal image
+        // Initialize particles for the modal image.
+        // The library will now automatically handle positioning and z-index.
         setTimeout(() => {
           const originalEffect = artworkEffects[artworkNumber - 1];
           if (!originalEffect) {
@@ -1237,14 +1238,10 @@
             return;
           }
 
-          // The library will now automatically handle the positioning and z-index.
-          // We just need to inherit the original effect's options.
-          const modalOptions = {
+          modalEffect = particlesGL({
             ...originalEffect.options,
             target: "#modalImage",
-          };
-
-          modalEffect = particlesGL(modalOptions);
+          });
         }, 150);
       }
 
