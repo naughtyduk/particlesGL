@@ -455,7 +455,9 @@
           systemData.videoCanvas = document.createElement("canvas");
           systemData.videoCanvas.width = 2048;
           systemData.videoCanvas.height = 1024;
-          systemData.videoContext = systemData.videoCanvas.getContext("2d");
+          systemData.videoContext = systemData.videoCanvas.getContext("2d", {
+            willReadFrequently: true,
+          });
         }
 
         // Draw current video frame to canvas
@@ -570,7 +572,7 @@
    * ------------------------------------------------*/
   async function elementToCanvas(element, options = {}) {
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
     // Set canvas size - use fixed dimensions that work well
     const canvasWidth = 2048;
