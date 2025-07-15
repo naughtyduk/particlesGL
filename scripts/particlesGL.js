@@ -474,7 +474,7 @@
 
         // Generate new particle positions based on current frame brightness
         const newPositions = [];
-        const brightnessThreshold = 80; // Brightness threshold for fire detection
+        const brightnessThreshold = 80; // Brightness threshold for particle detection
 
         for (let y = 0; y < 1024; y += systemData.options.sampling) {
           for (let x = 0; x < 2048; x += systemData.options.sampling) {
@@ -486,10 +486,11 @@
             // Calculate luminance (brightness) - weighted for human eye perception
             const brightness = r * 0.299 + g * 0.587 + b * 0.114;
 
-            // For fire, also check if pixel is warm-colored (more red/orange)
-            const isWarmColor = r > g && r > b && r > 100;
+            // Check if pixel has significant color content (not just black/dark)
+            const maxColorComponent = Math.max(r, g, b);
+            const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
 
-            if (brightness > brightnessThreshold && isWarmColor) {
+            if (brightness > brightnessThreshold && hasSignificantColor) {
               const xPos = (x - 1024) * systemData.options.particleSpacing;
               const yPos = (512 - y) * systemData.options.particleSpacing;
               newPositions.push(xPos, yPos, 0);
@@ -729,11 +730,15 @@
         let shouldCreateParticle = false;
 
         if (isVideo) {
-          // For video: use brightness and warm color detection
+          // For video: use brightness and significant color detection
           const brightness = r * 0.299 + g * 0.587 + b * 0.114;
-          const isWarmColor = r > g && r > b && r > 100;
+
+          // Check if pixel has significant color content (not just black/dark)
+          const maxColorComponent = Math.max(r, g, b);
+          const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
+
           shouldCreateParticle =
-            brightness > brightnessThreshold && isWarmColor;
+            brightness > brightnessThreshold && hasSignificantColor;
         } else {
           // For images/SVGs: use alpha threshold
           shouldCreateParticle = alpha > alphaThreshold;
