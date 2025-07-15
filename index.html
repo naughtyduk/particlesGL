@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>particlesGL - Interactive WebGL Particle Effects - NaughtyDuk©</title>
     <link rel="icon" href="/assets/favicon.ico" />
-    <meta name="description" content="particlesGL is an interactive WebGL particle system with mouse glitch effects. Built with love by NaughtyDuk©">
+    <meta name="description" content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©">
     <meta name="keywords" content="particlesGL, webGL, particles, interactive, glitch effects, three.js, NaughtyDuk©">
     <meta name="author" content="NaughtyDuk©">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
     <meta property="og:title" content="particlesGL - Interactive WebGL Particle Effects">
-    <meta property="og:description" content="particlesGL is an interactive WebGL particle system with mouse glitch effects. Built with love by NaughtyDuk©">
+    <meta property="og:description" content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©">
     <meta property="og:url" content="https://particlesgl.naughtyduk.com">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="en_GB">
     <meta property="og:site_name" content="particlesGL">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="particlesGL - Interactive WebGL Particle Effects">
-    <meta name="twitter:description" content="particlesGL is an interactive WebGL particle system with mouse glitch effects. Built with love by NaughtyDuk©">
+    <meta name="twitter:description" content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©">
     <meta name="twitter:url" content="https://particlesgl.naughtyduk.com">
     <style>
         :root {
@@ -49,21 +49,7 @@
             overflow: hidden;
         }
 
-        .footer-section {
-            background: #111 url('assets/NDPGL-003.webp') center/cover;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 0;
-        }
 
-
-
-        .text-section {
-            background: #e8e8e8 url('assets/NDPGL-001.webp') center/cover;
-        }
 
         .hero-section {
             display: flex;
@@ -78,13 +64,7 @@
 
 
 
-        .features-section {
-            height: auto !important;
-            padding: 10vw 0;
-            background: #f5f5f7 url('assets/NDPGL-002.webp') center/cover;
-            flex-direction: column;
-            gap: 4vw;
-        }
+
 
 
 
@@ -173,60 +153,9 @@
             fill: currentColor;
         }
 
-        .features-card {
-            background: #fafafa;
-            color: #333;
-            border-radius: 2vw;
-            padding: 4vw;
-            width: 100%;
-            max-width: 70vw;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            text-align: left;
-        }
 
-        .features-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 2vw 0;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem 2rem;
-        }
 
-        .feature-item {
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 1rem;
-            font-size: 1.2rem;
-            font-weight: 500;
-            line-height: 1.4;
-        }
 
-        .feature-item svg {
-            flex-shrink: 0;
-            width: 1.5rem;
-            height: 1.5rem;
-            fill: #007aff;
-            margin-top: 0.1em;
-        }
-
-        .section-title-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 0 5vw 0;
-            width: 100%;
-        }
-
-        .section-title-container.footer {
-            padding: 0 0 4vw 0;
-        }
-
-        .split {
-            visibility: hidden;
-        }
 
         /* Hero Effect Container - Full Page Background */
         #hero {
@@ -249,11 +178,7 @@
             pointer-events: none;
         }
 
-        .footer-logo {
-            margin-top: 2vw;
-            width: 100px;
-            height: auto;
-        }
+
 
         .lil-gui {
             --focus-color: #f5f5f5;
@@ -264,60 +189,9 @@
             z-index: 10000;
         }
 
-        /* Preloader */
-        .preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #111111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100000;
-            color: #f5f5f5;
-        }
 
-        .preloader-inner {
-            text-align: center;
-        }
-
-        .preloader-progress-bar {
-            width: 200px;
-            height: 2px;
-            background-color: rgba(255, 255, 255, 0.2);
-            margin: 0 auto 1rem;
-            overflow: hidden;
-        }
-
-        .preloader-progress {
-            width: 0%;
-            height: 100%;
-            background-color: #f5f5f5;
-            transform-origin: left;
-        }
 
         /* Responsive */
-        @media (max-width: 1395px) {
-            .features-list {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 925px) {
-            .features-card {
-                max-width: 90vw;
-                padding: 6vw;
-            }
-            .features-list {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            .feature-item {
-                font-size: 1rem;
-            }
-        }
 
         @media (max-width: 768px) {
             .banner-text-button {
@@ -344,13 +218,7 @@
     </style>
 </head>
 <body>
-    <div class="preloader" data-particles-ignore>
-        <div class="preloader-inner">
-            <div class="preloader-progress-bar">
-                <div class="preloader-progress"></div>
-            </div>
-        </div>
-    </div>
+
 
     <div class="main-content">
         <!-- Hero Section with ASCII Effect Background -->
@@ -362,7 +230,7 @@
                 <div class="banner-text sm hero">Introducing</div>
                 <div class="banner-text xl hero">particlesGL</div>
                 <div class="banner-text xs hero">
-                    </br></br>An interactive WebGL particle system with mouse glitch effects. Built with love by <a target="_blank" href="https://naughtyduk.com">NaughtyDuk©</a>
+                    </br></br>An interactive WebGL particle system with mouse displacement effects. Built with love by <a target="_blank" href="https://naughtyduk.com">NaughtyDuk©</a>
                 </div>
             </div>
             <div class="banner-text-container">
@@ -375,132 +243,14 @@
             </div>
         </div>
 
-        <!-- Interactive Text Section -->
-        <div class="content-section text-section">
-            <div class="banner-text split particlesGL">
-                PARTICLESGL CREATES STUNNING INTERACTIVE PARTICLE EFFECTS WITH REAL-TIME MOUSE GLITCH ANIMATIONS
-            </div>
-        </div>
 
-        <!-- Features Section -->
-        <div class="content-section features-section">
-            <div class="section-title-container">
-                <div class="banner-text dark sm">Features</div>
-            </div>
-            <div class="features-card">
-                <ul class="features-list">
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Interactive Mouse Effects</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Real-time Glitch Effects</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Smooth Rotations</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>WebGL Powered</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Performance Optimized</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Viewport Aware</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Easy Integration</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Three.js Based</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Auto Cleanup</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Responsive Design</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Lightweight</span>
-                    </li>
-                    <li class="feature-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                        </svg>
-                        <span>Customizable</span>
-                    </li>
-                </ul>
-                <div class="banner-text-container">
-                    <a href="https://github.com/naughtyduk/particlesGL" target="_blank" class="banner-text-button dark">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                        </svg>
-                        <span>View on GitHub</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Code Examples Section -->
-        <div class="content-section text-section">
-            <div class="banner-text split">
-                SIMPLE API DESIGN MAKES INTEGRATION EFFORTLESS WITH JUST A FEW LINES OF CODE
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="content-section footer-section">
-            <div class="banner-text-container">
-                <a href="https://github.com/naughtyduk/particlesGL" target="_blank" class="banner-text-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                    </svg>
-                    <span>View on GitHub</span>
-                </a>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="footer-logo" fill="#f5f5f5">
-                    <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold">NaughtyDuk©</text>
-                </svg>
-            </div>
-        </div>
     </div>
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
     <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
     
@@ -523,21 +273,6 @@
 
         /* DOM Content Loaded */
         document.addEventListener("DOMContentLoaded", () => {
-            /* Preloader */
-            const preloader = document.querySelector(".preloader");
-            const preloaderProgress = document.querySelector(".preloader-progress");
-
-            let progress = { value: 0 };
-            const loadingTl = gsap.timeline();
-            loadingTl.to(progress, {
-                value: 100,
-                duration: 1.5,
-                ease: "power1.inOut",
-                onUpdate: () => {
-                    gsap.set(preloaderProgress, { width: `${progress.value}%` });
-                },
-            });
-
             /* Wait for fonts to be loaded */
             const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
 
@@ -549,11 +284,13 @@
                     particleSize: 0.015,
                     particleSpacing: 0.002,
                     particleColor: "#8c8c8c",
-                    rotationSensitivity: 0.2,
-                    rotationSpeed: 0.05,
-                    glitchStrength: 0.6,
-                    glitchRadius: 0.1,
-                    velocityInfluence: 0.1,
+                    tilt: true,
+                    tiltFactor: 0.2,
+                    tiltSpeed: 0.05,
+                    displaceStrength: 0.6,
+                    displaceRadius: 0.1,
+                    velocityInfluence: 0.3,
+                    returnSpeed: 0.05,
                     returnSpeed: 0.05,
                     on: {
                         init: function(instance) {
@@ -579,7 +316,6 @@
                     });
 
                     gsap.registerPlugin(ScrollTrigger);
-                    gsap.registerPlugin(SplitText);
 
                     ScrollTrigger.scrollerProxy(document.body, {
                         scrollTop(value) {
@@ -614,48 +350,6 @@
             initLenis();
 
             fontsReady.then(() => {
-                /* Prepare split text animations */
-                gsap.set(".split", { visibility: "visible" });
-                const allSplitLines = [];
-
-                if (typeof SplitText !== 'undefined') {
-                    gsap.utils.toArray(".split").forEach((splitEl) => {
-                        const split = SplitText.create(splitEl, {
-                            type: "lines",
-                            linesClass: "line",
-                            mask: "lines",
-                        });
-
-                        gsap.from(split.lines, {
-                            scrollTrigger: {
-                                trigger: splitEl,
-                                start: "top 80%",
-                                toggleActions: "play none none reverse",
-                            },
-                            duration: 1.2,
-                            yPercent: 100,
-                            stagger: 0.1,
-                            ease: "expo.out",
-                        });
-
-                        allSplitLines.push(...split.lines);
-                    });
-                }
-
-                /* Complete preloader animation */
-                loadingTl.then(() => {
-                    gsap.to(preloader, {
-                        yPercent: -100,
-                        duration: 1,
-                        ease: "expo.inOut",
-                        onComplete: () => {
-                            preloader.style.display = "none";
-                            // Refresh ScrollTrigger after preloader is hidden
-                            ScrollTrigger.refresh();
-                        },
-                    });
-                });
-
                 /* GUI Controls */
                 if (typeof lil !== 'undefined' && asciiEffect) {
                     setTimeout(() => {
