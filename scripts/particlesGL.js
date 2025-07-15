@@ -167,10 +167,13 @@
           const mouseX = (relativeX / rect.width) * 2 - 1;
           const mouseY = -(relativeY / rect.height) * 2 + 1;
 
-          systemData.targetRotation.x =
-            mouseY * systemData.options.rotationSensitivity;
-          systemData.targetRotation.y =
-            mouseX * systemData.options.rotationSensitivity;
+          // Apply tilt effect only if enabled
+          if (systemData.options.tilt) {
+            systemData.targetRotation.x =
+              mouseY * systemData.options.tiltFactor;
+            systemData.targetRotation.y =
+              mouseX * systemData.options.tiltFactor;
+          }
 
           // Store mouse position for glitch effect
           systemData.currentMouse.set(mouseX, mouseY);
@@ -789,7 +792,8 @@
       particleColor: "#8c8c8c",
       stepSize: 4,
       alphaThreshold: 128,
-      rotationSensitivity: 0.2,
+      tilt: false,
+      tiltFactor: 0.2,
       rotationSpeed: 0.05,
       glitchStrength: 0.6,
       glitchRadius: 0.1,

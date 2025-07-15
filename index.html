@@ -665,32 +665,52 @@
                         // Use actual options from the effect instance
                         const controls = asciiEffect.options;
                         
-                        folder.add(controls, 'rotationSensitivity', 0, 1, 0.01).name('Mouse Sensitivity').onChange((value) => {
-                            asciiEffect.updateOptions({ rotationSensitivity: value });
+                        // Tilt Controls
+                        folder.add(controls, 'tilt').name('tilt').onChange((value) => {
+                            asciiEffect.updateOptions({ tilt: value });
                         });
                         
-                        folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('Glitch Strength').onChange((value) => {
-                            asciiEffect.updateOptions({ glitchStrength: value });
+                        folder.add(controls, 'tiltFactor', 0, 1, 0.01).name('tiltFactor').onChange((value) => {
+                            asciiEffect.updateOptions({ tiltFactor: value });
                         });
                         
-                        folder.add(controls, 'particleSize', 0.005, 0.1, 0.001).name('Particle Size').onChange((value) => {
-                            asciiEffect.updateOptions({ particleSize: value });
-                        });
-                        
-                        folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('Rotation Speed').onChange((value) => {
+                        folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('rotationSpeed').onChange((value) => {
                             asciiEffect.updateOptions({ rotationSpeed: value });
                         });
                         
-                        folder.add(controls, 'glitchRadius', 0.01, 0.5, 0.01).name('Glitch Radius').onChange((value) => {
+                        // Particle Controls
+                        folder.add(controls, 'particleSize', 0.005, 0.1, 0.001).name('particleSize').onChange((value) => {
+                            asciiEffect.updateOptions({ particleSize: value });
+                        });
+                        
+                        folder.add(controls, 'particleSpacing', 0.001, 0.01, 0.0001).name('particleSpacing').onChange((value) => {
+                            asciiEffect.updateOptions({ particleSpacing: value });
+                        });
+                        
+                        // Glitch Controls
+                        folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('glitchStrength').onChange((value) => {
+                            asciiEffect.updateOptions({ glitchStrength: value });
+                        });
+                        
+                        folder.add(controls, 'glitchRadius', 0.01, 0.5, 0.01).name('glitchRadius').onChange((value) => {
                             asciiEffect.updateOptions({ glitchRadius: value });
                         });
                         
-                        folder.add(controls, 'velocityInfluence', 0, 0.5, 0.01).name('Velocity Influence').onChange((value) => {
+                        folder.add(controls, 'velocityInfluence', 0, 0.5, 0.01).name('velocityInfluence').onChange((value) => {
                             asciiEffect.updateOptions({ velocityInfluence: value });
                         });
                         
-                        folder.add(controls, 'returnSpeed', 0.01, 0.2, 0.01).name('Return Speed').onChange((value) => {
+                        folder.add(controls, 'returnSpeed', 0.01, 0.2, 0.01).name('returnSpeed').onChange((value) => {
                             asciiEffect.updateOptions({ returnSpeed: value });
+                        });
+                        
+                        // Rendering Controls
+                        folder.add(controls, 'stepSize', 1, 10, 1).name('stepSize').onChange((value) => {
+                            asciiEffect.updateOptions({ stepSize: value });
+                        });
+                        
+                        folder.add(controls, 'alphaThreshold', 0, 255, 1).name('alphaThreshold').onChange((value) => {
+                            asciiEffect.updateOptions({ alphaThreshold: value });
                         });
                         
                         // Character selection (this will cause reinit)
@@ -701,7 +721,7 @@
                             }
                         };
                         
-                        folder.add(characterOptions, 'character').name('Particle Character').onChange((value) => {
+                        folder.add(characterOptions, 'character').name('character').onChange((value) => {
                             characterOptions.setCharacter(value);
                         });
                         
@@ -713,8 +733,24 @@
                             }
                         };
                         
-                        folder.add(colorOptions, 'particleColor').name('Particle Color').onChange((value) => {
+                        folder.addColor(colorOptions, 'particleColor').name('particleColor').onChange((value) => {
                             colorOptions.setColor(value);
+                        });
+                        
+                        // Font Controls
+                        folder.add(controls, 'fontSize', 12, 72, 1).name('fontSize').onChange((value) => {
+                            asciiEffect.updateOptions({ fontSize: value });
+                        });
+                        
+                        const fontOptions = {
+                            fontFamily: controls.fontFamily,
+                            setFont: function(newFont) {
+                                asciiEffect.updateOptions({ fontFamily: newFont });
+                            }
+                        };
+                        
+                        folder.add(fontOptions, 'fontFamily', ['monospace', 'Arial', 'Helvetica', 'Georgia', 'Times New Roman']).name('fontFamily').onChange((value) => {
+                            fontOptions.setFont(value);
                         });
                         
                         folder.close();
