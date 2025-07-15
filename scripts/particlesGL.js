@@ -72,6 +72,12 @@
         effectRadius: 0,
         targetEffectRadius: 0,
         lastMoveTime: 0,
+        // Real-time video support
+        isVideo: targetElement.tagName.toLowerCase() === "video",
+        videoCanvas: null,
+        videoContext: null,
+        lastVideoUpdate: 0,
+        videoUpdateInterval: options.videoUpdateRate || 100,
       });
 
       this.targetElements.set(instanceId, targetElement);
@@ -128,6 +134,12 @@
         // Disconnect observer
         if (systemData.observer) {
           systemData.observer.disconnect();
+        }
+
+        // Clean up video canvas if exists
+        if (systemData.videoCanvas) {
+          systemData.videoCanvas = null;
+          systemData.videoContext = null;
         }
 
         // Remove from maps
@@ -293,6 +305,11 @@
             options.tiltSpeed;
         }
 
+        // Update video-based particle systems
+        if (systemData.isVideo) {
+          this.updateVideoParticles(instanceId, systemData);
+        }
+
         // Apply glitch effect with system-specific mouse position
         this.applyGlitchEffect(system, options, systemData);
 
@@ -412,6 +429,98 @@
       }
 
       posAttr.needsUpdate = true;
+    }
+
+    updateVideoParticles(instanceId, systemData) {
+      const currentTime = performance.now();
+
+      // Check if enough time has passed since last video update
+      if (
+        currentTime - systemData.lastVideoUpdate <
+        systemData.videoUpdateInterval
+      ) {
+        return;
+      }
+
+      const videoElement = systemData.element;
+
+      // Check if video is playing and has new frame data
+      if (
+        videoElement.readyState >= 2 &&
+        !videoElement.paused &&
+        !videoElement.ended
+      ) {
+        // Initialize video canvas if not exists
+        if (!systemData.videoCanvas) {
+          systemData.videoCanvas = document.createElement("canvas");
+          systemData.videoCanvas.width = 2048;
+          systemData.videoCanvas.height = 1024;
+          systemData.videoContext = systemData.videoCanvas.getContext("2d");
+        }
+
+        // Draw current video frame to canvas
+        systemData.videoContext.clearRect(0, 0, 2048, 1024);
+        systemData.videoContext.drawImage(videoElement, 0, 0, 2048, 1024);
+
+        // Get image data from current frame
+        const imageData = systemData.videoContext.getImageData(
+          0,
+          0,
+          2048,
+          1024
+        );
+
+        // Generate new particle positions based on current frame brightness
+        const newPositions = [];
+        const brightnessThreshold = 80; // Brightness threshold for fire detection
+
+        for (let y = 0; y < 1024; y += systemData.options.sampling) {
+          for (let x = 0; x < 2048; x += systemData.options.sampling) {
+            const i = (y * 2048 + x) * 4;
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+
+            // Calculate luminance (brightness) - weighted for human eye perception
+            const brightness = r * 0.299 + g * 0.587 + b * 0.114;
+
+            // For fire, also check if pixel is warm-colored (more red/orange)
+            const isWarmColor = r > g && r > b && r > 100;
+
+            if (brightness > brightnessThreshold && isWarmColor) {
+              const xPos = (x - 1024) * systemData.options.particleSpacing;
+              const yPos = (512 - y) * systemData.options.particleSpacing;
+              newPositions.push(xPos, yPos, 0);
+            }
+          }
+        }
+
+        // Update particle system geometry with new positions
+        const geometry = systemData.system.geometry;
+        const positionAttr = geometry.attributes.position;
+        const originalPositionAttr = geometry.attributes.originalPosition;
+
+        if (newPositions.length > 0) {
+          // Update position arrays
+          positionAttr.array = new Float32Array(newPositions);
+          originalPositionAttr.array = new Float32Array(newPositions);
+
+          // Update geometry
+          geometry.setAttribute(
+            "position",
+            new THREE.Float32BufferAttribute(newPositions, 3)
+          );
+          geometry.setAttribute(
+            "originalPosition",
+            new THREE.Float32BufferAttribute(newPositions, 3)
+          );
+
+          positionAttr.needsUpdate = true;
+          originalPositionAttr.needsUpdate = true;
+        }
+
+        systemData.lastVideoUpdate = currentTime;
+      }
     }
 
     startAnimation() {
@@ -601,16 +710,34 @@
     const positions = [];
     const originalPositions = [];
 
-    // Internal alphaThreshold (removed from public API)
+    // Check if element is a video for different threshold logic
+    const isVideo = element.tagName.toLowerCase() === "video";
     const alphaThreshold = 128;
+    const brightnessThreshold = 80;
 
     // Sample pixels to create particles
     for (let y = 0; y < canvas.height; y += options.sampling) {
       for (let x = 0; x < canvas.width; x += options.sampling) {
         const i = (y * canvas.width + x) * 4;
+        const r = imageData.data[i];
+        const g = imageData.data[i + 1];
+        const b = imageData.data[i + 2];
         const alpha = imageData.data[i + 3];
 
-        if (alpha > alphaThreshold) {
+        let shouldCreateParticle = false;
+
+        if (isVideo) {
+          // For video: use brightness and warm color detection
+          const brightness = r * 0.299 + g * 0.587 + b * 0.114;
+          const isWarmColor = r > g && r > b && r > 100;
+          shouldCreateParticle =
+            brightness > brightnessThreshold && isWarmColor;
+        } else {
+          // For images/SVGs: use alpha threshold
+          shouldCreateParticle = alpha > alphaThreshold;
+        }
+
+        if (shouldCreateParticle) {
           const xPos = (x - canvas.width / 2) * options.particleSpacing;
           const yPos = (canvas.height / 2 - y) * options.particleSpacing;
           positions.push(xPos, yPos, 0);
@@ -872,6 +999,7 @@
       returnSpeed: 0.05,
       fontSize: 48,
       fontFamily: "monospace",
+      videoUpdateRate: 100, // ms between video frame updates
       on: {},
     };
 

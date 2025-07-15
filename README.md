@@ -23,7 +23,7 @@
 | Image to Particles             |    ✅     | Velocity-Based Interactions |    ✅     |
 | SVG to Particles               |    ✅     | Custom Characters/Emojis    |    ✅     |
 | Text to Particles              |    ✅     | Particle Color Control      |    ✅     |
-| Video to Particles             |    ✅     | Font Customization          |    ✅     |
+| Video to Particles (Real-time) |    ✅     | Font Customization          |    ✅     |
 | Mouse Displacement Effects     |    ✅     | Tilt on Hover               |    ✅     |
 | Smooth Particle Return         |    ✅     | Multiple Instances          |    ✅     |
 | Configurable Particle Size     |    ✅     | Auto-Resize Handling        |    ✅     |
@@ -145,6 +145,24 @@ The library automatically handles velocity-based interactions. Effects only appe
 - **Moving cursor**: Effect appears and follows movement
 - **Cursor stops**: Effect smoothly fades out
 
+### Real-time Video Support
+
+`particlesGL` supports real-time video conversion to particles:
+
+```javascript
+const videoEffect = particlesGL({
+  target: "video", // Target a video element
+  character: "🔥", // Fire emoji for video content
+  videoUpdateRate: 100, // Update every 100ms
+  // ... other options
+});
+```
+
+- **Live Updates**: Particles reshape based on current video frame
+- **Performance Optimized**: Configurable update rate (default 100ms)
+- **Automatic Detection**: Works with any HTML5 video element
+- **Smooth Transitions**: Particles smoothly transition between video frames
+
 ---
 
 ## Parameters
@@ -166,6 +184,7 @@ The library automatically handles velocity-based interactions. Effects only appe
 | `returnSpeed`       | number   | `0.05`           | Speed particles return to original position (0.01–0.2).                      |
 | `fontSize`          | number   | `48`             | Font size for character particles (12–72).                                   |
 | `fontFamily`        | string   | `'monospace'`    | Font family for character particles.                                         |
+| `videoUpdateRate`   | number   | `100`            | Milliseconds between video frame updates for real-time video support.        |
 | `on.init`           | function | `—`              | Callback that runs once the particle system is ready. Receives the instance. |
 
 > The `target` parameter is required; all others are optional.
@@ -188,16 +207,17 @@ Below are some ready-made configurations for different effects:
 
 ## FAQ
 
-| Question                                               | Answer                                                                                                                                                                                           |
-| :----------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Does the library handle responsive design?             | Yes, `particlesGL` automatically handles window resize events and rebuilds particle systems as needed. Resize handling is debounced for performance.                                             |
-| What happens to the original element?                  | The original element is hidden (`visibility: hidden`) and replaced with the particle system. The particle system matches the original element's position and dimensions.                         |
-| Can I use custom fonts for character particles?        | Yes, use the `fontFamily` parameter to specify any loaded font. Make sure the font is loaded before initializing `particlesGL`.                                                                  |
-| How do I optimize performance for many particles?      | Increase the `sampling` value to reduce particle count, use smaller `particleSize` values, and limit the number of simultaneous instances. The library automatically culls off-screen particles. |
-| Can I update particle properties after initialization? | Yes, use the `updateOptions()` method: `particleEffect.updateOptions({ particleColor: '#ff0000' })`. Some changes may require reinitializing the particle system.                                |
-| Does the effect work on mobile devices?                | Yes, `particlesGL` is optimized for mobile devices with automatic performance scaling and touch event support.                                                                                   |
-| What types of elements can be converted to particles?  | Any DOM element: images, SVGs, text, videos, or complex HTML structures. The library uses canvas rendering to convert elements to particle data.                                                 |
-| Are there any CORS issues with images?                 | Images from external domains may require CORS headers. For best results, serve images from the same domain or ensure proper `Access-Control-Allow-Origin` headers.                               |
+| Question                                               | Answer                                                                                                                                                                                                                                              |
+| :----------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Does the library handle responsive design?             | Yes, `particlesGL` automatically handles window resize events and rebuilds particle systems as needed. Resize handling is debounced for performance.                                                                                                |
+| What happens to the original element?                  | The original element is hidden (`visibility: hidden`) and replaced with the particle system. The particle system matches the original element's position and dimensions.                                                                            |
+| Can I use custom fonts for character particles?        | Yes, use the `fontFamily` parameter to specify any loaded font. Make sure the font is loaded before initializing `particlesGL`.                                                                                                                     |
+| How do I optimize performance for many particles?      | Increase the `sampling` value to reduce particle count, use smaller `particleSize` values, and limit the number of simultaneous instances. The library automatically culls off-screen particles.                                                    |
+| Can I update particle properties after initialization? | Yes, use the `updateOptions()` method: `particleEffect.updateOptions({ particleColor: '#ff0000' })`. Some changes may require reinitializing the particle system.                                                                                   |
+| Does the effect work on mobile devices?                | Yes, `particlesGL` is optimized for mobile devices with automatic performance scaling and touch event support.                                                                                                                                      |
+| What types of elements can be converted to particles?  | Any DOM element: images, SVGs, text, videos, or complex HTML structures. The library uses canvas rendering to convert elements to particle data.                                                                                                    |
+| How does real-time video support work?                 | For video elements, particles are regenerated based on the current video frame at the specified `videoUpdateRate`. The effect only updates when the video is playing, providing smooth real-time particle animation that follows the video content. |
+| Are there any CORS issues with images?                 | Images from external domains may require CORS headers. For best results, serve images from the same domain or ensure proper `Access-Control-Allow-Origin` headers.                                                                                  |
 
 ---
 
