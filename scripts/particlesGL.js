@@ -71,6 +71,7 @@
         inactivityTimer: 0,
         effectRadius: 0,
         targetEffectRadius: 0,
+        lastMoveTime: 0,
       });
 
       this.targetElements.set(instanceId, targetElement);
@@ -177,6 +178,9 @@
           const velocity = newMousePos.clone().sub(systemData.currentMouse);
           systemData.mouseVelocity = velocity.length();
 
+          // Record when mouse moved
+          systemData.lastMoveTime = performance.now();
+
           // Update moving state based on velocity
           systemData.isMoving = systemData.mouseVelocity > 0.001;
 
@@ -250,14 +254,14 @@
 
         const { renderer, scene, camera } = rendererData;
 
-        // Update inactivity timer and effect radius
+        // Update movement state based on time since last move
         if (systemData.isMouseOver) {
-          if (!systemData.isMoving) {
-            systemData.inactivityTimer += 16.67; // Approximate frame time
-            // Consider stopped after 100ms of inactivity
-            if (systemData.inactivityTimer > 100) {
-              systemData.isMoving = false;
-            }
+          const currentTime = performance.now();
+          const timeSinceLastMove = currentTime - systemData.lastMoveTime;
+
+          // Consider stopped after 100ms of no mouse movement
+          if (timeSinceLastMove > 100) {
+            systemData.isMoving = false;
           }
 
           // Set target radius based on movement state
@@ -266,6 +270,7 @@
             : 0;
         } else {
           systemData.targetEffectRadius = 0;
+          systemData.isMoving = false;
         }
 
         // Ease effect radius towards target
