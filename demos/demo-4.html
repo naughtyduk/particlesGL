@@ -100,7 +100,7 @@
       .gallery-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 3rem;
+        gap: 1rem;
         max-width: 1400px;
         width: 100%;
       }
@@ -108,24 +108,27 @@
       .artwork-container {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         position: relative;
+        width: 100%;
       }
 
       .artwork-frame {
         position: relative;
         background: var(--gallery-white);
-        padding: 2rem;
+        padding: 0.5rem;
         box-shadow: 0 10px 30px var(--gallery-shadow),
           0 4px 8px rgba(0, 0, 0, 0.05);
         border-radius: 4px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        width: 100%;
       }
 
       .artwork-image {
         width: 100%;
-        height: 280px;
+        height: 38svh;
+        min-height: 280px;
         object-fit: cover;
         border-radius: 2px;
         display: block;
@@ -137,9 +140,8 @@
         background: var(--plaque-bg);
         border: 2px solid var(--plaque-border);
         border-radius: 4px;
-        padding: 1.5rem;
+        padding: 1rem;
         width: 100%;
-        max-width: 280px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
       }
@@ -240,7 +242,6 @@
         font-size: 0.9rem;
         color: var(--gallery-accent);
         font-style: italic;
-        margin-bottom: 0.75rem;
       }
 
       .artwork-description {
@@ -263,7 +264,7 @@
       @media (max-width: 1200px) {
         .gallery-grid {
           grid-template-columns: repeat(2, 1fr);
-          gap: 2.5rem;
+          gap: 1rem;
         }
       }
 
@@ -283,11 +284,11 @@
 
         .gallery-grid {
           grid-template-columns: 1fr;
-          gap: 2rem;
+          gap: 1rem;
         }
 
         .artwork-frame {
-          padding: 1.5rem;
+          padding: 0.5rem;
         }
 
         .artwork-image {
@@ -333,7 +334,7 @@
         }
 
         .artwork-frame {
-          padding: 1rem;
+          padding: 0.5rem;
         }
 
         .artwork-image {
@@ -429,11 +430,6 @@
               <h3 class="artwork-title">Neon Dreams</h3>
             </div>
             <p class="artwork-artist">by Lucaspezeta</p>
-            <p class="artwork-description">
-              A vibrant exploration of digital consciousness, where electric
-              currents dance through synthetic landscapes. This piece captures
-              the essence of our interconnected digital age.
-            </p>
           </div>
         </div>
 
@@ -464,11 +460,6 @@
               <h3 class="artwork-title">Fractured Reality</h3>
             </div>
             <p class="artwork-artist">by Zaksheuskaya</p>
-            <p class="artwork-description">
-              An abstract meditation on perception and reality, where geometric
-              forms dissolve into organic chaos. A testament to the beauty found
-              in digital imperfection.
-            </p>
           </div>
         </div>
 
@@ -499,11 +490,6 @@
               <h3 class="artwork-title">Ethereal Visions</h3>
             </div>
             <p class="artwork-artist">by Anniroenkae</p>
-            <p class="artwork-description">
-              A dreamlike journey through digital landscapes, where soft
-              gradients merge with sharp contrasts. This piece invites
-              contemplation on the nature of virtual beauty.
-            </p>
           </div>
         </div>
 
@@ -534,11 +520,6 @@
               <h3 class="artwork-title">Data Streams</h3>
             </div>
             <p class="artwork-artist">by Steve</p>
-            <p class="artwork-description">
-              A bold statement on information flow in the digital age. Raw data
-              transforms into artistic expression, challenging our perception of
-              what constitutes contemporary art.
-            </p>
           </div>
         </div>
       </div>
