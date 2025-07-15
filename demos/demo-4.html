@@ -42,14 +42,28 @@
     />
     <meta name="twitter:url" content="https://particlesgl.naughtyduk.com" />
     <style>
+      @font-face {
+        font-family: "ProtoMono";
+        src: url("../assets/ProtoMono-Regular.woff2") format("woff2"),
+          url("../assets/ProtoMono-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
       :root {
-        --gallery-bg: #fafafa;
-        --gallery-white: #ffffff;
-        --gallery-shadow: rgba(0, 0, 0, 0.1);
-        --gallery-text: #2c3e50;
-        --gallery-accent: #34495e;
-        --plaque-bg: #f8f9fa;
-        --plaque-border: #e9ecef;
+        --bg: #ffffff;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --border-hover: #cbd5e1;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --accent: #000000;
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
       }
 
       * {
@@ -59,54 +73,54 @@
       }
 
       body {
-        font-family: "Playfair Display", "Georgia", serif;
-        background: var(--gallery-bg);
-        color: var(--gallery-text);
-        line-height: 1.6;
+        font-family: "ProtoMono", "Courier New", monospace;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
         -webkit-font-smoothing: antialiased;
+        font-weight: 400;
       }
 
       .gallery-container {
         min-height: 100vh;
-        padding: 4rem 2rem;
+        padding: 6rem 2rem;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1rem;
-        background-image: url("../assets/wall.webp");
-        background-size: cover;
-        background-position: center center;
-        background-attachment: fixed;
+        gap: 4rem;
+        background: var(--bg);
       }
 
       .gallery-title {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 0;
       }
 
       .gallery-title h1 {
-        font-size: 3.5rem;
-        font-weight: 700;
+        font-size: 2.5rem;
+        font-weight: 600;
         letter-spacing: 0.05em;
-        color: var(--gallery-text);
-        margin-bottom: 1rem;
+        color: var(--text);
+        margin-bottom: 0.75rem;
         text-transform: uppercase;
       }
 
       .gallery-title .subtitle {
-        font-size: 1.2rem;
-        color: var(--gallery-accent);
+        font-size: 0.875rem;
+        color: var(--text-muted);
         font-weight: 400;
-        font-style: italic;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
       }
 
       .gallery-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
+        gap: 2rem;
         max-width: 1400px;
         width: 100%;
+        position: relative;
+        z-index: 2;
       }
 
       .artwork-container {
@@ -119,14 +133,20 @@
 
       .artwork-frame {
         position: relative;
-        background: var(--gallery-white);
-        padding: 0.5rem;
-        box-shadow: 0 10px 30px var(--gallery-shadow),
-          0 4px 8px rgba(0, 0, 0, 0.05);
-        border-radius: 4px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-bottom: 1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.2s ease-in-out;
+        margin-bottom: 1.5rem;
         width: 100%;
+      }
+
+      .artwork-frame:hover {
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
       }
 
       .artwork-image {
@@ -134,35 +154,31 @@
         height: 38svh;
         min-height: 280px;
         object-fit: cover;
-        border-radius: 2px;
         display: block;
         transition: opacity 0.3s ease;
         opacity: 0;
       }
 
       .artwork-plaque {
-        background: var(--plaque-bg);
-        border: 2px solid var(--plaque-border);
-        border-radius: 4px;
-        padding: 1rem;
+        background: var(--surface);
         width: 100%;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
       }
 
       .artwork-title {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         font-weight: 600;
-        color: var(--gallery-text);
-        margin-bottom: 0.5rem;
-        letter-spacing: 0.02em;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
       }
 
       .plaque-header {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
       }
 
       .artwork-toggle {
@@ -174,8 +190,8 @@
 
       .artwork-toggle-checkbox {
         position: relative;
-        width: 24px;
-        height: 14px;
+        width: 36px;
+        height: 20px;
         cursor: pointer;
       }
 
@@ -192,97 +208,105 @@
         position: absolute;
         width: 100%;
         height: 100%;
-        border-radius: 8px;
-        background: rgba(52, 73, 94, 0.3);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: var(--border);
+        border-radius: 12px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .artwork-checkbox-display::after {
         content: "";
         position: absolute;
-        top: 1px;
-        left: 1px;
-        width: 12px;
-        height: 12px;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        background: var(--surface);
         border-radius: 50%;
-        background: rgba(44, 62, 80, 0.9);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
       }
 
       .artwork-toggle-checkbox
         input[type="checkbox"]:checked
         + .artwork-checkbox-display {
-        background: rgba(52, 73, 94, 0.6);
+        background: var(--accent);
       }
 
       .artwork-toggle-checkbox
         input[type="checkbox"]:checked
         + .artwork-checkbox-display::after {
-        transform: translateX(10px);
+        transform: translateX(16px);
+        background: var(--surface);
       }
 
       .artwork-toggle-checkbox:hover .artwork-checkbox-display {
-        background: rgba(52, 73, 94, 0.4);
+        background: var(--border-hover);
       }
 
       .artwork-toggle-checkbox:hover
         input[type="checkbox"]:checked
         + .artwork-checkbox-display {
-        background: rgba(52, 73, 94, 0.7);
+        background: #374151;
       }
 
       .artwork-toggle-label {
-        color: var(--gallery-accent);
-        font-family: "Inter", sans-serif;
-        font-size: 10px;
-        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
         cursor: pointer;
       }
 
       .artwork-artist {
-        font-size: 0.9rem;
-        color: var(--gallery-accent);
-        font-style: italic;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        letter-spacing: 0.025em;
       }
 
       .artwork-description {
-        font-size: 0.85rem;
-        color: var(--gallery-accent);
+        font-size: 0.8rem;
+        color: var(--text-muted);
         line-height: 1.5;
-        font-family: "Inter", sans-serif;
       }
 
       /* Fullscreen Button */
       .fullscreen-button {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
-        width: 32px;
-        height: 32px;
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        border-radius: 4px;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border);
+        border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 15;
-        transition: all 0.2s ease;
-        backdrop-filter: blur(4px);
+        transition: all 0.2s ease-in-out;
+        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow);
       }
 
       .fullscreen-button:hover {
-        background: rgba(0, 0, 0, 0.9);
+        background: var(--surface);
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-lg);
         transform: scale(1.05);
       }
 
       .fullscreen-button svg {
-        width: 16px;
-        height: 16px;
-        fill: white;
+        width: 18px;
+        height: 18px;
+        fill: var(--text);
+        transition: fill 0.2s ease;
+      }
+
+      .fullscreen-button:hover svg {
+        fill: var(--accent);
       }
 
       /* Modal Overlay */
@@ -292,7 +316,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(0, 0, 0, 0.75);
+        background: rgba(0, 0, 0, 0.8);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -300,7 +324,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(12px);
       }
 
       .modal-overlay.active {
@@ -312,23 +336,25 @@
         position: relative;
         max-width: 90vw;
         max-height: 90vh;
-        background: var(--gallery-white);
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-xl);
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
       }
 
       .modal-artwork {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        border-radius: 4px;
         max-width: 80vw;
         max-height: 80vh;
         opacity: 0;
+        border-radius: 8px;
       }
 
       .lil-gui {
@@ -344,87 +370,73 @@
       @media (max-width: 1200px) {
         .gallery-grid {
           grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
+          gap: 1.5rem;
         }
       }
 
       @media (max-width: 768px) {
         .gallery-container {
-          padding: 2rem 1rem;
-          gap: 2rem;
+          padding: 4rem 1rem;
+          gap: 3rem;
         }
 
         .gallery-title h1 {
-          font-size: 2.5rem;
+          font-size: 2rem;
+          letter-spacing: 0.03em;
         }
 
         .gallery-title .subtitle {
-          font-size: 1rem;
+          font-size: 0.8rem;
         }
 
         .gallery-grid {
           grid-template-columns: 1fr;
-          gap: 1rem;
-        }
-
-        .artwork-frame {
-          padding: 0.5rem;
+          gap: 1.5rem;
         }
 
         .artwork-image {
           height: 240px;
         }
 
-        .artwork-plaque {
-          padding: 1.25rem;
-        }
-
-        .artwork-toggle {
-          gap: 0.4rem;
-        }
-
         .artwork-toggle-checkbox {
-          width: 20px;
-          height: 12px;
+          width: 32px;
+          height: 18px;
         }
 
         .artwork-checkbox-display::after {
-          width: 10px;
-          height: 10px;
+          width: 14px;
+          height: 14px;
         }
 
         .artwork-toggle-checkbox
           input[type="checkbox"]:checked
           + .artwork-checkbox-display::after {
-          transform: translateX(8px);
+          transform: translateX(14px);
         }
 
         .artwork-toggle-label {
-          font-size: 9px;
+          font-size: 0.7rem;
         }
 
         .fullscreen-button {
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
         }
 
         .fullscreen-button svg {
-          width: 14px;
-          height: 14px;
+          width: 16px;
+          height: 16px;
         }
       }
 
       @media (max-width: 480px) {
         .gallery-container {
-          padding: 1.5rem 0.75rem;
+          padding: 3rem 1rem;
+          gap: 2rem;
         }
 
         .gallery-title h1 {
-          font-size: 2rem;
-        }
-
-        .artwork-frame {
-          padding: 0.5rem;
+          font-size: 1.75rem;
         }
 
         .artwork-image {
@@ -435,18 +447,14 @@
           gap: 0.5rem;
         }
 
-        .artwork-toggle {
-          gap: 0.35rem;
-        }
-
         .fullscreen-button {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
         }
 
         .fullscreen-button svg {
-          width: 12px;
-          height: 12px;
+          width: 14px;
+          height: 14px;
         }
       }
 
@@ -488,10 +496,6 @@
         }
       }
     </style>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
   </head>
   <body>
     <div class="gallery-container">
