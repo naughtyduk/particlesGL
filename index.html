@@ -674,8 +674,8 @@
                             asciiEffect.updateOptions({ tiltFactor: value });
                         });
                         
-                        folder.add(controls, 'rotationSpeed', 0.01, 0.2, 0.01).name('rotationSpeed').onChange((value) => {
-                            asciiEffect.updateOptions({ rotationSpeed: value });
+                        folder.add(controls, 'tiltSpeed', 0.01, 0.2, 0.01).name('tiltSpeed').onChange((value) => {
+                            asciiEffect.updateOptions({ tiltSpeed: value });
                         });
                         
                         // Particle Controls
@@ -687,16 +687,16 @@
                             asciiEffect.updateOptions({ particleSpacing: value });
                         });
                         
-                        // Glitch Controls
-                        folder.add(controls, 'glitchStrength', 0, 2, 0.1).name('glitchStrength').onChange((value) => {
-                            asciiEffect.updateOptions({ glitchStrength: value });
+                        // Displace Controls
+                        folder.add(controls, 'displaceStrength', 0, 2, 0.1).name('displaceStrength').onChange((value) => {
+                            asciiEffect.updateOptions({ displaceStrength: value });
                         });
                         
-                        folder.add(controls, 'glitchRadius', 0.01, 0.5, 0.01).name('glitchRadius').onChange((value) => {
-                            asciiEffect.updateOptions({ glitchRadius: value });
+                        folder.add(controls, 'displaceRadius', 0.01, 0.5, 0.01).name('displaceRadius').onChange((value) => {
+                            asciiEffect.updateOptions({ displaceRadius: value });
                         });
                         
-                        folder.add(controls, 'velocityInfluence', 0, 0.5, 0.01).name('velocityInfluence').onChange((value) => {
+                        folder.add(controls, 'velocityInfluence', 0, 2, 0.01).name('velocityInfluence').onChange((value) => {
                             asciiEffect.updateOptions({ velocityInfluence: value });
                         });
                         
@@ -705,12 +705,8 @@
                         });
                         
                         // Rendering Controls
-                        folder.add(controls, 'stepSize', 1, 10, 1).name('stepSize').onChange((value) => {
-                            asciiEffect.updateOptions({ stepSize: value });
-                        });
-                        
-                        folder.add(controls, 'alphaThreshold', 0, 255, 1).name('alphaThreshold').onChange((value) => {
-                            asciiEffect.updateOptions({ alphaThreshold: value });
+                        folder.add(controls, 'sampling', 1, 10, 1).name('sampling').onChange((value) => {
+                            asciiEffect.updateOptions({ sampling: value });
                         });
                         
                         // Character selection (this will cause reinit)

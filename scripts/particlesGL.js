@@ -240,10 +240,10 @@
         if (system.rotation) {
           system.rotation.x +=
             (systemData.targetRotation.x - system.rotation.x) *
-            options.rotationSpeed;
+            options.tiltSpeed;
           system.rotation.y +=
             (systemData.targetRotation.y - system.rotation.y) *
-            options.rotationSpeed;
+            options.tiltSpeed;
         }
 
         // Apply glitch effect with system-specific mouse position
@@ -308,7 +308,7 @@
         const tempVec = new THREE.Vector2(positions[i], positions[i + 1]);
         const distanceToMouse = mouseWorld.distanceTo(tempVec);
 
-        if (distanceToMouse > options.glitchRadius * 2) {
+        if (distanceToMouse > options.displaceRadius * 2) {
           const lerpFactor = options.returnSpeed;
           positions[i] += (originalPositions[i] - positions[i]) * lerpFactor;
           positions[i + 1] +=
@@ -316,7 +316,7 @@
           continue;
         }
 
-        const normalizedDist = distanceToMouse / options.glitchRadius;
+        const normalizedDist = distanceToMouse / options.displaceRadius;
         const falloff = Math.exp(-normalizedDist * normalizedDist * 2);
 
         if (falloff > 0.01) {
@@ -328,7 +328,7 @@
             baseAngle + velocityAngle * options.velocityInfluence;
           const randomAngle = (Math.random() - 0.5) * Math.PI * 0.5;
           const strength =
-            falloff * options.glitchStrength * (1 + Math.random() * 0.5);
+            falloff * options.displaceStrength * (1 + Math.random() * 0.5);
 
           const displacement = new THREE.Vector2(
             Math.cos(finalAngle + randomAngle) * strength,
@@ -398,9 +398,12 @@
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    // Set canvas size
-    canvas.width = options.canvasWidth || 2048;
-    canvas.height = options.canvasHeight || 1024;
+    // Set canvas size - use fixed dimensions that work well
+    const canvasWidth = 2048;
+    const canvasHeight = 1024;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -410,11 +413,11 @@
         case "img":
           await new Promise((resolve, reject) => {
             if (element.complete) {
-              ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
+              ctx.drawImage(element, 0, 0, canvasWidth, canvasHeight);
               resolve();
             } else {
               element.onload = () => {
-                ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(element, 0, 0, canvasWidth, canvasHeight);
                 resolve();
               };
               element.onerror = reject;
@@ -431,7 +434,7 @@
 
           await new Promise((resolve, reject) => {
             img.onload = () => {
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
               URL.revokeObjectURL(svgUrl);
               resolve();
             };
@@ -441,18 +444,18 @@
           break;
 
         case "canvas":
-          ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(element, 0, 0, canvasWidth, canvasHeight);
           break;
 
         case "video":
           if (element.readyState >= 2) {
-            ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(element, 0, 0, canvasWidth, canvasHeight);
           } else {
             await new Promise((resolve) => {
               element.addEventListener(
                 "loadeddata",
                 () => {
-                  ctx.drawImage(element, 0, 0, canvas.width, canvas.height);
+                  ctx.drawImage(element, 0, 0, canvasWidth, canvasHeight);
                   resolve();
                 },
                 { once: true }
@@ -465,21 +468,23 @@
           // For other HTML elements, try to use html2canvas if available
           if (typeof html2canvas === "function") {
             const html2canvasResult = await html2canvas(element, {
-              width: canvas.width,
-              height: canvas.height,
+              width: canvasWidth,
+              height: canvasHeight,
               scale: 1,
             });
-            ctx.drawImage(html2canvasResult, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(html2canvasResult, 0, 0, canvasWidth, canvasHeight);
           } else {
-            // Fallback: render text content
-            ctx.fillStyle = options.textColor || "#000000";
-            ctx.font = options.fontSize || "48px Arial";
+            // Fallback: render text content using particleColor
+            ctx.fillStyle = options.particleColor || "#8c8c8c";
+            ctx.font = `${options.fontSize || 48}px ${
+              options.fontFamily || "Arial"
+            }`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(
               element.textContent || element.innerText || "Text",
-              canvas.width / 2,
-              canvas.height / 2
+              canvasWidth / 2,
+              canvasHeight / 2
             );
           }
           break;
@@ -489,10 +494,10 @@
       // Fallback: create a simple shape
       ctx.fillStyle = "#333333";
       ctx.fillRect(
-        canvas.width / 4,
-        canvas.height / 4,
-        canvas.width / 2,
-        canvas.height / 2
+        canvasWidth / 4,
+        canvasHeight / 4,
+        canvasWidth / 2,
+        canvasHeight / 2
       );
     }
 
@@ -531,13 +536,16 @@
     const positions = [];
     const originalPositions = [];
 
+    // Internal alphaThreshold (removed from public API)
+    const alphaThreshold = 128;
+
     // Sample pixels to create particles
-    for (let y = 0; y < canvas.height; y += options.stepSize) {
-      for (let x = 0; x < canvas.width; x += options.stepSize) {
+    for (let y = 0; y < canvas.height; y += options.sampling) {
+      for (let x = 0; x < canvas.width; x += options.sampling) {
         const i = (y * canvas.width + x) * 4;
         const alpha = imageData.data[i + 3];
 
-        if (alpha > options.alphaThreshold) {
+        if (alpha > alphaThreshold) {
           const xPos = (x - canvas.width / 2) * options.particleSpacing;
           const yPos = (canvas.height / 2 - y) * options.particleSpacing;
           positions.push(xPos, yPos, 0);
@@ -658,11 +666,10 @@
       // Check if we need to reinitialize (geometry/texture changes)
       const needsReinit = [
         "character",
-        "stepSize",
+        "sampling",
         "particleSpacing",
-        "alphaThreshold",
-        "canvasWidth",
-        "canvasHeight",
+        "fontSize",
+        "fontFamily",
         "target",
       ].some(
         (key) =>
@@ -790,20 +797,16 @@
       particleSize: 0.015,
       particleSpacing: 0.002,
       particleColor: "#8c8c8c",
-      stepSize: 4,
-      alphaThreshold: 128,
+      sampling: 4,
       tilt: false,
       tiltFactor: 0.2,
-      rotationSpeed: 0.05,
-      glitchStrength: 0.6,
-      glitchRadius: 0.1,
-      velocityInfluence: 0.1,
+      tiltSpeed: 0.05,
+      displaceStrength: 0.6,
+      displaceRadius: 0.1,
+      velocityInfluence: 0.3,
       returnSpeed: 0.05,
-      canvasWidth: 2048,
-      canvasHeight: 1024,
       fontSize: 48,
       fontFamily: "monospace",
-      textColor: "#000000",
       on: {},
     };
 
