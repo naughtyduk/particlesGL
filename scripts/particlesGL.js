@@ -20,20 +20,9 @@
    * ------------------------------------------------*/
   class ParticlesGLRenderer {
     constructor() {
-      this.renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: "high-performance",
-        alpha: true,
-      });
-      this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-      this.camera.position.z = 1.15;
       this.particleSystems = new Map();
       this.targetElements = new Map();
-
-      // Setup renderer
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setClearColor(0x000000, 0);
+      this.renderers = new Map(); // Individual renderers for each element
 
       // Mouse tracking
       this.mouse = new THREE.Vector2();
@@ -52,6 +41,23 @@
     }
 
     addParticleSystem(instanceId, particleSystem, targetElement, options) {
+      // Create individual renderer, scene, and camera for each element
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: "high-performance",
+        alpha: true,
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setClearColor(0x000000, 0);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+      camera.position.z = 1.15;
+
+      scene.add(particleSystem);
+
+      this.renderers.set(instanceId, { renderer, scene, camera });
+
       this.particleSystems.set(instanceId, {
         system: particleSystem,
         element: targetElement,
@@ -61,7 +67,6 @@
         originalVisibility: targetElement.style.visibility,
       });
 
-      this.scene.add(particleSystem);
       this.targetElements.set(instanceId, targetElement);
 
       // Hide the original target element once particles are created
@@ -84,12 +89,12 @@
       } else {
         this.particleSystems.get(instanceId).inView = true;
       }
-
-      this.updateRendererSize();
     }
 
     removeParticleSystem(instanceId, keepTargetHidden = false) {
       const systemData = this.particleSystems.get(instanceId);
+      const rendererData = this.renderers.get(instanceId);
+
       if (systemData) {
         // Restore original target element visibility (unless we want to keep it hidden)
         if (!keepTargetHidden) {
@@ -113,9 +118,6 @@
           systemData.system.material.dispose();
         }
 
-        // Remove from scene
-        this.scene.remove(systemData.system);
-
         // Disconnect observer
         if (systemData.observer) {
           systemData.observer.disconnect();
@@ -124,6 +126,14 @@
         // Remove from maps
         this.particleSystems.delete(instanceId);
         this.targetElements.delete(instanceId);
+      }
+
+      // Dispose individual renderer
+      if (rendererData) {
+        if (rendererData.renderer) {
+          rendererData.renderer.dispose();
+        }
+        this.renderers.delete(instanceId);
       }
     }
 
@@ -209,24 +219,6 @@
       animate();
     }
 
-    updateRendererSize() {
-      // Update camera and renderer for the largest visible element
-      let maxWidth = 0;
-      let maxHeight = 0;
-
-      for (const [instanceId, systemData] of this.particleSystems) {
-        const rect = systemData.element.getBoundingClientRect();
-        maxWidth = Math.max(maxWidth, rect.width);
-        maxHeight = Math.max(maxHeight, rect.height);
-      }
-
-      if (maxWidth > 0 && maxHeight > 0) {
-        this.camera.aspect = maxWidth / maxHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(maxWidth, maxHeight);
-      }
-    }
-
     animate() {
       if (!isAnimating) return;
 
@@ -235,6 +227,11 @@
         if (!systemData.inView) continue;
 
         const { system, options } = systemData;
+        const rendererData = this.renderers.get(instanceId);
+
+        if (!rendererData) continue;
+
+        const { renderer, scene, camera } = rendererData;
 
         // Update rotation
         if (system.rotation) {
@@ -249,12 +246,12 @@
 
         // Update renderer size and render for this element
         const rect = systemData.element.getBoundingClientRect();
-        this.camera.aspect = rect.width / rect.height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(rect.width, rect.height);
+        camera.aspect = rect.width / rect.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(rect.width, rect.height);
 
         // Position canvas to match target element exactly (accounting for scroll)
-        const canvas = this.renderer.domElement;
+        const canvas = renderer.domElement;
         canvas.style.position = "absolute";
         canvas.style.top = rect.top + window.scrollY + "px";
         canvas.style.left = rect.left + window.scrollX + "px";
@@ -273,7 +270,7 @@
 
         canvas.setAttribute("data-particles-target", instanceId);
         document.body.appendChild(canvas);
-        this.renderer.render(this.scene, this.camera);
+        renderer.render(scene, camera);
       }
 
       animationFrameId = requestAnimationFrame(() => this.animate());
@@ -376,17 +373,17 @@
       document.removeEventListener("mousemove", this.onMouseMove);
       window.removeEventListener("resize", this.onResize);
 
-      // Dispose renderer
-      if (this.renderer) {
-        this.renderer.dispose();
-        this.renderer = null;
+      // Dispose all renderers
+      for (const [instanceId, rendererData] of this.renderers) {
+        if (rendererData.renderer) {
+          rendererData.renderer.dispose();
+        }
       }
 
       // Clear references
-      this.scene = null;
-      this.camera = null;
       this.particleSystems.clear();
       this.targetElements.clear();
+      this.renderers.clear();
     }
   }
 
@@ -591,14 +588,17 @@
       }
 
       // Create particle systems for each target element
-      for (const element of this.elements) {
+      for (let i = 0; i < this.elements.length; i++) {
+        const element = this.elements[i];
         try {
           const particleSystem = await createParticleSystem(
             element,
             this.options
           );
+          // Generate unique ID for each element
+          const elementId = element.id || `element-${i}`;
           globalRenderer.addParticleSystem(
-            this.id + "-" + element.id,
+            this.id + "-" + elementId,
             particleSystem,
             element,
             this.options
@@ -626,9 +626,11 @@
       if (!this.initialized) return;
 
       // Remove all particle systems for this instance
-      for (const element of this.elements) {
+      for (let i = 0; i < this.elements.length; i++) {
+        const element = this.elements[i];
+        const elementId = element.id || `element-${i}`;
         globalRenderer.removeParticleSystem(
-          this.id + "-" + element.id,
+          this.id + "-" + elementId,
           keepTargetHidden
         );
       }
@@ -677,8 +679,10 @@
       if (!globalRenderer) return;
 
       // Update renderer properties for all instances of this particle system
-      for (const element of this.elements) {
-        const instanceId = this.id + "-" + element.id;
+      for (let i = 0; i < this.elements.length; i++) {
+        const element = this.elements[i];
+        const elementId = element.id || `element-${i}`;
+        const instanceId = this.id + "-" + elementId;
         const systemData = globalRenderer.particleSystems.get(instanceId);
 
         if (systemData) {
