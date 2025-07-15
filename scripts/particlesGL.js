@@ -474,7 +474,9 @@
 
         // Generate new particle positions based on current frame brightness
         const newPositions = [];
+        const newColors = [];
         const brightnessThreshold = 80; // Brightness threshold for particle detection
+        const useColorSampling = systemData.options.particleColor === "sample";
 
         for (let y = 0; y < 1024; y += systemData.options.sampling) {
           for (let x = 0; x < 2048; x += systemData.options.sampling) {
@@ -494,6 +496,14 @@
               const xPos = (x - 1024) * systemData.options.particleSpacing;
               const yPos = (512 - y) * systemData.options.particleSpacing;
               newPositions.push(xPos, yPos, 0);
+
+              // Sample color if enabled
+              if (useColorSampling) {
+                const colorR = r / 255;
+                const colorG = g / 255;
+                const colorB = b / 255;
+                newColors.push(colorR, colorG, colorB);
+              }
             }
           }
         }
@@ -517,6 +527,29 @@
             "originalPosition",
             new THREE.Float32BufferAttribute(newPositions, 3)
           );
+
+          // Update color arrays if sampling is enabled
+          if (useColorSampling && newColors.length > 0) {
+            const colorAttr = geometry.attributes.color;
+            const originalColorAttr = geometry.attributes.originalColor;
+
+            if (colorAttr) {
+              colorAttr.array = new Float32Array(newColors);
+              originalColorAttr.array = new Float32Array(newColors);
+
+              geometry.setAttribute(
+                "color",
+                new THREE.Float32BufferAttribute(newColors, 3)
+              );
+              geometry.setAttribute(
+                "originalColor",
+                new THREE.Float32BufferAttribute(newColors, 3)
+              );
+
+              colorAttr.needsUpdate = true;
+              originalColorAttr.needsUpdate = true;
+            }
+          }
 
           positionAttr.needsUpdate = true;
           originalPositionAttr.needsUpdate = true;
@@ -684,14 +717,17 @@
   /* --------------------------------------------------
    *  Particle System Creation
    * ------------------------------------------------*/
-  function createCharacterSprite(character, options) {
+  function createCharacterSprite(character, options, useColorSampling = false) {
     const canvas = document.createElement("canvas");
     const size = 64;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext("2d");
 
-    ctx.fillStyle = options.particleColor || "#8c8c8c";
+    // Use white for color sampling so vertex colors show through
+    ctx.fillStyle = useColorSampling
+      ? "#ffffff"
+      : options.particleColor || "#8c8c8c";
     ctx.font = `${options.fontSize || 48}px ${
       options.fontFamily || "monospace"
     }`;
@@ -712,6 +748,11 @@
 
     const positions = [];
     const originalPositions = [];
+    const colors = [];
+    const originalColors = [];
+
+    // Check if color sampling is enabled
+    const useColorSampling = options.particleColor === "sample";
 
     // Check if element is a video for different threshold logic
     const isVideo = element.tagName.toLowerCase() === "video";
@@ -749,6 +790,15 @@
           const yPos = (canvas.height / 2 - y) * options.particleSpacing;
           positions.push(xPos, yPos, 0);
           originalPositions.push(xPos, yPos, 0);
+
+          // Sample color if enabled
+          if (useColorSampling) {
+            const colorR = r / 255;
+            const colorG = g / 255;
+            const colorB = b / 255;
+            colors.push(colorR, colorG, colorB);
+            originalColors.push(colorR, colorG, colorB);
+          }
         }
       }
     }
@@ -763,16 +813,29 @@
       new THREE.Float32BufferAttribute(originalPositions, 3)
     );
 
+    // Add color attributes if sampling is enabled
+    if (useColorSampling) {
+      geometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(colors, 3)
+      );
+      geometry.setAttribute(
+        "originalColor",
+        new THREE.Float32BufferAttribute(originalColors, 3)
+      );
+    }
+
     const material = new THREE.PointsMaterial({
       size: options.particleSize,
-      map: createCharacterSprite(options.character, options),
+      map: createCharacterSprite(options.character, options, useColorSampling),
       transparent: true,
       alphaTest: 0.5,
       sizeAttenuation: true,
+      vertexColors: useColorSampling,
     });
 
     const particleSystem = new THREE.Points(geometry, material);
-    particleSystem.userData = { options };
+    particleSystem.userData = { options, useColorSampling };
 
     return particleSystem;
   }
@@ -906,27 +969,46 @@
               material.size = newOptions.particleSize;
             }
             if (newOptions.particleColor !== undefined) {
+              const useColorSampling = newOptions.particleColor === "sample";
+              const wasColorSampling = systemData.useColorSampling;
+
               // Update character sprite with new color
               const oldMap = material.map;
               material.map = createCharacterSprite(
                 this.options.character,
-                this.options
+                this.options,
+                useColorSampling
               );
               if (oldMap) oldMap.dispose(); // Clean up old texture
+
+              // Update vertex colors setting
+              material.vertexColors = useColorSampling;
+
+              // Update userData
+              systemData.system.userData.useColorSampling = useColorSampling;
+              systemData.useColorSampling = useColorSampling;
+
+              // If switching color sampling mode, mark material as needing update
+              if (useColorSampling !== wasColorSampling) {
+                material.needsUpdate = true;
+              }
             }
           }
         }
       }
     }
 
-    createCharacterSprite(character, options) {
+    createCharacterSprite(character, options, useColorSampling = false) {
       const canvas = document.createElement("canvas");
       const size = 64;
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext("2d");
 
-      ctx.fillStyle = options.particleColor || "#8c8c8c";
+      // Use white for color sampling so vertex colors show through
+      ctx.fillStyle = useColorSampling
+        ? "#ffffff"
+        : options.particleColor || "#8c8c8c";
       ctx.font = `${options.fontSize || 48}px ${
         options.fontFamily || "monospace"
       }`;

@@ -439,7 +439,7 @@
                   character: "+",
                   particleSize: 0.075,
                   particleSpacing: 0.004,
-                  particleColor: "#ff6b9d",
+                  particleColor: "sample",
                   tilt: true,
                   tiltFactor: 0.3,
                   tiltSpeed: 0.08,
@@ -463,7 +463,7 @@
                   character: "+",
                   particleSize: 0.075,
                   particleSpacing: 0.0035,
-                  particleColor: "#4ecdc4",
+                  particleColor: "sample",
                   tilt: true,
                   tiltFactor: 0.25,
                   tiltSpeed: 0.06,
@@ -487,7 +487,7 @@
                   character: "+",
                   particleSize: 0.075,
                   particleSpacing: 0.003,
-                  particleColor: "#45b7d1",
+                  particleColor: "sample",
                   tilt: true,
                   tiltFactor: 0.2,
                   tiltSpeed: 0.05,
@@ -511,7 +511,7 @@
                   character: "+",
                   particleSize: 0.075,
                   particleSpacing: 0.0038,
-                  particleColor: "#96ceb4",
+                  particleColor: "sample",
                   tilt: true,
                   tiltFactor: 0.35,
                   tiltSpeed: 0.07,
@@ -589,17 +589,31 @@
 
                   const colorOptions = {
                     particleColor: controls.particleColor,
+                    useColorSampling: controls.particleColor === "sample",
                     setColor: function (newColor) {
                       effect.updateOptions({ particleColor: newColor });
                     },
                   };
 
+                  // Color sampling toggle
                   artworkFolder
-                    .addColor(colorOptions, "particleColor")
-                    .name("Particle Color")
+                    .add(colorOptions, "useColorSampling")
+                    .name("Color Sampling")
                     .onChange((value) => {
-                      colorOptions.setColor(value);
+                      const newColor = value ? "sample" : "#8c8c8c";
+                      colorOptions.particleColor = newColor;
+                      effect.updateOptions({ particleColor: newColor });
                     });
+
+                  // Color picker (only active when not sampling)
+                  if (controls.particleColor !== "sample") {
+                    artworkFolder
+                      .addColor(colorOptions, "particleColor")
+                      .name("Particle Color")
+                      .onChange((value) => {
+                        colorOptions.setColor(value);
+                      });
+                  }
 
                   artworkFolder.close();
                 }
