@@ -56,6 +56,10 @@
       canvas.setAttribute("data-particles-target", instanceId);
       document.body.appendChild(canvas);
 
+      // Analyze DOM for positioning context
+      const positioningContext = getPositioningContext(targetElement);
+      const effectiveZIndex = getEffectiveZIndex(targetElement);
+
       this.renderers.set(instanceId, { renderer, scene, camera });
 
       this.particleSystems.set(instanceId, {
@@ -70,8 +74,9 @@
         resetAnimation: { x: 0, y: 0 },
         currentMouse: new THREE.Vector2(),
         lastMousePos: new THREE.Vector2(),
-        // Internal flag to prevent the animate loop from repositioning the canvas
-        isFixedPosition: !!options._isModal,
+        // Store calculated positioning values
+        positioningContext: positioningContext,
+        effectiveZIndex: effectiveZIndex,
         // Internal velocity-based effect control (not user-controllable)
         mouseVelocity: 0,
         isMoving: false,
@@ -326,18 +331,23 @@
         camera.updateProjectionMatrix();
         renderer.setSize(rect.width, rect.height);
 
-        // For standard elements, position the canvas to match the target element exactly.
-        // For fixed elements (like modals), this step is skipped.
-        if (!systemData.isFixedPosition) {
-          const canvas = renderer.domElement;
-          canvas.style.position = "absolute";
-          canvas.style.top = rect.top + window.scrollY + "px";
-          canvas.style.left = rect.left + window.scrollX + "px";
-          canvas.style.width = rect.width + "px";
-          canvas.style.height = rect.height + "px";
-          canvas.style.zIndex = "10";
-          canvas.style.pointerEvents = "none";
+        // Automatically determine canvas positioning based on context
+        const canvas = renderer.domElement;
+        const position = systemData.positioningContext;
+        canvas.style.position = position;
+
+        if (position === "fixed") {
+          canvas.style.top = `${rect.top}px`;
+          canvas.style.left = `${rect.left}px`;
+        } else {
+          canvas.style.top = `${rect.top + window.scrollY}px`;
+          canvas.style.left = `${rect.left + window.scrollX}px`;
         }
+
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+        canvas.style.zIndex = systemData.effectiveZIndex + 1; // Always on top
+        canvas.style.pointerEvents = "none";
 
         renderer.render(scene, camera);
       }
@@ -739,6 +749,35 @@
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     return texture;
+  }
+
+  /* --------------------------------------------------
+   *  DOM Analysis Helpers
+   * ------------------------------------------------*/
+  function getPositioningContext(element) {
+    let el = element;
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el);
+      if (style.position === "fixed") {
+        return "fixed";
+      }
+      el = el.parentElement;
+    }
+    return "absolute";
+  }
+
+  function getEffectiveZIndex(element) {
+    let el = element;
+    let zIndex = 0;
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el);
+      const currentZIndex = parseInt(style.zIndex, 10);
+      if (!isNaN(currentZIndex) && style.position !== "static") {
+        zIndex = Math.max(zIndex, currentZIndex);
+      }
+      el = el.parentElement;
+    }
+    return zIndex;
   }
 
   async function createParticleSystem(element, options) {

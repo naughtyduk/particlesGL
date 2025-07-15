@@ -1227,7 +1227,7 @@
         modal.classList.add("active");
         document.body.style.overflow = "hidden";
 
-        // Initialize particles for the modal image after a short delay for the animation
+        // Initialize particles for the modal image
         setTimeout(() => {
           const originalEffect = artworkEffects[artworkNumber - 1];
           if (!originalEffect) {
@@ -1237,54 +1237,11 @@
             return;
           }
 
-          // Inherit the options from the original artwork's effect, but
-          // override the target to be the unique modal image and
-          // set our new flag to enable external positioning.
+          // The library will now automatically handle the positioning and z-index.
+          // We just need to inherit the original effect's options.
           const modalOptions = {
             ...originalEffect.options,
             target: "#modalImage",
-            _isModal: true, // This is the new flag for the library
-            on: {
-              init: function (instance) {
-                console.log(
-                  `Modal particles for artwork #${artworkNumber} initialized with ID: ${instance.id}`
-                );
-
-                // Defer finding the canvas to ensure it's in the DOM
-                setTimeout(() => {
-                  const selector = `canvas[data-particles-target^="${instance.id}"]`;
-                  const canvas = document.querySelector(selector);
-
-                  if (canvas) {
-                    const modalContent =
-                      document.querySelector(".modal-content");
-                    const modalRect = modalContent.getBoundingClientRect();
-
-                    // Move the canvas to the body to escape the modal's stacking context
-                    document.body.appendChild(canvas);
-
-                    // Position the canvas to perfectly overlay the modal content
-                    canvas.style.position = "fixed";
-                    canvas.style.top = `${modalRect.top}px`;
-                    canvas.style.left = `${modalRect.left}px`;
-                    canvas.style.width = `${modalRect.width}px`;
-                    canvas.style.height = `${modalRect.height}px`;
-                    canvas.style.zIndex = "1002"; // Will now be respected globally
-                    canvas.style.borderRadius = "8px";
-                    canvas.style.visibility = "visible";
-                    canvas.style.opacity = "1";
-
-                    console.log(
-                      "Modal canvas moved to body and repositioned successfully."
-                    );
-                  } else {
-                    console.error(
-                      `Failed to find the canvas for the modal particle effect using selector: ${selector}`
-                    );
-                  }
-                }, 50); // 50ms delay
-              },
-            },
           };
 
           modalEffect = particlesGL(modalOptions);
@@ -1300,7 +1257,6 @@
 
         // Clean up modal particles effect
         if (modalEffect && typeof modalEffect.cleanup === "function") {
-          console.log("Cleaning up modal particle effect.", modalEffect.id);
           modalEffect.cleanup();
           modalEffect = null;
         }
