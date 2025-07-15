@@ -31,10 +31,8 @@
 
       // Bind events
       this.onMouseMove = this.onMouseMove.bind(this);
-      this.onResize = this.onResize.bind(this);
 
       document.addEventListener("mousemove", this.onMouseMove);
-      window.addEventListener("resize", this.onResize);
     }
 
     addParticleSystem(instanceId, particleSystem, targetElement, options) {
@@ -179,10 +177,6 @@
           systemData.currentMouse.set(mouseX, mouseY);
         }
       }
-    }
-
-    onResize() {
-      this.updateRendererSize();
     }
 
     startResetAnimation(instanceId) {
@@ -375,7 +369,6 @@
 
       // Remove event listeners
       document.removeEventListener("mousemove", this.onMouseMove);
-      window.removeEventListener("resize", this.onResize);
 
       // Dispose all renderers
       for (const [instanceId, rendererData] of this.renderers) {
