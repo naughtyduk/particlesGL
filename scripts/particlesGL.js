@@ -65,6 +65,12 @@
         resetAnimation: { x: 0, y: 0 },
         currentMouse: new THREE.Vector2(),
         lastMousePos: new THREE.Vector2(),
+        // Internal velocity-based effect control (not user-controllable)
+        mouseVelocity: 0,
+        isMoving: false,
+        inactivityTimer: 0,
+        effectRadius: 0,
+        targetEffectRadius: 0,
       });
 
       this.targetElements.set(instanceId, targetElement);
@@ -165,6 +171,20 @@
           const mouseX = (relativeX / rect.width) * 2 - 1;
           const mouseY = -(relativeY / rect.height) * 2 + 1;
 
+          const newMousePos = new THREE.Vector2(mouseX, mouseY);
+
+          // Calculate velocity for this system (simple approach)
+          const velocity = newMousePos.clone().sub(systemData.currentMouse);
+          systemData.mouseVelocity = velocity.length();
+
+          // Update moving state based on velocity
+          systemData.isMoving = systemData.mouseVelocity > 0.001;
+
+          // Reset inactivity timer if moving
+          if (systemData.isMoving) {
+            systemData.inactivityTimer = 0;
+          }
+
           // Apply tilt effect only if enabled
           if (systemData.options.tilt) {
             systemData.targetRotation.x =
@@ -174,7 +194,7 @@
           }
 
           // Store mouse position for glitch effect
-          systemData.currentMouse.set(mouseX, mouseY);
+          systemData.currentMouse.copy(newMousePos);
         }
       }
     }
@@ -230,6 +250,34 @@
 
         const { renderer, scene, camera } = rendererData;
 
+        // Update inactivity timer and effect radius
+        if (systemData.isMouseOver) {
+          if (!systemData.isMoving) {
+            systemData.inactivityTimer += 16.67; // Approximate frame time
+            // Consider stopped after 100ms of inactivity
+            if (systemData.inactivityTimer > 100) {
+              systemData.isMoving = false;
+            }
+          }
+
+          // Set target radius based on movement state
+          systemData.targetEffectRadius = systemData.isMoving
+            ? options.displaceRadius
+            : 0;
+        } else {
+          systemData.targetEffectRadius = 0;
+        }
+
+        // Ease effect radius towards target
+        const easeSpeed = 0.08;
+        const radiusDiff =
+          systemData.targetEffectRadius - systemData.effectRadius;
+        if (Math.abs(radiusDiff) > 0.001) {
+          systemData.effectRadius += radiusDiff * easeSpeed;
+        } else {
+          systemData.effectRadius = systemData.targetEffectRadius;
+        }
+
         // Update rotation using per-system rotation state
         if (system.rotation) {
           system.rotation.x +=
@@ -284,6 +332,25 @@
 
       if (!posAttr || !originalPosAttr) return;
 
+      // Use dynamic effect radius instead of fixed displaceRadius
+      const currentRadius = systemData.effectRadius;
+
+      // If radius is essentially zero, just return particles to original positions
+      if (currentRadius < 0.001) {
+        const positions = posAttr.array;
+        const originalPositions = originalPosAttr.array;
+
+        for (let i = 0; i < positions.length; i += 3) {
+          const lerpFactor = options.returnSpeed;
+          positions[i] += (originalPositions[i] - positions[i]) * lerpFactor;
+          positions[i + 1] +=
+            (originalPositions[i + 1] - positions[i + 1]) * lerpFactor;
+        }
+
+        posAttr.needsUpdate = true;
+        return;
+      }
+
       const positions = posAttr.array;
       const originalPositions = originalPosAttr.array;
 
@@ -302,7 +369,7 @@
         const tempVec = new THREE.Vector2(positions[i], positions[i + 1]);
         const distanceToMouse = mouseWorld.distanceTo(tempVec);
 
-        if (distanceToMouse > options.displaceRadius * 2) {
+        if (distanceToMouse > currentRadius * 2) {
           const lerpFactor = options.returnSpeed;
           positions[i] += (originalPositions[i] - positions[i]) * lerpFactor;
           positions[i + 1] +=
@@ -310,7 +377,7 @@
           continue;
         }
 
-        const normalizedDist = distanceToMouse / options.displaceRadius;
+        const normalizedDist = distanceToMouse / currentRadius;
         const falloff = Math.exp(-normalizedDist * normalizedDist * 2);
 
         if (falloff > 0.01) {
