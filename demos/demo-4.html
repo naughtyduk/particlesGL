@@ -73,6 +73,10 @@
         flex-direction: column;
         align-items: center;
         gap: 1rem;
+        background-image: url("../assets/wall.webp");
+        background-size: cover;
+        background-position: center center;
+        background-attachment: fixed;
       }
 
       .gallery-title {
@@ -288,7 +292,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.75);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -324,30 +328,7 @@
         border-radius: 4px;
         max-width: 80vw;
         max-height: 80vh;
-      }
-
-      .modal-close {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        width: 40px;
-        height: 40px;
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1001;
-        transition: all 0.2s ease;
-        color: white;
-        font-size: 20px;
-      }
-
-      .modal-close:hover {
-        background: rgba(0, 0, 0, 0.9);
-        transform: scale(1.1);
+        opacity: 0;
       }
 
       .lil-gui {
@@ -675,7 +656,6 @@
     <!-- Modal Overlay -->
     <div class="modal-overlay" id="artworkModal">
       <div class="modal-content">
-        <button class="modal-close" onclick="closeModal()">&times;</button>
         <img src="" alt="" class="modal-artwork" id="modalImage" />
       </div>
     </div>
@@ -695,6 +675,20 @@
       let titleEffect;
       let artworkEffects = [];
       let modalEffect;
+      let activeModalArtworkNumber = null;
+
+      /* Helper to update both gallery and modal effects */
+      function updateBothEffects(artworkIndex, options) {
+        // Update the main gallery effect
+        if (artworkEffects[artworkIndex]) {
+          artworkEffects[artworkIndex].updateOptions(options);
+        }
+
+        // Update the modal effect if it's currently showing this artwork
+        if (modalEffect && activeModalArtworkNumber === artworkIndex + 1) {
+          modalEffect.updateOptions(options);
+        }
+      }
 
       /* DOM Content Loaded */
       document.addEventListener("DOMContentLoaded", () => {
@@ -851,21 +845,21 @@
                   .add(titleControls, "tilt")
                   .name("tilt")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ tilt: value });
+                    updateBothEffects(0, { tilt: value });
                   });
 
                 titleFolder
                   .add(titleControls, "tiltFactor", 0, 1, 0.01)
                   .name("tiltFactor")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ tiltFactor: value });
+                    updateBothEffects(0, { tiltFactor: value });
                   });
 
                 titleFolder
                   .add(titleControls, "tiltSpeed", 0.01, 0.2, 0.01)
                   .name("tiltSpeed")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ tiltSpeed: value });
+                    updateBothEffects(0, { tiltSpeed: value });
                   });
 
                 // Particle Controls
@@ -873,14 +867,14 @@
                   .add(titleControls, "particleSize", 0.005, 0.1, 0.001)
                   .name("particleSize")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ particleSize: value });
+                    updateBothEffects(0, { particleSize: value });
                   });
 
                 titleFolder
                   .add(titleControls, "particleSpacing", 0.001, 0.01, 0.0001)
                   .name("particleSpacing")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ particleSpacing: value });
+                    updateBothEffects(0, { particleSpacing: value });
                   });
 
                 // Displace Controls
@@ -888,28 +882,28 @@
                   .add(titleControls, "displaceStrength", 0, 2, 0.1)
                   .name("displaceStrength")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ displaceStrength: value });
+                    updateBothEffects(0, { displaceStrength: value });
                   });
 
                 titleFolder
                   .add(titleControls, "displaceRadius", 0.01, 0.5, 0.01)
                   .name("displaceRadius")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ displaceRadius: value });
+                    updateBothEffects(0, { displaceRadius: value });
                   });
 
                 titleFolder
                   .add(titleControls, "velocityInfluence", 0, 2, 0.01)
                   .name("velocityInfluence")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ velocityInfluence: value });
+                    updateBothEffects(0, { velocityInfluence: value });
                   });
 
                 titleFolder
                   .add(titleControls, "returnSpeed", 0.01, 0.2, 0.01)
                   .name("returnSpeed")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ returnSpeed: value });
+                    updateBothEffects(0, { returnSpeed: value });
                   });
 
                 // Rendering Controls
@@ -917,14 +911,14 @@
                   .add(titleControls, "sampling", 1, 10, 1)
                   .name("sampling")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ sampling: value });
+                    updateBothEffects(0, { sampling: value });
                   });
 
                 // Character selection
                 const titleCharacterOptions = {
                   character: titleControls.character,
                   setCharacter: function (newChar) {
-                    titleEffect.updateOptions({ character: newChar });
+                    updateBothEffects(0, { character: newChar });
                   },
                 };
 
@@ -939,7 +933,7 @@
                 const titleColorOptions = {
                   particleColor: titleControls.particleColor,
                   setColor: function (newColor) {
-                    titleEffect.updateOptions({ particleColor: newColor });
+                    updateBothEffects(0, { particleColor: newColor });
                   },
                 };
 
@@ -955,13 +949,13 @@
                   .add(titleControls, "fontSize", 12, 72, 1)
                   .name("fontSize")
                   .onChange((value) => {
-                    titleEffect.updateOptions({ fontSize: value });
+                    updateBothEffects(0, { fontSize: value });
                   });
 
                 const titleFontOptions = {
                   fontFamily: titleControls.fontFamily,
                   setFont: function (newFont) {
-                    titleEffect.updateOptions({ fontFamily: newFont });
+                    updateBothEffects(0, { fontFamily: newFont });
                   },
                 };
 
@@ -988,27 +982,28 @@
                     `Artwork ${index + 1}`
                   );
                   const controls = effect.options;
+                  const artworkIndex = index; // Capture index for closure
 
                   // Tilt Controls
                   artworkFolder
                     .add(controls, "tilt")
                     .name("tilt")
                     .onChange((value) => {
-                      effect.updateOptions({ tilt: value });
+                      updateBothEffects(artworkIndex, { tilt: value });
                     });
 
                   artworkFolder
                     .add(controls, "tiltFactor", 0, 1, 0.01)
                     .name("tiltFactor")
                     .onChange((value) => {
-                      effect.updateOptions({ tiltFactor: value });
+                      updateBothEffects(artworkIndex, { tiltFactor: value });
                     });
 
                   artworkFolder
                     .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
                     .name("tiltSpeed")
                     .onChange((value) => {
-                      effect.updateOptions({ tiltSpeed: value });
+                      updateBothEffects(artworkIndex, { tiltSpeed: value });
                     });
 
                   // Particle Controls
@@ -1016,14 +1011,16 @@
                     .add(controls, "particleSize", 0.005, 0.1, 0.001)
                     .name("particleSize")
                     .onChange((value) => {
-                      effect.updateOptions({ particleSize: value });
+                      updateBothEffects(artworkIndex, { particleSize: value });
                     });
 
                   artworkFolder
                     .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
                     .name("particleSpacing")
                     .onChange((value) => {
-                      effect.updateOptions({ particleSpacing: value });
+                      updateBothEffects(artworkIndex, {
+                        particleSpacing: value,
+                      });
                     });
 
                   // Displace Controls
@@ -1031,28 +1028,34 @@
                     .add(controls, "displaceStrength", 0, 2, 0.1)
                     .name("displaceStrength")
                     .onChange((value) => {
-                      effect.updateOptions({ displaceStrength: value });
+                      updateBothEffects(artworkIndex, {
+                        displaceStrength: value,
+                      });
                     });
 
                   artworkFolder
                     .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
                     .name("displaceRadius")
                     .onChange((value) => {
-                      effect.updateOptions({ displaceRadius: value });
+                      updateBothEffects(artworkIndex, {
+                        displaceRadius: value,
+                      });
                     });
 
                   artworkFolder
                     .add(controls, "velocityInfluence", 0, 2, 0.01)
                     .name("velocityInfluence")
                     .onChange((value) => {
-                      effect.updateOptions({ velocityInfluence: value });
+                      updateBothEffects(artworkIndex, {
+                        velocityInfluence: value,
+                      });
                     });
 
                   artworkFolder
                     .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
                     .name("returnSpeed")
                     .onChange((value) => {
-                      effect.updateOptions({ returnSpeed: value });
+                      updateBothEffects(artworkIndex, { returnSpeed: value });
                     });
 
                   // Rendering Controls
@@ -1060,14 +1063,14 @@
                     .add(controls, "sampling", 1, 10, 1)
                     .name("sampling")
                     .onChange((value) => {
-                      effect.updateOptions({ sampling: value });
+                      updateBothEffects(artworkIndex, { sampling: value });
                     });
 
                   // Character selection (this will cause reinit)
                   const characterOptions = {
                     character: controls.character,
                     setCharacter: function (newChar) {
-                      effect.updateOptions({ character: newChar });
+                      updateBothEffects(artworkIndex, { character: newChar });
                     },
                   };
 
@@ -1083,7 +1086,9 @@
                     particleColor: controls.particleColor,
                     useColorSampling: controls.particleColor === "sample",
                     setColor: function (newColor) {
-                      effect.updateOptions({ particleColor: newColor });
+                      updateBothEffects(artworkIndex, {
+                        particleColor: newColor,
+                      });
                     },
                   };
 
@@ -1093,7 +1098,9 @@
                     .onChange((value) => {
                       const newColor = value ? "sample" : "#8c8c8c";
                       colorOptions.particleColor = newColor;
-                      effect.updateOptions({ particleColor: newColor });
+                      updateBothEffects(artworkIndex, {
+                        particleColor: newColor,
+                      });
                     });
 
                   // Color picker (only active when not sampling)
@@ -1111,13 +1118,13 @@
                     .add(controls, "fontSize", 12, 72, 1)
                     .name("fontSize")
                     .onChange((value) => {
-                      effect.updateOptions({ fontSize: value });
+                      updateBothEffects(artworkIndex, { fontSize: value });
                     });
 
                   const fontOptions = {
                     fontFamily: controls.fontFamily,
                     setFont: function (newFont) {
-                      effect.updateOptions({ fontFamily: newFont });
+                      updateBothEffects(artworkIndex, { fontFamily: newFont });
                     },
                   };
 
@@ -1222,6 +1229,7 @@
         // Copy image to modal
         modalImage.src = artworkImage.src;
         modalImage.alt = artworkImage.alt;
+        activeModalArtworkNumber = artworkNumber;
 
         // Show modal
         modal.classList.add("active");
@@ -1251,6 +1259,7 @@
         // Hide modal
         modal.classList.remove("active");
         document.body.style.overflow = "";
+        activeModalArtworkNumber = null;
 
         // Clean up modal particles effect
         if (modalEffect && typeof modalEffect.cleanup === "function") {
