@@ -72,7 +72,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4rem;
+        gap: 1rem;
       }
 
       .gallery-title {
@@ -123,18 +123,14 @@
         margin-bottom: 1.5rem;
       }
 
-      .artwork-frame:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px var(--gallery-shadow),
-          0 8px 16px rgba(0, 0, 0, 0.1);
-      }
-
       .artwork-image {
         width: 100%;
         height: 280px;
         object-fit: cover;
         border-radius: 2px;
         display: block;
+        transition: opacity 0.3s ease;
+        opacity: 0;
       }
 
       .artwork-plaque {
@@ -148,17 +144,96 @@
         transition: all 0.3s ease;
       }
 
-      .artwork-plaque:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      }
-
       .artwork-title {
         font-size: 1.1rem;
         font-weight: 600;
         color: var(--gallery-text);
         margin-bottom: 0.5rem;
         letter-spacing: 0.02em;
+      }
+
+      .plaque-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .artwork-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        align-self: flex-start;
+      }
+
+      .artwork-toggle-checkbox {
+        position: relative;
+        width: 24px;
+        height: 14px;
+        cursor: pointer;
+      }
+
+      .artwork-toggle-checkbox input[type="checkbox"] {
+        opacity: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 20;
+      }
+
+      .artwork-checkbox-display {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        background: rgba(52, 73, 94, 0.3);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .artwork-checkbox-display::after {
+        content: "";
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(44, 62, 80, 0.9);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .artwork-toggle-checkbox
+        input[type="checkbox"]:checked
+        + .artwork-checkbox-display {
+        background: rgba(52, 73, 94, 0.6);
+      }
+
+      .artwork-toggle-checkbox
+        input[type="checkbox"]:checked
+        + .artwork-checkbox-display::after {
+        transform: translateX(10px);
+      }
+
+      .artwork-toggle-checkbox:hover .artwork-checkbox-display {
+        background: rgba(52, 73, 94, 0.4);
+      }
+
+      .artwork-toggle-checkbox:hover
+        input[type="checkbox"]:checked
+        + .artwork-checkbox-display {
+        background: rgba(52, 73, 94, 0.7);
+      }
+
+      .artwork-toggle-label {
+        color: var(--gallery-accent);
+        font-family: "Inter", sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
       }
 
       .artwork-artist {
@@ -222,6 +297,30 @@
         .artwork-plaque {
           padding: 1.25rem;
         }
+
+        .artwork-toggle {
+          gap: 0.4rem;
+        }
+
+        .artwork-toggle-checkbox {
+          width: 20px;
+          height: 12px;
+        }
+
+        .artwork-checkbox-display::after {
+          width: 10px;
+          height: 10px;
+        }
+
+        .artwork-toggle-checkbox
+          input[type="checkbox"]:checked
+          + .artwork-checkbox-display::after {
+          transform: translateX(8px);
+        }
+
+        .artwork-toggle-label {
+          font-size: 9px;
+        }
       }
 
       @media (max-width: 480px) {
@@ -239,6 +338,14 @@
 
         .artwork-image {
           height: 200px;
+        }
+
+        .plaque-header {
+          gap: 0.5rem;
+        }
+
+        .artwork-toggle {
+          gap: 0.35rem;
         }
       }
 
@@ -306,7 +413,21 @@
             />
           </div>
           <div class="artwork-plaque">
-            <h3 class="artwork-title">Neon Dreams</h3>
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-1" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-1"
+                  class="artwork-toggle-label"
+                  id="particles-label-1"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Neon Dreams</h3>
+            </div>
             <p class="artwork-artist">by Lucaspezeta</p>
             <p class="artwork-description">
               A vibrant exploration of digital consciousness, where electric
@@ -327,7 +448,21 @@
             />
           </div>
           <div class="artwork-plaque">
-            <h3 class="artwork-title">Fractured Reality</h3>
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-2" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-2"
+                  class="artwork-toggle-label"
+                  id="particles-label-2"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Fractured Reality</h3>
+            </div>
             <p class="artwork-artist">by Zaksheuskaya</p>
             <p class="artwork-description">
               An abstract meditation on perception and reality, where geometric
@@ -348,7 +483,21 @@
             />
           </div>
           <div class="artwork-plaque">
-            <h3 class="artwork-title">Ethereal Visions</h3>
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-3" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-3"
+                  class="artwork-toggle-label"
+                  id="particles-label-3"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Ethereal Visions</h3>
+            </div>
             <p class="artwork-artist">by Anniroenkae</p>
             <p class="artwork-description">
               A dreamlike journey through digital landscapes, where soft
@@ -369,7 +518,21 @@
             />
           </div>
           <div class="artwork-plaque">
-            <h3 class="artwork-title">Data Streams</h3>
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-4" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-4"
+                  class="artwork-toggle-label"
+                  id="particles-label-4"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Data Streams</h3>
+            </div>
             <p class="artwork-artist">by Steve</p>
             <p class="artwork-description">
               A bold statement on information flow in the digital age. Raw data
@@ -530,6 +693,11 @@
             }
           }, 500);
 
+          /* Setup Individual Artwork Toggle Controls */
+          setTimeout(() => {
+            setupArtworkToggleControls();
+          }, 600);
+
           /* GUI Controls */
           if (typeof lil !== "undefined") {
             setTimeout(() => {
@@ -629,6 +797,66 @@
           });
         });
       });
+
+      /* Setup Individual Artwork Toggle Controls */
+      function setupArtworkToggleControls() {
+        // Setup toggle controls for each artwork
+        for (let i = 1; i <= 4; i++) {
+          const particlesToggle = document.getElementById(
+            `particles-toggle-${i}`
+          );
+          const particlesLabel = document.getElementById(
+            `particles-label-${i}`
+          );
+
+          if (!particlesToggle || !particlesLabel) continue;
+
+          // Get artwork elements
+          const artworkImage = document.getElementById(`artwork-${i}`);
+
+          // Particles toggle functionality
+          particlesToggle.addEventListener("change", function () {
+            // Find the canvas for this specific artwork
+            const canvas = document.querySelector(
+              `canvas[data-particles-target*="artwork-${i}"]`
+            );
+
+            if (this.checked) {
+              // Particles enabled
+              particlesLabel.textContent = "Enabled";
+
+              // Show particles
+              if (canvas) {
+                canvas.style.transition = "opacity 0.3s ease";
+                canvas.style.opacity = "1";
+              }
+
+              // Hide image (particlesGL library sets visibility: hidden, but we also control opacity)
+              if (artworkImage) {
+                artworkImage.style.transition = "opacity 0.3s ease";
+                artworkImage.style.opacity = "0";
+                artworkImage.style.visibility = "hidden";
+              }
+            } else {
+              // Particles disabled
+              particlesLabel.textContent = "Disabled";
+
+              // Hide particles
+              if (canvas) {
+                canvas.style.transition = "opacity 0.3s ease";
+                canvas.style.opacity = "0";
+              }
+
+              // Show image (override particlesGL library's visibility: hidden)
+              if (artworkImage) {
+                artworkImage.style.transition = "opacity 0.3s ease";
+                artworkImage.style.opacity = "1";
+                artworkImage.style.visibility = "visible";
+              }
+            }
+          });
+        }
+      }
 
       /* Cleanup on page unload */
       window.addEventListener("beforeunload", () => {
