@@ -251,6 +251,105 @@
         font-family: "Inter", sans-serif;
       }
 
+      /* Fullscreen Button */
+      .fullscreen-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 32px;
+        height: 32px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 15;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(4px);
+      }
+
+      .fullscreen-button:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.05);
+      }
+
+      .fullscreen-button svg {
+        width: 16px;
+        height: 16px;
+        fill: white;
+      }
+
+      /* Modal Overlay */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        background: var(--gallery-white);
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-artwork {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 4px;
+        max-width: 80vw;
+        max-height: 80vh;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1001;
+        transition: all 0.2s ease;
+        color: white;
+        font-size: 20px;
+      }
+
+      .modal-close:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.1);
+      }
+
       .lil-gui {
         --focus-color: #f5f5f5;
         --number-color: #f5f5f5;
@@ -322,6 +421,16 @@
         .artwork-toggle-label {
           font-size: 9px;
         }
+
+        .fullscreen-button {
+          width: 28px;
+          height: 28px;
+        }
+
+        .fullscreen-button svg {
+          width: 14px;
+          height: 14px;
+        }
       }
 
       @media (max-width: 480px) {
@@ -347,6 +456,16 @@
 
         .artwork-toggle {
           gap: 0.35rem;
+        }
+
+        .fullscreen-button {
+          width: 24px;
+          height: 24px;
+        }
+
+        .fullscreen-button svg {
+          width: 12px;
+          height: 12px;
         }
       }
 
@@ -412,6 +531,13 @@
               class="artwork-image gallery-artwork"
               id="artwork-1"
             />
+            <button class="fullscreen-button" onclick="openModal(1)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
           </div>
           <div class="artwork-plaque">
             <div class="plaque-header">
@@ -442,6 +568,13 @@
               class="artwork-image gallery-artwork"
               id="artwork-2"
             />
+            <button class="fullscreen-button" onclick="openModal(2)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
           </div>
           <div class="artwork-plaque">
             <div class="plaque-header">
@@ -472,6 +605,13 @@
               class="artwork-image gallery-artwork"
               id="artwork-3"
             />
+            <button class="fullscreen-button" onclick="openModal(3)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
           </div>
           <div class="artwork-plaque">
             <div class="plaque-header">
@@ -502,6 +642,13 @@
               class="artwork-image gallery-artwork"
               id="artwork-4"
             />
+            <button class="fullscreen-button" onclick="openModal(4)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
           </div>
           <div class="artwork-plaque">
             <div class="plaque-header">
@@ -522,6 +669,14 @@
             <p class="artwork-artist">by Steve</p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="artworkModal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <img src="" alt="" class="modal-artwork" id="modalImage" />
       </div>
     </div>
 
@@ -1052,6 +1207,48 @@
           });
         }
       }
+
+      /* Modal functionality */
+      function openModal(artworkNumber) {
+        const artworkImage = document.getElementById(
+          `artwork-${artworkNumber}`
+        );
+        const modal = document.getElementById("artworkModal");
+        const modalImage = document.getElementById("modalImage");
+
+        if (!artworkImage || !modal || !modalImage) return;
+
+        // Copy image to modal
+        modalImage.src = artworkImage.src;
+        modalImage.alt = artworkImage.alt;
+
+        // Show modal
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("artworkModal");
+
+        // Hide modal
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+
+      // Close modal with escape key
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      // Close modal when clicking overlay
+      document.addEventListener("click", function (e) {
+        const modal = document.getElementById("artworkModal");
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
 
       /* Cleanup on page unload */
       window.addEventListener("beforeunload", () => {
