@@ -628,9 +628,26 @@
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-    // Set canvas size - use fixed dimensions that work well
-    const canvasWidth = 2048;
-    const canvasHeight = 1024;
+    // Determine canvas size based on element type
+    let canvasWidth, canvasHeight;
+    const tagName = element.tagName.toLowerCase();
+
+    if (
+      tagName === "img" ||
+      tagName === "svg" ||
+      tagName === "canvas" ||
+      tagName === "video"
+    ) {
+      // Media elements: use standard dimensions
+      canvasWidth = 2048;
+      canvasHeight = 1024;
+    } else {
+      // Text elements: size canvas to match element dimensions
+      const rect = element.getBoundingClientRect();
+      const scale = 4; // Higher resolution for cleaner particles
+      canvasWidth = rect.width * scale;
+      canvasHeight = rect.height * scale;
+    }
 
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -704,18 +721,28 @@
             });
             ctx.drawImage(html2canvasResult, 0, 0, canvasWidth, canvasHeight);
           } else {
-            // Fallback: render text content using particleColor
-            ctx.fillStyle = options.particleColor || "#8c8c8c";
-            ctx.font = `${options.fontSize || 48}px ${
-              options.fontFamily || "Arial"
-            }`;
+            // For text elements: Get actual computed styles
+            const computedStyle = window.getComputedStyle(element);
+            const text = element.textContent || element.innerText || "Text";
+
+            // Extract actual font properties from DOM element
+            const originalFontSize = parseFloat(computedStyle.fontSize);
+            const fontFamily = computedStyle.fontFamily;
+            const fontWeight = computedStyle.fontWeight;
+            const fontStyle = computedStyle.fontStyle;
+
+            // Canvas is 4x the element size, so scale font by 4x
+            const canvasScale = 4;
+            const canvasFontSize = originalFontSize * canvasScale;
+
+            // Set font with exact computed styles
+            ctx.font = `${fontStyle} ${fontWeight} ${canvasFontSize}px ${fontFamily}`;
+            ctx.fillStyle = options.particleColor || computedStyle.color;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(
-              element.textContent || element.innerText || "Text",
-              canvasWidth / 2,
-              canvasHeight / 2
-            );
+
+            // Render text centered on canvas
+            ctx.fillText(text, canvasWidth / 2, canvasHeight / 2);
           }
           break;
       }
@@ -844,8 +871,32 @@
         }
 
         if (shouldCreateParticle) {
-          const xPos = (x - canvas.width / 2) * options.particleSpacing;
-          const yPos = (canvas.height / 2 - y) * options.particleSpacing;
+          let xPos, yPos;
+
+          // Check if this is a text element (custom canvas size)
+          const isTextCanvas = canvas.width !== 2048 || canvas.height !== 1024;
+
+          if (isTextCanvas) {
+            // For text elements: calculate positions to exactly match element size
+            // The camera is at z=1.15 with FOV=75 degrees
+            const fov = 75 * (Math.PI / 180);
+            const cameraZ = 1.15;
+            const visibleHeight = 2 * Math.tan(fov / 2) * cameraZ;
+
+            // Get the original element dimensions
+            const rect = element.getBoundingClientRect();
+            const elementAspect = rect.width / rect.height;
+            const visibleWidth = visibleHeight * elementAspect;
+
+            // Scale particle positions to fill the visible area
+            xPos = ((x - canvas.width / 2) / canvas.width) * visibleWidth;
+            yPos = ((canvas.height / 2 - y) / canvas.height) * visibleHeight;
+          } else {
+            // For images/videos: use standard calculation with particleSpacing
+            xPos = (x - canvas.width / 2) * options.particleSpacing;
+            yPos = (canvas.height / 2 - y) * options.particleSpacing;
+          }
+
           positions.push(xPos, yPos, 0);
           originalPositions.push(xPos, yPos, 0);
 
