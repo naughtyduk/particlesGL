@@ -4,8 +4,7 @@
 
 **STABLE Release** - `now with velocity-based interactions`
 
-> [!NOTE]
-> `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling.
+> [!NOTE] > `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
@@ -109,37 +108,6 @@ Next, initialise the library with your desired configuration.
 
 ---
 
-## Advanced Usage
-
-### Velocity-Based Interactions
-
-The library automatically handles velocity-based interactions. Effects only appear when the cursor is moving:
-
-- **Stationary cursor**: No effect visible.
-- **Moving cursor**: Effect appears and follows movement.
-- **Cursor stops**: Effect smoothly fades out.
-
-### Real-time Video Support
-
-`particlesGL` supports real-time video conversion to particles:
-
-```javascript
-const videoEffect = particlesGL({
-  target: "video", // Target a video element
-  character: "🔥", // Fire emoji for video content
-  particleColour: "sample",
-  videoUpdateRate: 100, // Update every 100ms
-  // ... other options
-});
-```
-
-- **Live Updates**: Particles reshape based on the current video frame.
-- **Performance Optimised**: Configurable update rate (default 100ms).
-- **Automatic Detection**: Works with any HTML5 video element.
-- **Smooth Transitions**: Particles smoothly transition between video frames.
-
----
-
 ## Parameters
 
 | Option              | Type     | Default          | Description                                                                                       |
@@ -184,7 +152,7 @@ Below are some ready-made configurations for different effects:
 
 | Question                                               | Answer                                                                                                                                                                                                                                                       |
 | :----------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Does the library handle responsive design?             | Yes, `particlesGL` automatically handles window resize events and rebuilds particle systems as needed. Resize handling is debounced for performance.                                                                                                         |
+| Does the library handle responsive design?             | Yes, `particlesGL` automatically handles window resize events and rebuilds particle systems as needed. Resize handling is debounced to 250ms for performance.                                                                                                |
 | What happens to the original element?                  | The original element is hidden (`visibility: hidden`) and replaced with the particle system. The particle system is inserted into the DOM and precisely matches the original element's position and dimensions.                                              |
 | Can I use custom fonts for character particles?        | Yes, use the `fontFamily` parameter to specify any loaded font. Make sure the font is loaded before you initialise `particlesGL`.                                                                                                                            |
 | How do I optimise performance for many particles?      | Increase the `sampling` value to reduce particle count, use a smaller `particleSize`, and limit the number of simultaneous instances. The library also helps by automatically pausing rendering for particle systems that are off-screen (viewport culling). |
@@ -245,16 +213,6 @@ console.log(particleEffect.options);
 // Clean up the effect and restore the original element
 particleEffect.cleanup();
 ```
-
----
-
-## Important Notes
-
-- The library automatically handles element visibility, replacing the original element with the particle system.
-- Multiple instances are supported and share a single WebGL context for optimal performance.
-- Particle systems are automatically cleaned up when the page is unloaded or when `cleanup()` is called.
-- For best performance, be mindful of the number of particle systems running simultaneously, especially on mobile devices.
-- The velocity-based interaction system ensures effects only appear when the cursor is moving, creating natural and performant interactions.
 
 ---
 
