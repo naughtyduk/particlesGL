@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      particlesGL 3D Model Demo - Real-time Particle Cloud - NaughtyDuk©
+    </title>
+    <link rel="icon" href="/assets/favicon.ico" />
+    <meta
+      name="description"
+      content="particlesGL 3D Model Demo - An interactive particle cloud generated from a 3D model with mouse displacement effects. Built with love by NaughtyDuk©"
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, webGL, particles, interactive, 3D model, three.js, NaughtyDuk©"
+    />
+    <meta name="author" content="NaughtyDuk©" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #e8e8e8;
+        color: #323232;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+      #particle-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="particle-container"></div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+
+    <!-- particlesGL Library -->
+    <script src="/scripts/particlesGL.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (typeof particlesGL === "undefined") {
+          console.error("particlesGL library not found.");
+          return;
+        }
+
+        const loader = new THREE.GLTFLoader();
+
+        loader.load(
+          "../assets/Duk_Animated.gltf",
+          function (gltf) {
+            const positions = [];
+            const box = new THREE.Box3().setFromObject(gltf.scene);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 1.5 / maxDim; // Increased scale for larger model
+
+            gltf.scene.traverse(function (child) {
+              if (child.isMesh) {
+                const geometry = child.geometry;
+                const posAttr = geometry.attributes.position;
+                const tempVertex = new THREE.Vector3();
+                child.updateWorldMatrix(true, false);
+
+                for (let i = 0; i < posAttr.count; i++) {
+                  tempVertex.fromBufferAttribute(posAttr, i);
+                  tempVertex.applyMatrix4(child.matrixWorld);
+
+                  // Center, scale, and rotate vertices here in the demo file
+                  tempVertex.sub(center);
+                  tempVertex.multiplyScalar(scale);
+                  tempVertex.applyAxisAngle(
+                    new THREE.Vector3(1, 0, 0),
+                    Math.PI / 36
+                  ); // Subtle forward tilt - about 5 degrees
+
+                  positions.push(tempVertex.x, tempVertex.y, tempVertex.z);
+                }
+              }
+            });
+
+            // Initialize particlesGL with the processed geometry
+            const particleEffect = particlesGL({
+              target: "#particle-container",
+              geometry: positions,
+              character: "•",
+              particleSize: 0.025,
+              particleColor: "#3b3b3b",
+              tilt: true,
+              tiltFactor: 0.1,
+              tiltSpeed: 0.05,
+              displaceStrength: 0.2,
+              displaceRadius: 0.2,
+              velocityInfluence: 0.5,
+              returnSpeed: 0.02,
+            });
+
+            // GUI Controls - Now matches other demos
+            if (typeof lil !== "undefined" && particleEffect) {
+              const gui = new lil.GUI();
+              const folder = gui.addFolder("particlesGL Effect");
+              const controls = particleEffect.options;
+
+              // Tilt Controls
+              folder
+                .add(controls, "tilt")
+                .name("tilt")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ tilt: value })
+                );
+              folder
+                .add(controls, "tiltFactor", 0, 1, 0.01)
+                .name("tiltFactor")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ tiltFactor: value })
+                );
+              folder
+                .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+                .name("tiltSpeed")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ tiltSpeed: value })
+                );
+
+              // Particle Controls
+              folder
+                .add(controls, "particleSize", 0.005, 0.1, 0.001)
+                .name("particleSize")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ particleSize: value })
+                );
+              folder
+                .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+                .name("particleSpacing")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ particleSpacing: value })
+                );
+
+              // Displace Controls
+              folder
+                .add(controls, "displaceStrength", 0, 2, 0.1)
+                .name("displaceStrength")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ displaceStrength: value })
+                );
+              folder
+                .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+                .name("displaceRadius")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ displaceRadius: value })
+                );
+              folder
+                .add(controls, "velocityInfluence", 0, 2, 0.01)
+                .name("velocityInfluence")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ velocityInfluence: value })
+                );
+              folder
+                .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+                .name("returnSpeed")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ returnSpeed: value })
+                );
+
+              // Rendering Controls
+              folder
+                .add(controls, "sampling", 1, 10, 1)
+                .name("sampling")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ sampling: value })
+                );
+
+              // Character selection
+              const characterOptions = { character: controls.character };
+              folder
+                .add(characterOptions, "character")
+                .name("character")
+                .onChange((value) => {
+                  particleEffect.updateOptions({ character: value });
+                });
+
+              // Add particle color control
+              const colorOptions = { particleColor: controls.particleColor };
+              folder
+                .addColor(colorOptions, "particleColor")
+                .name("particleColor")
+                .onChange((value) => {
+                  particleEffect.updateOptions({ particleColor: value });
+                });
+
+              // Font Controls
+              folder
+                .add(controls, "fontSize", 12, 96, 1)
+                .name("fontSize")
+                .onChange((value) =>
+                  particleEffect.updateOptions({ fontSize: value })
+                );
+
+              const fontOptions = { fontFamily: controls.fontFamily };
+              folder
+                .add(fontOptions, "fontFamily")
+                .name("fontFamily")
+                .onChange((value) => {
+                  particleEffect.updateOptions({ fontFamily: value });
+                });
+
+              folder.close();
+            }
+          },
+          undefined,
+          function (error) {
+            console.error("An error happened while loading the model:", error);
+          }
+        );
+      });
+    </script>
+  </body>
+</html>

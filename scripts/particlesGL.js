@@ -759,6 +759,141 @@
   /* --------------------------------------------------
    *  Particle System Creation
    * ------------------------------------------------*/
+  async function createParticleSystem(element, options) {
+    let particleData;
+
+    if (options.geometry) {
+      // Use pre-computed geometry if provided by the user
+      particleData = { positions: options.geometry, colors: [] };
+    } else {
+      // Fallback to existing canvas-based method for images, videos, text etc.
+      const canvas = await elementToCanvas(element, options);
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const tempPositions = [];
+      const tempColors = [];
+
+      // Check if color sampling is enabled
+      const useColorSampling = options.particleColor === "sample";
+
+      // Check if element is a video for different threshold logic
+      const isVideo = element.tagName.toLowerCase() === "video";
+      const alphaThreshold = 128;
+      const brightnessThreshold = 80;
+
+      // Sample pixels to create particles
+      for (let y = 0; y < canvas.height; y += options.sampling) {
+        for (let x = 0; x < canvas.width; x += options.sampling) {
+          const i = (y * canvas.width + x) * 4;
+          const r = imageData.data[i];
+          const g = imageData.data[i + 1];
+          const b = imageData.data[i + 2];
+          const alpha = imageData.data[i + 3];
+
+          let shouldCreateParticle = false;
+
+          if (isVideo) {
+            // For video: use brightness and significant color detection
+            const brightness = r * 0.299 + g * 0.587 + b * 0.114;
+
+            // Check if pixel has significant color content (not just black/dark)
+            const maxColorComponent = Math.max(r, g, b);
+            const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
+
+            shouldCreateParticle =
+              brightness > brightnessThreshold && hasSignificantColor;
+          } else {
+            // For images/SVGs: use alpha threshold
+            shouldCreateParticle = alpha > alphaThreshold;
+          }
+
+          if (shouldCreateParticle) {
+            let xPos, yPos;
+
+            // Check if this is a text element (custom canvas size)
+            const isTextCanvas =
+              canvas.width !== 2048 || canvas.height !== 1024;
+
+            if (isTextCanvas) {
+              // For text elements: calculate positions to exactly match element size
+              // The camera is at z=1.15 with FOV=75 degrees
+              const fov = 75 * (Math.PI / 180);
+              const cameraZ = 1.15;
+              const visibleHeight = 2 * Math.tan(fov / 2) * cameraZ;
+
+              // Get the original element dimensions
+              const rect = element.getBoundingClientRect();
+              const elementAspect = rect.width / rect.height;
+              const visibleWidth = visibleHeight * elementAspect;
+
+              // Scale particle positions to fill the visible area
+              xPos = ((x - canvas.width / 2) / canvas.width) * visibleWidth;
+              yPos = ((canvas.height / 2 - y) / canvas.height) * visibleHeight;
+            } else {
+              // For images/videos: use standard calculation with particleSpacing
+              xPos = (x - canvas.width / 2) * options.particleSpacing;
+              yPos = (canvas.height / 2 - y) * options.particleSpacing;
+            }
+
+            tempPositions.push(xPos, yPos, 0);
+
+            // Sample color if enabled
+            if (useColorSampling) {
+              const colorR = r / 255;
+              const colorG = g / 255;
+              const colorB = b / 255;
+              tempColors.push(colorR, colorG, colorB);
+            }
+          }
+        }
+      }
+      particleData = { positions: tempPositions, colors: tempColors };
+    }
+
+    const { positions, colors } = particleData;
+    const originalPositions = [...positions];
+    const originalColors = [...colors];
+
+    const useColorSampling =
+      options.particleColor === "sample" && colors.length > 0;
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3)
+    );
+    geometry.setAttribute(
+      "originalPosition",
+      new THREE.Float32BufferAttribute(originalPositions, 3)
+    );
+
+    // Add color attributes if sampling is enabled
+    if (useColorSampling) {
+      geometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(colors, 3)
+      );
+      geometry.setAttribute(
+        "originalColor",
+        new THREE.Float32BufferAttribute(originalColors, 3)
+      );
+    }
+
+    const material = new THREE.PointsMaterial({
+      size: options.particleSize,
+      map: createCharacterSprite(options.character, options, useColorSampling),
+      transparent: true,
+      alphaTest: 0.5,
+      sizeAttenuation: true,
+      vertexColors: useColorSampling,
+    });
+
+    const particleSystem = new THREE.Points(geometry, material);
+    particleSystem.userData = { options, useColorSampling };
+
+    return particleSystem;
+  }
+
   function createCharacterSprite(character, options, useColorSampling = false) {
     const canvas = document.createElement("canvas");
     const size = 64;
@@ -819,129 +954,6 @@
       zIndex: zIndex,
       isFixedContext: isFixed,
     };
-  }
-
-  async function createParticleSystem(element, options) {
-    const canvas = await elementToCanvas(element, options);
-    const ctx = canvas.getContext("2d");
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    const positions = [];
-    const originalPositions = [];
-    const colors = [];
-    const originalColors = [];
-
-    // Check if color sampling is enabled
-    const useColorSampling = options.particleColor === "sample";
-
-    // Check if element is a video for different threshold logic
-    const isVideo = element.tagName.toLowerCase() === "video";
-    const alphaThreshold = 128;
-    const brightnessThreshold = 80;
-
-    // Sample pixels to create particles
-    for (let y = 0; y < canvas.height; y += options.sampling) {
-      for (let x = 0; x < canvas.width; x += options.sampling) {
-        const i = (y * canvas.width + x) * 4;
-        const r = imageData.data[i];
-        const g = imageData.data[i + 1];
-        const b = imageData.data[i + 2];
-        const alpha = imageData.data[i + 3];
-
-        let shouldCreateParticle = false;
-
-        if (isVideo) {
-          // For video: use brightness and significant color detection
-          const brightness = r * 0.299 + g * 0.587 + b * 0.114;
-
-          // Check if pixel has significant color content (not just black/dark)
-          const maxColorComponent = Math.max(r, g, b);
-          const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
-
-          shouldCreateParticle =
-            brightness > brightnessThreshold && hasSignificantColor;
-        } else {
-          // For images/SVGs: use alpha threshold
-          shouldCreateParticle = alpha > alphaThreshold;
-        }
-
-        if (shouldCreateParticle) {
-          let xPos, yPos;
-
-          // Check if this is a text element (custom canvas size)
-          const isTextCanvas = canvas.width !== 2048 || canvas.height !== 1024;
-
-          if (isTextCanvas) {
-            // For text elements: calculate positions to exactly match element size
-            // The camera is at z=1.15 with FOV=75 degrees
-            const fov = 75 * (Math.PI / 180);
-            const cameraZ = 1.15;
-            const visibleHeight = 2 * Math.tan(fov / 2) * cameraZ;
-
-            // Get the original element dimensions
-            const rect = element.getBoundingClientRect();
-            const elementAspect = rect.width / rect.height;
-            const visibleWidth = visibleHeight * elementAspect;
-
-            // Scale particle positions to fill the visible area
-            xPos = ((x - canvas.width / 2) / canvas.width) * visibleWidth;
-            yPos = ((canvas.height / 2 - y) / canvas.height) * visibleHeight;
-          } else {
-            // For images/videos: use standard calculation with particleSpacing
-            xPos = (x - canvas.width / 2) * options.particleSpacing;
-            yPos = (canvas.height / 2 - y) * options.particleSpacing;
-          }
-
-          positions.push(xPos, yPos, 0);
-          originalPositions.push(xPos, yPos, 0);
-
-          // Sample color if enabled
-          if (useColorSampling) {
-            const colorR = r / 255;
-            const colorG = g / 255;
-            const colorB = b / 255;
-            colors.push(colorR, colorG, colorB);
-            originalColors.push(colorR, colorG, colorB);
-          }
-        }
-      }
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(positions, 3)
-    );
-    geometry.setAttribute(
-      "originalPosition",
-      new THREE.Float32BufferAttribute(originalPositions, 3)
-    );
-
-    // Add color attributes if sampling is enabled
-    if (useColorSampling) {
-      geometry.setAttribute(
-        "color",
-        new THREE.Float32BufferAttribute(colors, 3)
-      );
-      geometry.setAttribute(
-        "originalColor",
-        new THREE.Float32BufferAttribute(originalColors, 3)
-      );
-    }
-
-    const material = new THREE.PointsMaterial({
-      size: options.particleSize,
-      map: createCharacterSprite(options.character, options, useColorSampling),
-      transparent: true,
-      alphaTest: 0.5,
-      sizeAttenuation: true,
-      vertexColors: useColorSampling,
-    });
-
-    const particleSystem = new THREE.Points(geometry, material);
-    particleSystem.userData = { options, useColorSampling };
-
-    return particleSystem;
   }
 
   /* --------------------------------------------------
@@ -1037,6 +1049,7 @@
         "fontSize",
         "fontFamily",
         "target",
+        "geometry",
       ].some(
         (key) =>
           newOptions[key] !== undefined && newOptions[key] !== oldOptions[key]
@@ -1193,6 +1206,7 @@
       fontSize: 48,
       fontFamily: "monospace",
       videoUpdateRate: 100, // ms between video frame updates
+      geometry: null, // Optional pre-computed geometry
       on: {},
     };
 
