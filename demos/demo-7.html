@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      particlesGL Webcam Demo - Real-time Video Particle Effects - NaughtyDuk©
+    </title>
+    <link rel="icon" href="/assets/favicon.ico" />
+    <meta
+      name="description"
+      content="particlesGL Webcam Demo - Real-time particle effects from your webcam feed. Built with love by NaughtyDuk©"
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, webGL, particles, interactive, webcam, video, three.js, NaughtyDuk©"
+    />
+    <meta name="author" content="NaughtyDuk©" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #111111;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      .webcam-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #webcam-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1); /* Mirror the webcam feed */
+      }
+
+      /* Also flip the particle canvas to match the mirrored video */
+      canvas[data-particles-target] {
+        transform: scaleX(-1);
+        pointer-events: none;
+      }
+
+      .permission-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: white;
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .permission-overlay h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      .permission-overlay p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        line-height: 1.5;
+      }
+
+      .enable-camera-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .enable-camera-btn:hover {
+        background: #0056b3;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="permission-overlay" id="permission-overlay">
+      <h2>Camera Access Required</h2>
+      <p>
+        This demo requires access to your camera to create real-time particle
+        effects from your webcam feed. Click the button below to enable camera
+        access.
+      </p>
+      <button class="enable-camera-btn" id="enable-camera-btn">
+        Enable Camera
+      </button>
+    </div>
+
+    <div class="webcam-container">
+      <video
+        id="webcam-feed"
+        autoplay
+        playsinline
+        data-flip-horizontal="true"
+      ></video>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+
+    <!-- particlesGL Library -->
+    <script src="/scripts/particlesGL.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const videoElement = document.getElementById("webcam-feed");
+        const permissionOverlay = document.getElementById("permission-overlay");
+        const enableCameraBtn = document.getElementById("enable-camera-btn");
+        let particleEffect;
+
+        // 1. Get webcam access
+        async function setupWebcam() {
+          // Force HTTPS redirect if needed (except localhost)
+          if (
+            location.protocol !== "https:" &&
+            location.hostname !== "localhost" &&
+            location.hostname !== "127.0.0.1"
+          ) {
+            location.replace(
+              "https:" +
+                window.location.href.substring(window.location.protocol.length)
+            );
+            return false;
+          }
+
+          try {
+            let stream;
+
+            // For localhost HTTP, manually enable mediaDevices
+            if (!navigator.mediaDevices && location.hostname === "localhost") {
+              navigator.mediaDevices = {};
+              navigator.mediaDevices.getUserMedia = function (constraints) {
+                const getUserMedia =
+                  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+                if (!getUserMedia) {
+                  return Promise.reject(
+                    new Error("getUserMedia is not implemented")
+                  );
+                }
+                return new Promise((resolve, reject) => {
+                  getUserMedia.call(navigator, constraints, resolve, reject);
+                });
+              };
+            }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  width: { ideal: 1280 },
+                  height: { ideal: 720 },
+                  aspectRatio: { ideal: 16 / 9 },
+                  facingMode: "user",
+                },
+              });
+            } else {
+              return false;
+            }
+
+            videoElement.srcObject = stream;
+
+            // Hide permission overlay once camera is granted
+            permissionOverlay.classList.add("hidden");
+
+            return new Promise((resolve) => {
+              videoElement.onloadedmetadata = () => {
+                resolve(true);
+              };
+            });
+          } catch (err) {
+            return false;
+          }
+        }
+
+        // Handle camera permission button click
+        enableCameraBtn.addEventListener("click", async () => {
+          enableCameraBtn.disabled = true;
+          enableCameraBtn.textContent = "Requesting Camera Access...";
+
+          const webcamReady = await setupWebcam();
+          if (webcamReady) {
+            initParticleEffect();
+            setupGUI();
+          } else {
+            enableCameraBtn.disabled = false;
+            enableCameraBtn.textContent = "Enable Camera";
+          }
+        });
+
+        // 2. Initialize particlesGL
+        function initParticleEffect() {
+          if (typeof particlesGL !== "undefined") {
+            particleEffect = particlesGL({
+              target: "#webcam-feed",
+              character: "•",
+              particleSize: 0.02,
+              particleSpacing: 0.0025,
+              particleColor: "sample", // Sample color from the video
+              sampling: 8,
+              tilt: false,
+              tiltFactor: 0.2,
+              tiltSpeed: 0.05,
+              displaceStrength: 0.5,
+              displaceRadius: 0.15,
+              velocityInfluence: 0.4,
+              returnSpeed: 0.05,
+              videoUpdateRate: 33, // ~30fps
+            });
+          }
+        }
+
+        // 3. Setup GUI Controls
+        function setupGUI() {
+          if (typeof lil !== "undefined" && particleEffect) {
+            const gui = new lil.GUI();
+            const folder = gui.addFolder("particlesGL Effect");
+            const controls = particleEffect.options;
+
+            // Tilt Controls
+            folder
+              .add(controls, "tilt")
+              .name("tilt")
+              .onChange((value) => {
+                particleEffect.updateOptions({ tilt: value });
+              });
+
+            folder
+              .add(controls, "tiltFactor", 0, 1, 0.01)
+              .name("tiltFactor")
+              .onChange((value) => {
+                particleEffect.updateOptions({ tiltFactor: value });
+              });
+
+            folder
+              .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+              .name("tiltSpeed")
+              .onChange((value) => {
+                particleEffect.updateOptions({ tiltSpeed: value });
+              });
+
+            // Particle Controls
+            folder
+              .add(controls, "particleSize", 0.005, 0.1, 0.001)
+              .name("particleSize")
+              .onChange((value) => {
+                particleEffect.updateOptions({ particleSize: value });
+              });
+
+            folder
+              .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+              .name("particleSpacing")
+              .onChange((value) => {
+                particleEffect.updateOptions({ particleSpacing: value });
+              });
+
+            // Displace Controls
+            folder
+              .add(controls, "displaceStrength", 0, 2, 0.1)
+              .name("displaceStrength")
+              .onChange((value) => {
+                particleEffect.updateOptions({ displaceStrength: value });
+              });
+
+            folder
+              .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+              .name("displaceRadius")
+              .onChange((value) => {
+                particleEffect.updateOptions({ displaceRadius: value });
+              });
+
+            folder
+              .add(controls, "velocityInfluence", 0, 2, 0.01)
+              .name("velocityInfluence")
+              .onChange((value) => {
+                particleEffect.updateOptions({ velocityInfluence: value });
+              });
+
+            folder
+              .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+              .name("returnSpeed")
+              .onChange((value) => {
+                particleEffect.updateOptions({ returnSpeed: value });
+              });
+
+            // Rendering Controls
+            folder
+              .add(controls, "sampling", 1, 10, 1)
+              .name("sampling")
+              .onChange((value) => {
+                particleEffect.updateOptions({ sampling: value });
+              });
+
+            // Character selection (this will cause reinit)
+            const characterOptions = {
+              character: controls.character,
+              setCharacter: function (newChar) {
+                particleEffect.updateOptions({ character: newChar });
+              },
+            };
+
+            folder
+              .add(characterOptions, "character")
+              .name("character")
+              .onChange((value) => {
+                characterOptions.setCharacter(value);
+              });
+
+            // Add particle color control
+            const colorOptions = {
+              particleColor: controls.particleColor,
+              setColor: function (newColor) {
+                particleEffect.updateOptions({ particleColor: newColor });
+              },
+            };
+
+            folder
+              .addColor(colorOptions, "particleColor")
+              .name("particleColor")
+              .onChange((value) => {
+                colorOptions.setColor(value);
+              });
+
+            // Font Controls
+            folder
+              .add(controls, "fontSize", 12, 72, 1)
+              .name("fontSize")
+              .onChange((value) => {
+                particleEffect.updateOptions({ fontSize: value });
+              });
+
+            const fontOptions = {
+              fontFamily: controls.fontFamily,
+              setFont: function (newFont) {
+                particleEffect.updateOptions({ fontFamily: newFont });
+              },
+            };
+
+            folder
+              .add(fontOptions, "fontFamily", [
+                "monospace",
+                "Arial",
+                "Helvetica",
+                "Georgia",
+                "Times New Roman",
+              ])
+              .name("fontFamily")
+              .onChange((value) => {
+                fontOptions.setFont(value);
+              });
+
+            folder.close();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

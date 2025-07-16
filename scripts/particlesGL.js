@@ -198,8 +198,13 @@
           const relativeX = event.clientX - rect.left;
           const relativeY = event.clientY - rect.top;
 
-          const mouseX = (relativeX / rect.width) * 2 - 1;
+          let mouseX = (relativeX / rect.width) * 2 - 1;
           const mouseY = -(relativeY / rect.height) * 2 + 1;
+
+          // Check if element should be horizontally flipped for correct mouse alignment
+          if (systemData.element.dataset.flipHorizontal === "true") {
+            mouseX = -mouseX;
+          }
 
           const newMousePos = new THREE.Vector2(mouseX, mouseY);
 
