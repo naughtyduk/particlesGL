@@ -1,4 +1,4 @@
-# particlesGL – Universal WebGL Particles Effect
+# particlesGL – Universal WebGL Particle Effect
 
 <a href="https://particlesgl.naughtyduk.com"><img src="/assets/particlesGL-promo-IMG.gif" alt="particlesGL" style="width: 100%"/></a>
 
@@ -24,14 +24,14 @@
 | Image to Particles             |    ✅     | Velocity-Based Interactions |    ✅     |
 | SVG to Particles               |    ✅     | Custom Characters/Emojis    |    ✅     |
 | Text to Particles              |    ✅     | Particle Colour Control     |    ✅     |
-| Video to Particles (Real-time) |    ✅     | Particle Colour Sampling    |    ✅     |
+| Video to Particles (Real-time) |    ✅     | Video as Particle Source    |    ✅     |
 | 3D Models (GLTF/GLB)           |    ✅     | Font Customisation          |    ✅     |
 | Mouse Displacement Effects     |    ✅     | Multiple Instances          |    ✅     |
 | Tilt on Hover                  |    ✅     | Auto-Resize Handling        |    ✅     |
 | Smooth Particle Return         |    ✅     | Lightweight & Performant    |    ✅     |
 | Configurable Particle Size     |    ✅     | `on.init` Callback          |    ✅     |
 | Adjustable Displacement Radius |    ✅     | Smart DOM Positioning       |    ✅     |
-| Customizable Particle Spacing  |    ✅     |                             |           |
+| Customizable Particle Spacing  |    ✅     | Particle Colour Sampling    |    ✅     |
 
 ---
 
@@ -73,21 +73,23 @@ Set up your HTML structure first. Add the `particlesGL` class to any element you
   <div class="particlesGL" data-model-src="/assets/Duk_Animated.gltf"></div>
 
   <!-- AND/OR with horizontal flip correction -->
-  <img
-    src="/logo.svg"
-    alt="Logo"
-    class="particlesGL"
-    data-flip-horizontal="true"
-  />
+  <img src="/logo.svg" alt="Logo" class="particlesGL" />
 
   <!-- AND/OR any other element -->
-  <div class="particlesGL">
-    <p>This content will become particles.</p>
-  </div>
 </body>
 ```
 
-> The original element will be hidden and replaced with the particle system. Make sure your target elements are positioned where you want the particle effect to appear. Note if you are using 3D models, you must use `data-model-src` for `particlesGL` to detect it.
+> The original element will be hidden and replaced with the particle system. Make sure your target elements are positioned where you want the particle effect to appear.
+
+**HTML Data Attributes**
+
+In addition to JavaScript options, `particlesGL` can be configured using data attributes on your HTML elements:
+
+| Attribute               | Description                                                                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-model-src`        | Specifies the path to a 3D model (`.gltf`, `.glb`) to be used as the particle source, overriding the element's content.                                                |
+| `data-flip-horizontal`  | Set to `true` to invert the mouse displacement effect horizontally.                                                                                                    |
+| `data-particles-target` | **Read-only**: An attribute added by the library to the generated `<canvas>` element. It contains a unique ID for the instance, useful for CSS selection or debugging. |
 
 Next, initialise the library with your desired configuration.
 
