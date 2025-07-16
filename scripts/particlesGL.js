@@ -1,5 +1,10 @@
-// particlesGL - Interactive WebGL Particle Effects Library
-// Built with love by NaughtyDuk©
+/*
+ * particlesGL – Universal WebGL Particles Effect
+ * -----------------------------------------------------------------------------
+ *
+ * Author: NaughtyDuk© – https://particlesgl.naughtyduk.com
+ * Licence: MIT
+ */
 
 (function () {
   "use strict";
@@ -22,7 +27,7 @@
     constructor() {
       this.particleSystems = new Map();
       this.targetElements = new Map();
-      this.renderers = new Map(); // Individual renderers for each element
+      this.renderers = new Map();
 
       // Mouse tracking
       this.mouse = new THREE.Vector2();
@@ -36,7 +41,6 @@
     }
 
     addParticleSystem(instanceId, particleSystem, targetElement, options) {
-      // Create individual renderer, scene, and camera for each element
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
         powerPreference: "high-performance",
@@ -51,18 +55,14 @@
 
       scene.add(particleSystem);
 
-      // Analyze DOM for positioning context
       const stacking = getStackingProperties(targetElement);
 
-      // Smartly insert the canvas into the DOM
       const canvas = renderer.domElement;
       canvas.setAttribute("data-particles-target", instanceId);
 
       if (stacking.isFixedContext) {
-        // For fixed contexts (modals), append to body to escape stacking issues
         document.body.appendChild(canvas);
       } else {
-        // For standard contexts, insert as a sibling to respect the natural DOM order
         targetElement.parentNode.insertBefore(canvas, targetElement);
       }
 
@@ -80,16 +80,13 @@
         resetAnimation: { x: 0, y: 0 },
         currentMouse: new THREE.Vector2(),
         lastMousePos: new THREE.Vector2(),
-        // Store calculated positioning values
         stacking: stacking,
-        // Internal velocity-based effect control (not user-controllable)
         mouseVelocity: 0,
         isMoving: false,
         inactivityTimer: 0,
         effectRadius: 0,
         targetEffectRadius: 0,
         lastMoveTime: 0,
-        // Real-time video support
         isVideo: targetElement.tagName.toLowerCase() === "video",
         videoCanvas: null,
         videoContext: null,
@@ -99,10 +96,8 @@
 
       this.targetElements.set(instanceId, targetElement);
 
-      // Hide the original target element once particles are created
       targetElement.style.visibility = "hidden";
 
-      // Setup viewport visibility observer
       if ("IntersectionObserver" in window) {
         const observer = new IntersectionObserver(
           (entries) => {
@@ -126,13 +121,11 @@
       const rendererData = this.renderers.get(instanceId);
 
       if (systemData) {
-        // Restore original target element visibility (unless we want to keep it hidden)
         if (!keepTargetHidden) {
           systemData.element.style.visibility =
             systemData.originalVisibility || "";
         }
 
-        // Remove canvas from DOM
         const canvas = document.querySelector(
           `canvas[data-particles-target="${instanceId}"]`
         );
@@ -140,7 +133,6 @@
           canvas.remove();
         }
 
-        // Dispose resources
         if (systemData.system.geometry) systemData.system.geometry.dispose();
         if (systemData.system.material) {
           if (systemData.system.material.map)
@@ -148,23 +140,19 @@
           systemData.system.material.dispose();
         }
 
-        // Disconnect observer
         if (systemData.observer) {
           systemData.observer.disconnect();
         }
 
-        // Clean up video canvas if exists
         if (systemData.videoCanvas) {
           systemData.videoCanvas = null;
           systemData.videoContext = null;
         }
 
-        // Remove from maps
         this.particleSystems.delete(instanceId);
         this.targetElements.delete(instanceId);
       }
 
-      // Dispose individual renderer
       if (rendererData) {
         if (rendererData.renderer) {
           rendererData.renderer.dispose();
@@ -174,7 +162,6 @@
     }
 
     onMouseMove(event) {
-      // Check each particle system for mouse interaction
       for (const [instanceId, systemData] of this.particleSystems) {
         const rect = systemData.element.getBoundingClientRect();
         const isMouseOver =
@@ -183,17 +170,13 @@
           event.clientY >= rect.top &&
           event.clientY <= rect.bottom;
 
-        // Handle mouse enter/leave for this specific system
         if (isMouseOver && !systemData.isMouseOver) {
-          // Mouse entered this target
           systemData.isMouseOver = true;
         } else if (!isMouseOver && systemData.isMouseOver) {
-          // Mouse left this target - start reset animation
           systemData.isMouseOver = false;
           this.startResetAnimation(instanceId);
         }
 
-        // Update rotation and mouse position only for the hovered system
         if (isMouseOver) {
           const relativeX = event.clientX - rect.left;
           const relativeY = event.clientY - rect.top;
@@ -201,29 +184,23 @@
           let mouseX = (relativeX / rect.width) * 2 - 1;
           const mouseY = -(relativeY / rect.height) * 2 + 1;
 
-          // Check if element should be horizontally flipped for correct mouse alignment
           if (systemData.element.dataset.flipHorizontal === "true") {
             mouseX = -mouseX;
           }
 
           const newMousePos = new THREE.Vector2(mouseX, mouseY);
 
-          // Calculate velocity for this system (simple approach)
           const velocity = newMousePos.clone().sub(systemData.currentMouse);
           systemData.mouseVelocity = velocity.length();
 
-          // Record when mouse moved
           systemData.lastMoveTime = performance.now();
 
-          // Update moving state based on velocity
           systemData.isMoving = systemData.mouseVelocity > 0.001;
 
-          // Reset inactivity timer if moving
           if (systemData.isMoving) {
             systemData.inactivityTimer = 0;
           }
 
-          // Apply tilt effect only if enabled
           if (systemData.options.tilt) {
             systemData.targetRotation.x =
               mouseY * systemData.options.tiltFactor;
@@ -231,7 +208,6 @@
               mouseX * systemData.options.tiltFactor;
           }
 
-          // Store mouse position for glitch effect
           systemData.currentMouse.copy(newMousePos);
         }
       }
@@ -241,12 +217,11 @@
       const systemData = this.particleSystems.get(instanceId);
       if (!systemData) return;
 
-      // Animate back to center (0, 0) with easing
       systemData.resetAnimation.x = systemData.targetRotation.x;
       systemData.resetAnimation.y = systemData.targetRotation.y;
 
       const animate = () => {
-        const easeSpeed = 0.08; // Adjust for faster/slower easing
+        const easeSpeed = 0.08;
 
         systemData.resetAnimation.x +=
           (0 - systemData.resetAnimation.x) * easeSpeed;
@@ -256,14 +231,12 @@
         systemData.targetRotation.x = systemData.resetAnimation.x;
         systemData.targetRotation.y = systemData.resetAnimation.y;
 
-        // Continue animation until close to center
         if (
           Math.abs(systemData.resetAnimation.x) > 0.001 ||
           Math.abs(systemData.resetAnimation.y) > 0.001
         ) {
           requestAnimationFrame(animate);
         } else {
-          // Snap to exact center
           systemData.targetRotation.x = 0;
           systemData.targetRotation.y = 0;
           systemData.resetAnimation.x = 0;
@@ -277,7 +250,6 @@
     animate() {
       if (!isAnimating) return;
 
-      // Update all particle systems
       for (const [instanceId, systemData] of this.particleSystems) {
         if (!systemData.inView) continue;
 
@@ -289,21 +261,17 @@
         const { renderer, scene, camera } = rendererData;
 
         if (systemData.externalRadiusUpdate) {
-          // When displaceRadius is updated externally, it dictates the target radius.
           systemData.targetEffectRadius = options.displaceRadius;
-          systemData.externalRadiusUpdate = false; // Consume the flag for this frame.
+          systemData.externalRadiusUpdate = false;
         } else {
-          // Original mouse-based logic
           if (systemData.isMouseOver) {
             const currentTime = performance.now();
             const timeSinceLastMove = currentTime - systemData.lastMoveTime;
 
-            // Consider stopped after 100ms of no mouse movement
             if (timeSinceLastMove > 100) {
               systemData.isMoving = false;
             }
 
-            // Set target radius based on movement state
             systemData.targetEffectRadius = systemData.isMoving
               ? options.displaceRadius
               : 0;
@@ -313,7 +281,6 @@
           }
         }
 
-        // Ease effect radius towards target
         const easeSpeed = 0.08;
         const radiusDiff =
           systemData.targetEffectRadius - systemData.effectRadius;
@@ -323,7 +290,6 @@
           systemData.effectRadius = systemData.targetEffectRadius;
         }
 
-        // Update rotation using per-system rotation state
         if (system.rotation) {
           system.rotation.x +=
             (systemData.targetRotation.x - system.rotation.x) *
@@ -333,18 +299,15 @@
             options.tiltSpeed;
         }
 
-        // Update video-based particle systems
         if (systemData.isVideo) {
           this.updateVideoParticles(instanceId, systemData);
         }
 
-        // Update renderer size and render for this element
         const rect = systemData.element.getBoundingClientRect();
         camera.aspect = rect.width / rect.height;
         camera.updateProjectionMatrix();
         renderer.setSize(rect.width, rect.height);
 
-        // Calculate visible plane dimensions at Z=0 to correctly map mouse coordinates
         const fov = camera.fov * (Math.PI / 180);
         const visibleHeight = 2 * Math.tan(fov / 2) * camera.position.z;
         const visibleWidth = visibleHeight * camera.aspect;
@@ -353,10 +316,8 @@
           systemData.currentMouse.y * (visibleHeight / 2)
         );
 
-        // Apply glitch effect with system-specific mouse position
         this.applyGlitchEffect(system, options, systemData, mouseWorld);
 
-        // Automatically determine canvas positioning based on its context
         const canvas = renderer.domElement;
         const stacking = systemData.stacking;
         canvas.style.position = stacking.position;
@@ -364,12 +325,10 @@
         if (stacking.position === "fixed") {
           canvas.style.top = `${rect.top}px`;
           canvas.style.left = `${rect.left}px`;
-          // For fixed elements, we need to use the calculated effective z-index of the container
           canvas.style.zIndex = stacking.zIndex + 1;
         } else {
           canvas.style.top = `${systemData.element.offsetTop}px`;
           canvas.style.left = `${systemData.element.offsetLeft}px`;
-          // For absolute elements, just use the target's own z-index
           const targetStyle = window.getComputedStyle(systemData.element);
           canvas.style.zIndex =
             targetStyle.zIndex === "auto" ? "0" : targetStyle.zIndex;
@@ -394,10 +353,8 @@
 
       if (!posAttr || !originalPosAttr) return;
 
-      // Use dynamic effect radius instead of fixed displaceRadius
       const currentRadius = systemData.effectRadius;
 
-      // If radius is essentially zero, just return particles to original positions
       if (currentRadius < 0.001) {
         const positions = posAttr.array;
         const originalPositions = originalPosAttr.array;
@@ -416,7 +373,6 @@
       const positions = posAttr.array;
       const originalPositions = originalPosAttr.array;
 
-      // Use stored mouse position for this specific system
       const currentMouse = systemData.currentMouse;
       const mouseVelocity = currentMouse.clone().sub(systemData.lastMousePos);
       systemData.lastMousePos.copy(currentMouse);
@@ -470,7 +426,6 @@
     updateVideoParticles(instanceId, systemData) {
       const currentTime = performance.now();
 
-      // Check if enough time has passed since last video update
       if (
         currentTime - systemData.lastVideoUpdate <
         systemData.videoUpdateInterval
@@ -480,13 +435,11 @@
 
       const videoElement = systemData.element;
 
-      // Check if video is playing and has new frame data
       if (
         videoElement.readyState >= 2 &&
         !videoElement.paused &&
         !videoElement.ended
       ) {
-        // Initialize video canvas if not exists
         if (!systemData.videoCanvas) {
           systemData.videoCanvas = document.createElement("canvas");
           systemData.videoCanvas.width = 2048;
@@ -496,11 +449,9 @@
           });
         }
 
-        // Draw current video frame to canvas
         systemData.videoContext.clearRect(0, 0, 2048, 1024);
         systemData.videoContext.drawImage(videoElement, 0, 0, 2048, 1024);
 
-        // Get image data from current frame
         const imageData = systemData.videoContext.getImageData(
           0,
           0,
@@ -508,10 +459,9 @@
           1024
         );
 
-        // Generate new particle positions based on current frame brightness
         const newPositions = [];
         const newColors = [];
-        const brightnessThreshold = 80; // Brightness threshold for particle detection
+        const brightnessThreshold = 80;
         const useColorSampling = systemData.options.particleColor === "sample";
 
         for (let y = 0; y < 1024; y += systemData.options.sampling) {
@@ -521,10 +471,8 @@
             const g = imageData.data[i + 1];
             const b = imageData.data[i + 2];
 
-            // Calculate luminance (brightness) - weighted for human eye perception
             const brightness = r * 0.299 + g * 0.587 + b * 0.114;
 
-            // Check if pixel has significant color content (not just black/dark)
             const maxColorComponent = Math.max(r, g, b);
             const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
 
@@ -533,7 +481,6 @@
               const yPos = (512 - y) * systemData.options.particleSpacing;
               newPositions.push(xPos, yPos, 0);
 
-              // Sample color if enabled
               if (useColorSampling) {
                 const colorR = r / 255;
                 const colorG = g / 255;
@@ -544,17 +491,14 @@
           }
         }
 
-        // Update particle system geometry with new positions
         const geometry = systemData.system.geometry;
         const positionAttr = geometry.attributes.position;
         const originalPositionAttr = geometry.attributes.originalPosition;
 
         if (newPositions.length > 0) {
-          // Update position arrays
           positionAttr.array = new Float32Array(newPositions);
           originalPositionAttr.array = new Float32Array(newPositions);
 
-          // Update geometry
           geometry.setAttribute(
             "position",
             new THREE.Float32BufferAttribute(newPositions, 3)
@@ -564,7 +508,6 @@
             new THREE.Float32BufferAttribute(newPositions, 3)
           );
 
-          // Update color arrays if sampling is enabled
           if (useColorSampling && newColors.length > 0) {
             const colorAttr = geometry.attributes.color;
             const originalColorAttr = geometry.attributes.originalColor;
@@ -615,22 +558,18 @@
     dispose() {
       this.stopAnimation();
 
-      // Clean up all particle systems
       for (const [instanceId] of this.particleSystems) {
         this.removeParticleSystem(instanceId);
       }
 
-      // Remove event listeners
       document.removeEventListener("mousemove", this.onMouseMove);
 
-      // Dispose all renderers
       for (const [instanceId, rendererData] of this.renderers) {
         if (rendererData.renderer) {
           rendererData.renderer.dispose();
         }
       }
 
-      // Clear references
       this.particleSystems.clear();
       this.targetElements.clear();
       this.renderers.clear();
@@ -644,7 +583,6 @@
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-    // Determine canvas size based on element type
     let canvasWidth, canvasHeight;
     const tagName = element.tagName.toLowerCase();
 
@@ -654,13 +592,11 @@
       tagName === "canvas" ||
       tagName === "video"
     ) {
-      // Media elements: use standard dimensions
       canvasWidth = 2048;
       canvasHeight = 1024;
     } else {
-      // Text elements: size canvas to match element dimensions
       const rect = element.getBoundingClientRect();
-      const scale = 4; // Higher resolution for cleaner particles
+      const scale = 4;
       canvasWidth = rect.width * scale;
       canvasHeight = rect.height * scale;
     }
@@ -668,7 +604,6 @@
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
@@ -689,7 +624,6 @@
           break;
 
         case "svg":
-          // Convert SVG to image
           const svgData = new XMLSerializer().serializeToString(element);
           const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
           const svgUrl = URL.createObjectURL(svgBlob);
@@ -728,33 +662,27 @@
           break;
 
         default:
-          // For text elements: Get actual computed styles
           const computedStyle = window.getComputedStyle(element);
           const text = element.textContent || element.innerText || "Text";
 
-          // Extract actual font properties from DOM element
           const originalFontSize = parseFloat(computedStyle.fontSize);
           const fontFamily = computedStyle.fontFamily;
           const fontWeight = computedStyle.fontWeight;
           const fontStyle = computedStyle.fontStyle;
 
-          // Canvas is 4x the element size, so scale font by 4x
           const canvasScale = 4;
           const canvasFontSize = originalFontSize * canvasScale;
 
-          // Set font with exact computed styles
           ctx.font = `${fontStyle} ${fontWeight} ${canvasFontSize}px ${fontFamily}`;
           ctx.fillStyle = options.particleColor || computedStyle.color;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          // Render text centered on canvas
           ctx.fillText(text, canvasWidth / 2, canvasHeight / 2);
           break;
       }
     } catch (error) {
       console.error("Error converting element to canvas:", error);
-      // Fallback: create a simple shape
       ctx.fillStyle = "#333333";
       ctx.fillRect(
         canvasWidth / 4,
@@ -772,7 +700,6 @@
    * ------------------------------------------------*/
   async function loadModelGeometry(modelSrc, options) {
     return new Promise((resolve, reject) => {
-      // Check for THREE.js and GLTFLoader
       if (typeof THREE === "undefined" || !THREE.GLTFLoader) {
         console.error(
           "particlesGL: THREE.js and THREE.GLTFLoader are required for model loading. Please include them in your project."
@@ -804,7 +731,6 @@
                 tempVertex.fromBufferAttribute(posAttr, i);
                 tempVertex.applyMatrix4(child.matrixWorld);
 
-                // Center and scale vertices
                 tempVertex.sub(center);
                 tempVertex.multiplyScalar(scale);
 
@@ -820,7 +746,7 @@
 
           resolve(positions);
         },
-        undefined, // onProgress callback not used
+        undefined,
         (error) => {
           console.error(
             `particlesGL: Failed to load 3D model from ${modelSrc}`,
@@ -840,7 +766,6 @@
     const modelSrc = element.dataset.modelSrc;
 
     if (modelSrc) {
-      // New: Load geometry from a 3D model source
       try {
         const positions = await loadModelGeometry(modelSrc, options);
         particleData = { positions: positions, colors: [] };
@@ -849,32 +774,26 @@
           `particlesGL: Could not process model ${modelSrc}.`,
           error
         );
-        // Fallback to treating element as empty div which will result in no particles
         const canvas = await elementToCanvas(element, options);
         const ctx = canvas.getContext("2d");
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        particleData = { positions: [], colors: [] }; // Ensure it's an empty array
+        particleData = { positions: [], colors: [] };
       }
     } else if (options.geometry) {
-      // Use pre-computed geometry if provided by the user
       particleData = { positions: options.geometry, colors: [] };
     } else {
-      // Fallback to existing canvas-based method for images, videos, text etc.
       const canvas = await elementToCanvas(element, options);
       const ctx = canvas.getContext("2d");
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const tempPositions = [];
       const tempColors = [];
 
-      // Check if color sampling is enabled
       const useColorSampling = options.particleColor === "sample";
 
-      // Check if element is a video for different threshold logic
       const isVideo = element.tagName.toLowerCase() === "video";
       const alphaThreshold = 128;
       const brightnessThreshold = 80;
 
-      // Sample pixels to create particles
       for (let y = 0; y < canvas.height; y += options.sampling) {
         for (let x = 0; x < canvas.width; x += options.sampling) {
           const i = (y * canvas.width + x) * 4;
@@ -886,51 +805,41 @@
           let shouldCreateParticle = false;
 
           if (isVideo) {
-            // For video: use brightness and significant color detection
             const brightness = r * 0.299 + g * 0.587 + b * 0.114;
 
-            // Check if pixel has significant color content (not just black/dark)
             const maxColorComponent = Math.max(r, g, b);
-            const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
+            const hasSignificantColor = maxColorComponent > 50;
 
             shouldCreateParticle =
               brightness > brightnessThreshold && hasSignificantColor;
           } else {
-            // For images/SVGs: use alpha threshold
             shouldCreateParticle = alpha > alphaThreshold;
           }
 
           if (shouldCreateParticle) {
             let xPos, yPos;
 
-            // Check if this is a text element (custom canvas size)
             const isTextCanvas =
               canvas.width !== 2048 || canvas.height !== 1024;
 
             if (isTextCanvas) {
-              // For text elements: calculate positions to exactly match element size
-              // The camera is at z=1.15 with FOV=75 degrees
               const fov = 75 * (Math.PI / 180);
               const cameraZ = 1.15;
               const visibleHeight = 2 * Math.tan(fov / 2) * cameraZ;
 
-              // Get the original element dimensions
               const rect = element.getBoundingClientRect();
               const elementAspect = rect.width / rect.height;
               const visibleWidth = visibleHeight * elementAspect;
 
-              // Scale particle positions to fill the visible area
               xPos = ((x - canvas.width / 2) / canvas.width) * visibleWidth;
               yPos = ((canvas.height / 2 - y) / canvas.height) * visibleHeight;
             } else {
-              // For images/videos: use standard calculation with particleSpacing
               xPos = (x - canvas.width / 2) * options.particleSpacing;
               yPos = (canvas.height / 2 - y) * options.particleSpacing;
             }
 
             tempPositions.push(xPos, yPos, 0);
 
-            // Sample color if enabled
             if (useColorSampling) {
               const colorR = r / 255;
               const colorG = g / 255;
@@ -960,7 +869,6 @@
       new THREE.Float32BufferAttribute(originalPositions, 3)
     );
 
-    // Add color attributes if sampling is enabled
     if (useColorSampling) {
       geometry.setAttribute(
         "color",
@@ -994,7 +902,6 @@
     canvas.height = size;
     const ctx = canvas.getContext("2d");
 
-    // Use white for color sampling so vertex colors show through
     ctx.fillStyle = useColorSampling
       ? "#ffffff"
       : options.particleColor || "#8c8c8c";
@@ -1035,7 +942,6 @@
       el = el.parentElement;
     }
 
-    // Finally, check the element itself
     const style = window.getComputedStyle(element);
     const elementZIndex = parseInt(style.zIndex, 10);
     if (style.position !== "static" && !isNaN(elementZIndex)) {
@@ -1063,14 +969,12 @@
     async init() {
       if (this.initialized) return;
 
-      // Initialize global renderer if needed
       if (!globalRenderer) {
         globalRenderer = new ParticlesGLRenderer();
         globalRenderer.startAnimation();
         setupGlobalResizeObserver();
       }
 
-      // Create particle systems for each target element
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         try {
@@ -1078,7 +982,6 @@
             element,
             this.options
           );
-          // Generate unique ID for each element
           const elementId = element.id || `element-${i}`;
           globalRenderer.addParticleSystem(
             this.id + "-" + elementId,
@@ -1092,14 +995,12 @@
             element,
             error
           );
-          // Element remains visible if particles fail to create
         }
       }
 
       this.initialized = true;
       activeInstances.set(this.id, this);
 
-      // Call initialization callback
       if (this.options.on && this.options.on.init) {
         this.options.on.init(this);
       }
@@ -1108,7 +1009,6 @@
     cleanup(keepTargetHidden = false) {
       if (!this.initialized) return;
 
-      // Remove all particle systems for this instance
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         const elementId = element.id || `element-${i}`;
@@ -1120,7 +1020,6 @@
 
       activeInstances.delete(this.id);
 
-      // Clean up global renderer if no instances remain
       if (activeInstances.size === 0 && globalRenderer) {
         globalRenderer.dispose();
         globalRenderer = null;
@@ -1134,7 +1033,6 @@
       const oldOptions = { ...this.options };
       this.options = { ...this.options, ...newOptions };
 
-      // Check if we need to reinitialize (geometry/texture changes)
       const needsReinit = [
         "character",
         "sampling",
@@ -1149,11 +1047,9 @@
       );
 
       if (needsReinit) {
-        // Hard reinit for major changes
         this.cleanup();
         setTimeout(() => this.init(), 100);
       } else {
-        // Update properties in real-time
         this.updateLiveProperties(newOptions);
       }
     }
@@ -1161,7 +1057,6 @@
     updateLiveProperties(newOptions) {
       if (!globalRenderer) return;
 
-      // Update renderer properties for all instances of this particle system
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         const elementId = element.id || `element-${i}`;
@@ -1169,15 +1064,12 @@
         const systemData = globalRenderer.particleSystems.get(instanceId);
 
         if (systemData) {
-          // If displaceRadius is being updated, flag it for the animation loop
           if (newOptions.displaceRadius !== undefined) {
             systemData.externalRadiusUpdate = true;
           }
 
-          // Update system options
           systemData.options = { ...systemData.options, ...newOptions };
 
-          // Update material properties
           const material = systemData.system.material;
           if (material) {
             if (newOptions.particleSize !== undefined) {
@@ -1187,23 +1079,19 @@
               const useColorSampling = newOptions.particleColor === "sample";
               const wasColorSampling = systemData.useColorSampling;
 
-              // Update character sprite with new color
               const oldMap = material.map;
               material.map = createCharacterSprite(
                 this.options.character,
                 this.options,
                 useColorSampling
               );
-              if (oldMap) oldMap.dispose(); // Clean up old texture
+              if (oldMap) oldMap.dispose();
 
-              // Update vertex colors setting
               material.vertexColors = useColorSampling;
 
-              // Update userData
               systemData.system.userData.useColorSampling = useColorSampling;
               systemData.useColorSampling = useColorSampling;
 
-              // If switching color sampling mode, mark material as needing update
               if (useColorSampling !== wasColorSampling) {
                 material.needsUpdate = true;
               }
@@ -1220,7 +1108,6 @@
       canvas.height = size;
       const ctx = canvas.getContext("2d");
 
-      // Use white for color sampling so vertex colors show through
       ctx.fillStyle = useColorSampling
         ? "#ffffff"
         : options.particleColor || "#8c8c8c";
@@ -1242,22 +1129,19 @@
    *  Global Resize Observer
    * ------------------------------------------------*/
   function setupGlobalResizeObserver() {
-    if (resizeObserver) return; // Already setup
+    if (resizeObserver) return;
 
     const handleResize = () => {
-      // Clear existing timer
       if (resizeDebounceTimer) {
         clearTimeout(resizeDebounceTimer);
       }
 
-      // Set new timer with 250ms debounce
       resizeDebounceTimer = setTimeout(() => {
         console.log("particlesGL: Browser resized, reinitializing effects...");
 
-        // Reinitialize all active instances
         for (const [, instance] of activeInstances) {
           if (instance && instance.initialized) {
-            instance.cleanup(true); // Keep target hidden during resize reinit
+            instance.cleanup(true);
             setTimeout(() => {
               instance.init();
             }, 50);
@@ -1266,7 +1150,6 @@
       }, 250);
     };
 
-    // Setup resize observer
     window.addEventListener("resize", handleResize);
     resizeObserver = handleResize;
   }
@@ -1311,7 +1194,6 @@
 
     const options = { ...defaults, ...userOptions };
 
-    // Find target elements
     const elements = document.querySelectorAll(options.target);
     if (elements.length === 0) {
       console.error(
@@ -1320,10 +1202,8 @@
       return null;
     }
 
-    // Create instance
     const instance = new ParticlesGLInstance(options, Array.from(elements));
 
-    // Auto-initialize
     instance.init();
 
     return {
