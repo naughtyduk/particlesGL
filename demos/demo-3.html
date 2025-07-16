@@ -129,6 +129,8 @@
         align-items: stretch;
         position: relative;
         width: 100%;
+        max-width: 100%;
+        overflow: hidden;
       }
 
       .artwork-frame {
@@ -141,6 +143,8 @@
         transition: all 0.2s ease-in-out;
         margin-bottom: 1.5rem;
         width: 100%;
+        max-width: 100%;
+        contain: layout style;
       }
 
       .artwork-frame:hover {
@@ -151,6 +155,7 @@
 
       .artwork-image {
         width: 100%;
+        max-width: 100%;
         height: 38svh;
         min-height: 280px;
         object-fit: cover;
