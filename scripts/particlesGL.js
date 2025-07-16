@@ -46,7 +46,10 @@
         powerPreference: "high-performance",
         alpha: true,
       });
-      renderer.setPixelRatio(window.devicePixelRatio);
+
+      // Cap pixel ratio to prevent performance issues on high-DPI mobile devices
+      const pixelRatio = Math.min(window.devicePixelRatio, 2);
+      renderer.setPixelRatio(pixelRatio);
       renderer.setClearColor(0x000000, 0);
 
       const scene = new THREE.Scene();
@@ -96,8 +99,6 @@
 
       this.targetElements.set(instanceId, targetElement);
 
-      targetElement.style.visibility = "hidden";
-
       if ("IntersectionObserver" in window) {
         const observer = new IntersectionObserver(
           (entries) => {
@@ -114,6 +115,12 @@
       } else {
         this.particleSystems.get(instanceId).inView = true;
       }
+
+      // Hide the original target element after particles are fully set up
+      // Use a small delay to prevent flickering
+      setTimeout(() => {
+        targetElement.style.visibility = "hidden";
+      }, 16); // One frame delay
     }
 
     removeParticleSystem(instanceId, keepTargetHidden = false) {
@@ -122,8 +129,11 @@
 
       if (systemData) {
         if (!keepTargetHidden) {
-          systemData.element.style.visibility =
-            systemData.originalVisibility || "";
+          // Small delay to prevent flickering during cleanup
+          setTimeout(() => {
+            systemData.element.style.visibility =
+              systemData.originalVisibility || "";
+          }, 16);
         }
 
         const canvas = document.querySelector(
@@ -304,9 +314,16 @@
         }
 
         const rect = systemData.element.getBoundingClientRect();
-        camera.aspect = rect.width / rect.height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(rect.width, rect.height);
+
+        // Ensure we have valid dimensions
+        if (rect.width > 0 && rect.height > 0) {
+          camera.aspect = rect.width / rect.height;
+          camera.updateProjectionMatrix();
+          renderer.setSize(rect.width, rect.height);
+        } else {
+          // Skip rendering if element has no size
+          continue;
+        }
 
         const fov = camera.fov * (Math.PI / 180);
         const visibleHeight = 2 * Math.tan(fov / 2) * camera.position.z;
@@ -321,6 +338,11 @@
         const canvas = renderer.domElement;
         const stacking = systemData.stacking;
         canvas.style.position = stacking.position;
+
+        // Ensure canvas is always visible
+        canvas.style.display = "block";
+        canvas.style.visibility = "visible";
+        canvas.style.opacity = "1";
 
         if (stacking.position === "fixed") {
           canvas.style.top = `${rect.top}px`;
@@ -1131,21 +1153,52 @@
   function setupGlobalResizeObserver() {
     if (resizeObserver) return;
 
+    let lastWidth = window.innerWidth;
+    let lastHeight = window.innerHeight;
+    let lastDevicePixelRatio = window.devicePixelRatio;
+
     const handleResize = () => {
       if (resizeDebounceTimer) {
         clearTimeout(resizeDebounceTimer);
       }
 
       resizeDebounceTimer = setTimeout(() => {
-        console.log("particlesGL: Browser resized, reinitializing effects...");
+        const currentWidth = window.innerWidth;
+        const currentHeight = window.innerHeight;
+        const currentDevicePixelRatio = window.devicePixelRatio;
 
-        for (const [, instance] of activeInstances) {
-          if (instance && instance.initialized) {
-            instance.cleanup(true);
-            setTimeout(() => {
-              instance.init();
-            }, 50);
+        // Only reinitialize if there's a significant change
+        const widthChanged = Math.abs(currentWidth - lastWidth) > 10;
+        const heightChanged = Math.abs(currentHeight - lastHeight) > 100; // Higher threshold for height to ignore mobile address bar
+        const pixelRatioChanged =
+          currentDevicePixelRatio !== lastDevicePixelRatio;
+
+        if (widthChanged || heightChanged || pixelRatioChanged) {
+          console.log(
+            "particlesGL: Significant resize detected, reinitializing effects...",
+            {
+              widthChanged,
+              heightChanged,
+              pixelRatioChanged,
+              oldSize: `${lastWidth}x${lastHeight}`,
+              newSize: `${currentWidth}x${currentHeight}`,
+              oldDPR: lastDevicePixelRatio,
+              newDPR: currentDevicePixelRatio,
+            }
+          );
+
+          for (const [, instance] of activeInstances) {
+            if (instance && instance.initialized) {
+              instance.cleanup(true);
+              setTimeout(() => {
+                instance.init();
+              }, 50);
+            }
           }
+
+          lastWidth = currentWidth;
+          lastHeight = currentHeight;
+          lastDevicePixelRatio = currentDevicePixelRatio;
         }
       }, 250);
     };
