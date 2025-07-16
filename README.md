@@ -1,6 +1,6 @@
 # particlesGL – Interactive WebGL Particle Effects for the Web
 
-<a href="https://particlesgl.naughtyduk.com"><img src="/assets/NDPGL-001.webp" alt="particlesGL" style="width: 100%"/></a>
+<a href="https://particlesgl.naughtyduk.com"><img src="/assets/particlesGL-promo-IMG.gif" alt="particlesGL" style="width: 100%"/></a>
 
 **BETA Release**
 
@@ -42,11 +42,14 @@ Add the following scripts before you initialise `particlesGL()` (normally at the
 <!-- Three.js – WebGL 3D library (required) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
+<!-- GLTFLoader – For 3D model support (optional, only if using 3D models) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/GLTFLoader.js"></script>
+
 <!-- particlesGL.js – the library itself -->
 <script src="/scripts/particlesGL.js"></script>
 ```
 
-> `Three.js` provides the WebGL rendering engine that powers `particlesGL`. The library will not work without it.
+> `Three.js` provides the WebGL rendering engine that powers `particlesGL`. `GLTFLoader` is only required if you plan to use 3D models. The library will not work without Three.js.
 
 ---
 
@@ -64,6 +67,17 @@ Set up your HTML structure first. Add the `particlesGL` class to any element you
 
   <!-- Or use with text -->
   <h1 class="particlesGL">Hello World</h1>
+
+  <!-- Or with 3D models -->
+  <div class="particlesGL" data-model-src="/assets/Duk_Animated.gltf"></div>
+
+  <!-- Or with horizontal flip correction -->
+  <img
+    src="/logo.svg"
+    alt="Logo"
+    class="particlesGL"
+    data-flip-horizontal="true"
+  />
 
   <!-- Or any other element -->
   <div class="particlesGL">
@@ -84,7 +98,7 @@ Next, initialise the library with your desired configuration.
       character: "•", // Character/emoji to use for particles
       particleSize: 0.015, // Size of individual particles
       particleSpacing: 0.002, // Spacing between particles (for images/videos)
-      particleColour: "sample", // Hex colour or 'sample' to use the element's colours
+      particleColour: "sample", // Hex colour or 'sample' to extract colours from source pixels
       sampling: 4, // Pixel sampling rate (lower = more particles)
       tilt: true, // Enable tilt effect on hover
       tiltFactor: 0.2, // Intensity of tilt effect
@@ -95,6 +109,9 @@ Next, initialise the library with your desired configuration.
       returnSpeed: 0.05, // Speed particles return to original position
       fontSize: 48, // Font size for character particles
       fontFamily: "monospace", // Font family for character particles
+      videoUpdateRate: 100, // Milliseconds between video frame updates
+      modelScale: 1.5, // Scale factor for 3D models
+      geometry: null, // Pre-computed particle positions for custom geometry
       on: {
         init(instance) {
           // The `init` callback fires once particlesGL has converted
@@ -111,25 +128,27 @@ Next, initialise the library with your desired configuration.
 
 ## Parameters
 
-| Option              | Type     | Default          | Description                                                                                       |
-| ------------------- | -------- | ---------------- | ------------------------------------------------------------------------------------------------- |
-| `target`            | string   | `'.particlesGL'` | **Required.** CSS selector for the element(s) to convert to particles.                            |
-| `character`         | string   | `'•'`            | Character or emoji to use for particles.                                                          |
-| `particleSize`      | number   | `0.015`          | Size of individual particles (e.g., 0.001–0.1).                                                   |
-| `particleSpacing`   | number   | `0.002`          | Spacing between particles for images/videos (e.g., 0.001–0.01). Not used for text elements.       |
-| `particleColour`    | string   | `'#8c8c8c'`      | Hex colour code for particles, or `'sample'` to inherit colours from the source element's pixels. |
-| `sampling`          | number   | `4`              | Pixel sampling rate. Lower values = more particles, higher performance cost.                      |
-| `tilt`              | boolean  | `false`          | Enable 3D tilt effect on mouse hover.                                                             |
-| `tiltFactor`        | number   | `0.2`            | Intensity of tilt effect (0–1).                                                                   |
-| `tiltSpeed`         | number   | `0.05`           | Speed of tilt animation (0.01–0.2).                                                               |
-| `displaceStrength`  | number   | `0.6`            | Strength of mouse displacement effect (0–2).                                                      |
-| `displaceRadius`    | number   | `0.1`            | Radius of displacement effect (0.01–0.5).                                                         |
-| `velocityInfluence` | number   | `0.3`            | How much mouse velocity affects displacement direction (0–2).                                     |
-| `returnSpeed`       | number   | `0.05`           | Speed particles return to their original position (0.01–0.2).                                     |
-| `fontSize`          | number   | `48`             | Font size for character particles (e.g., 12–72).                                                  |
-| `fontFamily`        | string   | `'monospace'`    | Font family for character particles.                                                              |
-| `videoUpdateRate`   | number   | `100`            | Milliseconds between frame updates for real-time video support.                                   |
-| `on.init`           | function | `—`              | Callback that runs once the particle system is ready. Receives the instance as an argument.       |
+| Option              | Type     | Default          | Description                                                                                                |
+| ------------------- | -------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| `target`            | string   | `'.particlesGL'` | **Required.** CSS selector for the element(s) to convert to particles.                                     |
+| `character`         | string   | `'•'`            | Character or emoji to use for particles.                                                                   |
+| `particleSize`      | number   | `0.015`          | Size of individual particles (e.g., 0.001–0.1).                                                            |
+| `particleSpacing`   | number   | `0.002`          | Spacing between particles for images/videos (e.g., 0.001–0.01). Not used for text elements.                |
+| `particleColour`    | string   | `sample`         | Hex colour code for particles, or `'sample'` to extract colours from source pixels (images, videos, SVGs). |
+| `sampling`          | number   | `4`              | Pixel sampling rate. Lower values = more particles, higher performance cost.                               |
+| `tilt`              | boolean  | `false`          | Enable 3D tilt effect on mouse hover.                                                                      |
+| `tiltFactor`        | number   | `0.2`            | Intensity of tilt effect (0–1).                                                                            |
+| `tiltSpeed`         | number   | `0.05`           | Speed of tilt animation (0.01–0.2).                                                                        |
+| `displaceStrength`  | number   | `0.6`            | Strength of mouse displacement effect (0–2).                                                               |
+| `displaceRadius`    | number   | `0.1`            | Radius of displacement effect (0.01–0.5).                                                                  |
+| `velocityInfluence` | number   | `0.3`            | How much mouse velocity affects displacement direction (0–2).                                              |
+| `returnSpeed`       | number   | `0.05`           | Speed particles return to their original position (0.01–0.2).                                              |
+| `fontSize`          | number   | `48`             | Font size for character particles (e.g., 12–72).                                                           |
+| `fontFamily`        | string   | `'monospace'`    | Font family for character particles.                                                                       |
+| `videoUpdateRate`   | number   | `100`            | Milliseconds between frame updates for real-time video support.                                            |
+| `modelScale`        | number   | `1`              | Scale factor for 3D models (e.g., 0.5–5.0).                                                                |
+| `geometry`          | array    | `null`           | Pre-computed particle positions for custom geometry. Array of [x, y, z] coordinates.                       |
+| `on.init`           | function | `—`              | Callback that runs once the particle system is ready. Receives the instance as an argument.                |
 
 > The `target` parameter is required; all others are optional.
 
@@ -151,17 +170,17 @@ Below are some ready-made configurations for different effects:
 
 ## FAQ
 
-| Question                                               | Answer                                                                                                                                                                                                                                                       |
-| :----------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Does the library handle responsive design?             | Yes, `particlesGL` automatically handles window resize events and rebuilds particle systems as needed. Resize handling is debounced to 250ms for performance.                                                                                                |
-| What happens to the original element?                  | The original element is hidden (`visibility: hidden`) and replaced with the particle system. The particle system is inserted into the DOM and precisely matches the original element's position and dimensions.                                              |
-| Can I use custom fonts for character particles?        | Yes, use the `fontFamily` parameter to specify any loaded font. Make sure the font is loaded before you initialise `particlesGL`.                                                                                                                            |
-| How do I optimise performance for many particles?      | Increase the `sampling` value to reduce particle count, use a smaller `particleSize`, and limit the number of simultaneous instances. The library also helps by automatically pausing rendering for particle systems that are off-screen (viewport culling). |
-| Can I update particle properties after initialisation? | Yes, use the `updateOptions()` method: `particleEffect.updateOptions({ particleColour: '#ff0000' })`. Some changes (like `character` or `sampling`) may require the particle system to be completely rebuilt, which the library handles automatically.       |
-| Does the effect work on mobile devices?                | Yes, `particlesGL` works on most modern mobile devices that support WebGL. Interaction is based on touch-and-drag events, which mimic a mouse. Touch-specific interactions like multi-touch are not supported.                                               |
-| What types of elements can be converted to particles?  | Images, SVGs, text, and videos. For other HTML elements (like a `<div>` or `<p>`), the library will convert their text content into particles.                                                                                                               |
-| How does real-time video support work?                 | For video elements, particles are regenerated from the current video frame at the interval specified by `videoUpdateRate`. The effect only updates when the video is playing, providing a smooth, real-time animation that follows the video content.        |
-| Are there any CORS issues with images?                 | Images from external domains may fail to load due to Cross-Origin Resource Sharing (CORS) policies. For best results, serve images from the same domain or ensure the remote server provides the correct `Access-Control-Allow-Origin` headers.              |
+| Question                                               | Answer                                                                                                                                                                                                                                                        |
+| :----------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Does the library handle responsive design?             | Yes, `particlesGL` automatically handles window resize events and rebuilds particle systems as needed. Resize handling is debounced to 250ms for performance.                                                                                                 |
+| What happens to the original element?                  | The original element is hidden (`visibility: hidden`) and replaced with the particle system. The particle system is inserted into the DOM and precisely matches the original element's position and dimensions.                                               |
+| Can I use custom fonts for character particles?        | Yes, use the `fontFamily` parameter to specify any loaded font. Make sure the font is loaded before you initialise `particlesGL`.                                                                                                                             |
+| How do I optimise performance for many particles?      | Increase the `sampling` value to reduce particle count, use a smaller `particleSize`, and limit the number of simultaneous instances. The library also helps by automatically pausing rendering for particle systems that are off-screen (viewport culling).  |
+| Can I update particle properties after initialisation? | Yes, use the `updateOptions()` method: `particleEffect.updateOptions({ particleColour: '#ff0000' })`. Some changes (like `character` or `sampling`) may require the particle system to be completely rebuilt, which the library handles automatically.        |
+| Does the effect work on mobile devices?                | Yes, `particlesGL` works on most modern mobile devices that support WebGL. Interaction is based on touch-and-drag events, which mimic a mouse. Touch-specific interactions like multi-touch are not supported.                                                |
+| What types of elements can be converted to particles?  | Images, SVGs, text, videos, and 3D models (GLTF/GLB format). For other HTML elements (like a `<div>` or `<p>`), the library will convert their text content into particles.                                                                                   |
+| How does real-time video support work?                 | For video elements, particles are regenerated from the current video frame at the interval specified by `videoUpdateRate`. The effect only updates when the video is playing, providing a smooth, real-time animation that follows the video content.         |
+| Are there any CORS issues with images or 3D models?    | Images and 3D models from external domains may fail to load due to Cross-Origin Resource Sharing (CORS) policies. For best results, serve assets from the same domain or ensure the remote server provides the correct `Access-Control-Allow-Origin` headers. |
 
 ---
 

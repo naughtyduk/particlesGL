@@ -1303,9 +1303,9 @@
       returnSpeed: 0.05,
       fontSize: 48,
       fontFamily: "monospace",
-      videoUpdateRate: 100, // ms between video frame updates
-      modelScale: 1.5, // New: Scale factor for 3D models
-      geometry: null, // Optional pre-computed geometry
+      videoUpdateRate: 100,
+      modelScale: 1,
+      geometry: null,
       on: {},
     };
 
