@@ -29,12 +29,10 @@
       this.targetElements = new Map();
       this.renderers = new Map();
 
-      // Mouse tracking
       this.mouse = new THREE.Vector2();
       this.lastMousePos = new THREE.Vector2();
       this.mouseVelocity = new THREE.Vector2();
 
-      // Bind events
       this.onMouseMove = this.onMouseMove.bind(this);
 
       document.addEventListener("mousemove", this.onMouseMove);
@@ -47,7 +45,6 @@
         alpha: true,
       });
 
-      // Cap pixel ratio to prevent performance issues on high-DPI mobile devices
       const pixelRatio = Math.min(window.devicePixelRatio, 2);
       renderer.setPixelRatio(pixelRatio);
       renderer.setClearColor(0x000000, 0);
@@ -107,7 +104,11 @@
               systemData.inView = entries[0].isIntersecting;
             }
           },
-          { root: null, threshold: 0 }
+          {
+            root: null,
+            threshold: 0,
+            rootMargin: "500px",
+          }
         );
 
         observer.observe(targetElement);
@@ -116,11 +117,9 @@
         this.particleSystems.get(instanceId).inView = true;
       }
 
-      // Hide the original target element after particles are fully set up
-      // Use a small delay to prevent flickering
       setTimeout(() => {
         targetElement.style.visibility = "hidden";
-      }, 16); // One frame delay
+      }, 16);
     }
 
     removeParticleSystem(instanceId, keepTargetHidden = false) {
@@ -129,7 +128,6 @@
 
       if (systemData) {
         if (!keepTargetHidden) {
-          // Small delay to prevent flickering during cleanup
           setTimeout(() => {
             systemData.element.style.visibility =
               systemData.originalVisibility || "";
@@ -315,13 +313,11 @@
 
         const rect = systemData.element.getBoundingClientRect();
 
-        // Ensure we have valid dimensions
         if (rect.width > 0 && rect.height > 0) {
           camera.aspect = rect.width / rect.height;
           camera.updateProjectionMatrix();
           renderer.setSize(rect.width, rect.height);
         } else {
-          // Skip rendering if element has no size
           continue;
         }
 
@@ -339,7 +335,6 @@
         const stacking = systemData.stacking;
         canvas.style.position = stacking.position;
 
-        // Ensure canvas is always visible
         canvas.style.display = "block";
         canvas.style.visibility = "visible";
         canvas.style.opacity = "1";
@@ -496,7 +491,7 @@
             const brightness = r * 0.299 + g * 0.587 + b * 0.114;
 
             const maxColorComponent = Math.max(r, g, b);
-            const hasSignificantColor = maxColorComponent > 50; // Lower threshold for more inclusive detection
+            const hasSignificantColor = maxColorComponent > 50;
 
             if (brightness > brightnessThreshold && hasSignificantColor) {
               const xPos = (x - 1024) * systemData.options.particleSpacing;
@@ -1157,7 +1152,6 @@
     let lastHeight = window.innerHeight;
     let lastDevicePixelRatio = window.devicePixelRatio;
 
-    // Detect mobile devices
     const isMobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent
@@ -1174,10 +1168,9 @@
         const currentHeight = window.innerHeight;
         const currentDevicePixelRatio = window.devicePixelRatio;
 
-        // Smart resize detection based on device type
         const widthChanged = Math.abs(currentWidth - lastWidth) > 10;
         const heightChanged = isMobile
-          ? false // Ignore height changes on mobile (scrolling/address bar)
+          ? false
           : Math.abs(currentHeight - lastHeight) > 100;
         const pixelRatioChanged =
           currentDevicePixelRatio !== lastDevicePixelRatio;
@@ -1200,17 +1193,15 @@
     };
 
     const handleOrientationChange = () => {
-      // Handle orientation changes on mobile with a longer delay
       if (isMobile) {
         setTimeout(() => {
           handleResize();
-        }, 500); // Longer delay for orientation changes
+        }, 500);
       }
     };
 
     window.addEventListener("resize", handleResize);
 
-    // Add orientation change listener for mobile devices
     if (isMobile) {
       window.addEventListener("orientationchange", handleOrientationChange);
     }
@@ -1222,7 +1213,6 @@
     if (resizeObserver) {
       window.removeEventListener("resize", resizeObserver.handleResize);
 
-      // Remove orientation change listener if it was added
       if (resizeObserver.isMobile) {
         window.removeEventListener(
           "orientationchange",
