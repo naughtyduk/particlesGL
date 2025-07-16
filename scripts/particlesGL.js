@@ -283,23 +283,29 @@
 
         const { renderer, scene, camera } = rendererData;
 
-        // Update movement state based on time since last move
-        if (systemData.isMouseOver) {
-          const currentTime = performance.now();
-          const timeSinceLastMove = currentTime - systemData.lastMoveTime;
+        if (systemData.externalRadiusUpdate) {
+          // When displaceRadius is updated externally, it dictates the target radius.
+          systemData.targetEffectRadius = options.displaceRadius;
+          systemData.externalRadiusUpdate = false; // Consume the flag for this frame.
+        } else {
+          // Original mouse-based logic
+          if (systemData.isMouseOver) {
+            const currentTime = performance.now();
+            const timeSinceLastMove = currentTime - systemData.lastMoveTime;
 
-          // Consider stopped after 100ms of no mouse movement
-          if (timeSinceLastMove > 100) {
+            // Consider stopped after 100ms of no mouse movement
+            if (timeSinceLastMove > 100) {
+              systemData.isMoving = false;
+            }
+
+            // Set target radius based on movement state
+            systemData.targetEffectRadius = systemData.isMoving
+              ? options.displaceRadius
+              : 0;
+          } else {
+            systemData.targetEffectRadius = 0;
             systemData.isMoving = false;
           }
-
-          // Set target radius based on movement state
-          systemData.targetEffectRadius = systemData.isMoving
-            ? options.displaceRadius
-            : 0;
-        } else {
-          systemData.targetEffectRadius = 0;
-          systemData.isMoving = false;
         }
 
         // Ease effect radius towards target
@@ -1076,6 +1082,11 @@
         const systemData = globalRenderer.particleSystems.get(instanceId);
 
         if (systemData) {
+          // If displaceRadius is being updated, flag it for the animation loop
+          if (newOptions.displaceRadius !== undefined) {
+            systemData.externalRadiusUpdate = true;
+          }
+
           // Update system options
           systemData.options = { ...systemData.options, ...newOptions };
 
