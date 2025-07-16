@@ -4,100 +4,194 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      particlesGL - Interactive WebGL Particle Effects - NaughtyDuk©
+      particlesGL Audio Visualizer - Real-time Music Particle Effects -
+      NaughtyDuk©
     </title>
     <link rel="icon" href="/assets/favicon.ico" />
     <meta
       name="description"
-      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
+      content="particlesGL Audio Visualizer - Real-time particle effects that react to music with circular pulsing patterns. Built with love by NaughtyDuk©"
     />
     <meta
       name="keywords"
-      content="particlesGL, webGL, particles, interactive, glitch effects, three.js, NaughtyDuk©"
+      content="particlesGL, webGL, particles, interactive, audio visualizer, music, three.js, NaughtyDuk©"
     />
     <meta name="author" content="NaughtyDuk©" />
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
-    <meta
-      property="og:title"
-      content="particlesGL - Interactive WebGL Particle Effects"
-    />
-    <meta
-      property="og:description"
-      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
-    />
-    <meta property="og:url" content="https://particlesgl.naughtyduk.com" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="en_GB" />
-    <meta property="og:site_name" content="particlesGL" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="particlesGL - Interactive WebGL Particle Effects"
-    />
-    <meta
-      name="twitter:description"
-      content="particlesGL is an interactive WebGL particle system with mouse displacement effects. Built with love by NaughtyDuk©"
-    />
-    <meta name="twitter:url" content="https://particlesgl.naughtyduk.com" />
     <style>
-      :root {
-        --bg: #f0f0f0;
-        --fg: #333;
-      }
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
       body {
+        margin: 0;
+        background-color: #111111;
+        color: #fff;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
-        background: var(--bg);
-        color: var(--fg);
-        line-height: 1.5;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      .content-section {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100svh;
-        padding: 0 10vw;
-        position: relative;
         overflow: hidden;
       }
 
-      .hero-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100svh;
-        gap: 2vw;
-        background: #e3e3e1;
-        position: relative;
-      }
-
-      /* Hero Effect Container - Full Page Background */
-      #hero {
+      .visualizer-container {
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
+        width: 100vw;
+        height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
       }
 
-      .hero-logo {
-        width: 100%;
+      #circle-target {
+        width: 1vw;
+        height: 1vw;
+        position: relative;
+        opacity: 1;
+        padding: 30vw 50vw;
+      }
+
+      .track-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+        justify-content: center;
+      }
+
+      .track-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #fafafa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-left: -5px;
+        margin-top: 5px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .title-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .player-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .progress-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: 4px;
+      }
+
+      /* ShadCN Dark Audio Controls */
+      .audio-controls {
+        position: fixed;
+        bottom: 2rem;
+        left: 1rem;
+        right: 1rem;
+        background: rgb(9 9 11 / 20%);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 1000;
+        border: 0.5px solid #1e1e20;
+        margin: 0 auto;
+        max-width: 640px;
+      }
+
+      .play-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: transparent;
+        border: 1px solid #27272a;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .play-button:hover {
+        background: #27272a;
+        transform: scale(1.05);
+      }
+
+      .play-button svg {
+        width: 18px;
+        height: 18px;
+        fill: #fafafa;
+      }
+
+      .progress-container {
+        flex: 1;
+        height: 4px;
+        background: #3f3f46;
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .progress-bar {
+        position: relative;
         height: 100%;
-        pointer-events: none;
-        opacity: 0;
+        background: #fafafa;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.1s ease;
+      }
+
+      .progress-bar::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translate(50%, -50%);
+        width: 16px;
+        height: 4px;
+        background-color: #fafafa;
+        border-radius: 999px;
+        transition: transform 0.2s ease;
+      }
+
+      .volume-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .volume-slider {
+        width: 80px;
+        height: 4px;
+        background: #27272a;
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .volume-bar {
+        height: 100%;
+        background: #fafafa;
+        border-radius: 2px;
+        width: 70%;
+      }
+
+      .time-display {
+        font-size: 12px;
+        color: #a1a1aa;
+        font-weight: 500;
+        text-align: center;
       }
 
       .lil-gui {
@@ -108,380 +202,428 @@
       .lil-gui.autoPlace {
         z-index: 10000;
       }
-
-      /* Honey Pot Cursor Follower */
-      .honey-pot-cursor {
-        position: absolute;
-        width: 60px;
-        height: 60px;
-        pointer-events: none;
-        z-index: 15;
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
-        transition: opacity 0.2s ease, transform 0.15s ease;
-        object-fit: contain;
-        will-change: transform, opacity;
-      }
-
-      .honey-pot-cursor.active {
-        opacity: 0.9;
-        transform: translate(-50%, -50%) scale(0);
-      }
-
-      .honey-pot-cursor.moving {
-        transform: translate(-50%, -50%) scale(1.3);
-      }
     </style>
   </head>
   <body>
-    <div class="main-content">
-      <!-- Hero Section with ASCII Effect Background -->
-      <div class="content-section hero-section">
-        <div id="hero">
-          <img
-            src="../assets/ND25-Grey-Logo.svg"
-            alt="NaughtyDuk Logo"
-            class="hero-logo particlesGL"
-          />
-          <!-- Honey Pot Cursor Follower -->
-          <img
-            src="../assets/honey-pot.webp"
-            alt="Honey Pot"
-            class="honey-pot-cursor"
-            id="honeyPot"
-          />
+    <div class="visualizer-container">
+      <div id="circle-target"></div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls">
+      <button class="play-button" id="playButton">
+        <svg id="playIcon" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
+
+      <div class="player-main">
+        <div class="title-section">
+          <div class="track-title">Swoon - Adrenaline</div>
+          <div class="volume-slider" id="volumeSlider">
+            <div class="volume-bar" id="volumeBar"></div>
+          </div>
+        </div>
+        <div class="progress-section">
+          <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
         </div>
       </div>
     </div>
 
+    <!-- Hidden Audio Element -->
+    <audio id="audioElement" preload="auto">
+      <source src="../assets/swoon-adrenaline.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
-    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
 
-    <!-- ASCII Effect Library -->
+    <!-- particlesGL Library -->
     <script src="/scripts/particlesGL.js"></script>
 
     <script>
-      /* GSAP plugins are registered in initLenis() */
-
-      /* Global ASCII effect variable */
-      let asciiEffect;
-
-      /* Global honey pot variables */
-      let honeyPotHandlers = null;
-
-      /**
-       * Helper functions for locking/unlocking scroll
-       */
-
-      // Init Lenis
-      let lenisInstance;
-      let lenisEnabled = true;
-
-      /* DOM Content Loaded */
       document.addEventListener("DOMContentLoaded", () => {
-        /* Wait for fonts to be loaded */
-        const fontsReady =
-          document.fonts && document.fonts.ready
-            ? document.fonts.ready
-            : Promise.resolve();
+        let audioContext;
+        let analyser;
+        let dataArray;
+        let particleEffect;
+        let isPlaying = false;
+        let isScrubbing = false;
 
-        /* Honey Pot Cursor Follower - Simplified */
-        const honeyPot = document.getElementById("honeyPot");
-        const heroSection = document.querySelector(".hero-section");
-        let isMouseInHero = false;
-        let velocityTimeout;
+        const audioElement = document.getElementById("audioElement");
+        const playButton = document.getElementById("playButton");
+        const playIcon = document.getElementById("playIcon");
+        const pauseIcon = document.getElementById("pauseIcon");
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        const timeDisplay = document.getElementById("timeDisplay");
+        const volumeSlider = document.getElementById("volumeSlider");
+        const volumeBar = document.getElementById("volumeBar");
 
-        function handleGlobalMouseMove(e) {
-          const rect = heroSection.getBoundingClientRect();
-          const isInBounds =
-            e.clientX >= rect.left &&
-            e.clientX <= rect.right &&
-            e.clientY >= rect.top &&
-            e.clientY <= rect.bottom;
+        // Create SINGLE circle geometry
+        function createCircleGeometry(radius = 0.3, segments = 128) {
+          const positions = [];
+          const angleStep = (Math.PI * 2) / segments;
 
-          if (isInBounds) {
-            // Show honey pot
-            if (!isMouseInHero) {
-              isMouseInHero = true;
-              honeyPot.classList.add("active");
-            }
+          for (let i = 0; i < segments; i++) {
+            const angle = i * angleStep;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            positions.push(x, y, 0);
+          }
 
-            // Position relative to hero section
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            honeyPot.style.left = x + "px";
-            honeyPot.style.top = y + "px";
+          return positions;
+        }
 
-            // Add moving class for scaling
-            honeyPot.classList.add("moving");
+        // Initialize particlesGL with single circle
+        if (typeof particlesGL !== "undefined") {
+          const circleGeometry = createCircleGeometry(0.4, 128);
 
-            // Remove moving class after delay
-            clearTimeout(velocityTimeout);
-            velocityTimeout = setTimeout(() => {
-              honeyPot.classList.remove("moving");
-            }, 150);
-          } else {
-            // Hide honey pot
-            if (isMouseInHero) {
-              isMouseInHero = false;
-              honeyPot.classList.remove("active", "moving");
-              clearTimeout(velocityTimeout);
-            }
+          particleEffect = particlesGL({
+            target: "#circle-target",
+            geometry: circleGeometry,
+            character: "●",
+            particleSize: 0.06,
+            particleColor: "#ff3333",
+            tilt: false,
+            tiltFactor: 0,
+            tiltSpeed: 0,
+            displaceStrength: 0.1,
+            displaceRadius: 0.1,
+            velocityInfluence: 0.5,
+            returnSpeed: 0.05,
+          });
+
+          console.log(
+            "particlesGL initialized with",
+            circleGeometry.length / 3,
+            "particles"
+          );
+        }
+
+        // Start the audio analysis loop immediately
+        analyzeAudio();
+
+        // Initialize Web Audio API
+        async function initAudio() {
+          try {
+            audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(audioElement);
+            analyser = audioContext.createAnalyser();
+
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+
+            // Start audio analysis loop
+            analyzeAudio();
+          } catch (error) {
+            console.error("Error initializing audio:", error);
           }
         }
 
-        // Store handlers globally for cleanup
-        honeyPotHandlers = {
-          handleGlobalMouseMove,
-          heroSection,
+        // Audio analysis and particle updates
+        function analyzeAudio() {
+          requestAnimationFrame(analyzeAudio);
+
+          if (!analyser || !particleEffect) {
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+
+          // Calculate frequency bands
+          const bassRange = dataArray.slice(0, 10);
+          const midRange = dataArray.slice(10, 50);
+          const highRange = dataArray.slice(50, 128);
+
+          const bassAvg =
+            bassRange.reduce((a, b) => a + b, 0) / bassRange.length;
+          const midAvg = midRange.reduce((a, b) => a + b, 0) / midRange.length;
+          const highAvg =
+            highRange.reduce((a, b) => a + b, 0) / highRange.length;
+          const overallAvg =
+            dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+
+          // Normalize audio levels
+          const bassNorm = bassAvg / 255;
+          const midNorm = midAvg / 255;
+          const highNorm = highAvg / 255;
+          const overallNorm = overallAvg / 255;
+
+          // Create outward pulsing effect - particles shoot out from circle
+          const pulseIntensity = Math.max(bassNorm, midNorm, highNorm);
+
+          // Particle size grows with bass
+          const baseSize = 0.04;
+          const maxSize = 0.12;
+          const newSize = baseSize + bassNorm * (maxSize - baseSize);
+
+          // Displacement strength - how forcefully particles are pushed outward
+          const baseDisplacement = 0.1;
+          const maxDisplacement = 1.5;
+          const newDisplacement =
+            baseDisplacement +
+            pulseIntensity * (maxDisplacement - baseDisplacement);
+
+          // Displacement radius - how far from center the effect reaches
+          const baseRadius = 0.5;
+          const maxRadius = 1.5;
+          const newRadius = baseRadius + overallNorm * (maxRadius - baseRadius);
+
+          // Color changes with frequency
+          const redIntensity = Math.floor(200 + bassNorm * 55);
+          const greenIntensity = Math.floor(midNorm * 100);
+          const blueIntensity = Math.floor(highNorm * 80);
+          const newColor = `rgb(${redIntensity}, ${greenIntensity}, ${blueIntensity})`;
+
+          // Velocity for smooth outward movement
+          const baseVelocity = 0.3;
+          const maxVelocity = 1.5;
+          const newVelocity =
+            baseVelocity + pulseIntensity * (maxVelocity - baseVelocity);
+
+          // Return speed - how quickly particles come back to circle
+          const baseReturn = 0.02;
+          const maxReturn = 0.1;
+          const newReturn =
+            baseReturn + (1 - pulseIntensity) * (maxReturn - baseReturn);
+
+          // Update particle effect
+          particleEffect.updateOptions({
+            particleSize: newSize,
+            displaceStrength: newDisplacement,
+            displaceRadius: newRadius,
+            particleColor: newColor,
+            velocityInfluence: newVelocity,
+            returnSpeed: newReturn,
+          });
+
+          // Debug audio levels occasionally
+          if (Math.random() < 0.005) {
+            console.log("Audio visualizer:", {
+              bass: bassNorm.toFixed(2),
+              mid: midNorm.toFixed(2),
+              high: highNorm.toFixed(2),
+              pulse: pulseIntensity.toFixed(2),
+              displacement: newDisplacement.toFixed(2),
+              radius: newRadius.toFixed(2),
+            });
+          }
+        }
+
+        // Play/Pause functionality
+        playButton.addEventListener("click", async () => {
+          if (!audioContext) {
+            await initAudio();
+          }
+
+          if (audioContext.state === "suspended") {
+            await audioContext.resume();
+          }
+
+          if (isPlaying) {
+            audioElement.pause();
+            playIcon.style.display = "block";
+            pauseIcon.style.display = "none";
+            isPlaying = false;
+          } else {
+            audioElement.play();
+            playIcon.style.display = "none";
+            pauseIcon.style.display = "block";
+            isPlaying = true;
+          }
+        });
+
+        // Progress bar functionality
+        audioElement.addEventListener("timeupdate", () => {
+          if (isScrubbing) return; // Don't update UI while scrubbing
+
+          const progress =
+            (audioElement.currentTime / audioElement.duration) * 100;
+          progressBar.style.width = `${progress}%`;
+
+          const currentTime = formatTime(audioElement.currentTime);
+          const duration = formatTime(audioElement.duration);
+          timeDisplay.textContent = `${currentTime} / ${duration}`;
+        });
+
+        const seek = (e) => {
+          const rect = progressContainer.getBoundingClientRect();
+          const clientX = e.clientX ?? e.touches[0].clientX;
+          const progress = (clientX - rect.left) / rect.width;
+          const clampedProgress = Math.max(0, Math.min(1, progress));
+
+          progressBar.style.width = `${clampedProgress * 100}%`;
+          audioElement.currentTime = clampedProgress * audioElement.duration;
         };
 
-        // Add single global mouse move listener
-        document.addEventListener("mousemove", handleGlobalMouseMove);
+        progressContainer.addEventListener("mousedown", (e) => {
+          isScrubbing = true;
+          seek(e);
 
-        /* Initialize particlesGL Effect immediately */
-        if (typeof particlesGL !== "undefined") {
-          asciiEffect = particlesGL({
-            target: ".particlesGL",
-            character: "🐝",
-            particleSize: 0.035,
-            particleSpacing: 0.005,
-            particleColor: "#8c8c8c",
-            tilt: true,
-            tiltFactor: 0.19,
-            tiltSpeed: 0.06,
-            displaceStrength: 1.1,
-            displaceRadius: 0.33,
-            velocityInfluence: 2,
-            returnSpeed: 0.01,
-            sampling: 4,
-            fontSize: 48,
-            fontFamily: "monospace",
-            on: {
-              init: function (instance) {
-                console.log("particlesGL initialized!", instance);
-              },
-            },
-          });
-        }
-
-        function initLenis() {
-          if (!lenisInstance) {
-            lenisInstance = new Lenis({
-              lerp: 0.15,
-              wheelMultiplier: 0.7,
-              gestureOrientation: "vertical",
-              normalizeWheel: true,
-              smoothWheel: true,
-              smoothTouch: false,
-              touchMultiplier: 1,
-              touchInertiaMultiplier: 35,
-              infinite: false,
-              orientation: "vertical",
-            });
-
-            gsap.registerPlugin(ScrollTrigger);
-
-            ScrollTrigger.scrollerProxy(document.body, {
-              scrollTop(value) {
-                if (arguments.length) {
-                  lenisInstance.scrollTo(value, { immediate: true });
-                }
-                return lenisInstance.animatedScroll || 0;
-              },
-              getBoundingClientRect() {
-                return {
-                  top: 0,
-                  left: 0,
-                  width: window.innerWidth,
-                  height: window.innerHeight,
-                };
-              },
-              pinType: document.body.style.transform ? "transform" : "fixed",
-            });
-
-            function raf(time) {
-              if (lenisEnabled) {
-                lenisInstance.raf(time);
-                ScrollTrigger.update();
-              }
-              requestAnimationFrame(raf);
+          const onMouseMove = (moveEvent) => {
+            if (isScrubbing) {
+              seek(moveEvent);
             }
+          };
 
-            requestAnimationFrame(raf);
-          }
-        }
+          const onMouseUp = () => {
+            isScrubbing = false;
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+          };
 
-        initLenis();
-
-        fontsReady.then(() => {
-          /* GUI Controls */
-          if (typeof lil !== "undefined" && asciiEffect) {
-            const gui = new lil.GUI();
-            const folder = gui.addFolder("particlesGL Effect");
-
-            // Use actual options from the effect instance
-            const controls = asciiEffect.options;
-
-            // Tilt Controls
-            folder
-              .add(controls, "tilt")
-              .name("tilt")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ tilt: value });
-              });
-
-            folder
-              .add(controls, "tiltFactor", 0, 1, 0.01)
-              .name("tiltFactor")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ tiltFactor: value });
-              });
-
-            folder
-              .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
-              .name("tiltSpeed")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ tiltSpeed: value });
-              });
-
-            // Particle Controls
-            folder
-              .add(controls, "particleSize", 0.005, 0.1, 0.001)
-              .name("particleSize")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ particleSize: value });
-              });
-
-            folder
-              .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
-              .name("particleSpacing")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ particleSpacing: value });
-              });
-
-            // Displace Controls
-            folder
-              .add(controls, "displaceStrength", 0, 2, 0.1)
-              .name("displaceStrength")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ displaceStrength: value });
-              });
-
-            folder
-              .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
-              .name("displaceRadius")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ displaceRadius: value });
-              });
-
-            folder
-              .add(controls, "velocityInfluence", 0, 2, 0.01)
-              .name("velocityInfluence")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ velocityInfluence: value });
-              });
-
-            folder
-              .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
-              .name("returnSpeed")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ returnSpeed: value });
-              });
-
-            // Rendering Controls
-            folder
-              .add(controls, "sampling", 1, 10, 1)
-              .name("sampling")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ sampling: value });
-              });
-
-            // Character selection (this will cause reinit)
-            const characterOptions = {
-              character: controls.character,
-              setCharacter: function (newChar) {
-                asciiEffect.updateOptions({ character: newChar });
-              },
-            };
-
-            folder
-              .add(characterOptions, "character")
-              .name("character")
-              .onChange((value) => {
-                characterOptions.setCharacter(value);
-              });
-
-            // Add particle color control
-            const colorOptions = {
-              particleColor: controls.particleColor,
-              setColor: function (newColor) {
-                asciiEffect.updateOptions({ particleColor: newColor });
-              },
-            };
-
-            folder
-              .addColor(colorOptions, "particleColor")
-              .name("particleColor")
-              .onChange((value) => {
-                colorOptions.setColor(value);
-              });
-
-            // Font Controls
-            folder
-              .add(controls, "fontSize", 12, 72, 1)
-              .name("fontSize")
-              .onChange((value) => {
-                asciiEffect.updateOptions({ fontSize: value });
-              });
-
-            const fontOptions = {
-              fontFamily: controls.fontFamily,
-              setFont: function (newFont) {
-                asciiEffect.updateOptions({ fontFamily: newFont });
-              },
-            };
-
-            folder
-              .add(fontOptions, "fontFamily", [
-                "monospace",
-                "Arial",
-                "Helvetica",
-                "Georgia",
-                "Times New Roman",
-              ])
-              .name("fontFamily")
-              .onChange((value) => {
-                fontOptions.setFont(value);
-              });
-
-            folder.close();
-          }
-
-          console.log("particlesGL page ready!", asciiEffect);
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
         });
-      });
 
-      /* Cleanup on page unload */
-      window.addEventListener("beforeunload", () => {
-        if (asciiEffect && typeof asciiEffect.cleanup === "function") {
-          asciiEffect.cleanup();
-        }
-        if (lenisInstance && typeof lenisInstance.destroy === "function") {
-          lenisInstance.destroy();
+        progressContainer.addEventListener(
+          "touchstart",
+          (e) => {
+            isScrubbing = true;
+            seek(e);
+
+            const onTouchMove = (moveEvent) => {
+              if (isScrubbing) {
+                seek(moveEvent);
+              }
+            };
+
+            const onTouchEnd = () => {
+              isScrubbing = false;
+              document.removeEventListener("touchmove", onTouchMove);
+              document.removeEventListener("touchend", onTouchEnd);
+            };
+
+            document.addEventListener("touchmove", onTouchMove);
+            document.addEventListener("touchend", onTouchEnd);
+          },
+          { passive: true }
+        );
+
+        // Volume control
+        volumeSlider.addEventListener("click", (e) => {
+          const rect = volumeSlider.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const volume = clickX / rect.width;
+          audioElement.volume = Math.max(0, Math.min(1, volume));
+          volumeBar.style.width = volume * 100 + "%";
+        });
+
+        // Format time helper
+        function formatTime(seconds) {
+          if (isNaN(seconds)) return "0:00";
+          const mins = Math.floor(seconds / 60);
+          const secs = Math.floor(seconds % 60);
+          return `${mins}:${secs.toString().padStart(2, "0")}`;
         }
 
-        // Cleanup honey pot event listeners
-        if (honeyPotHandlers) {
-          document.removeEventListener(
-            "mousemove",
-            honeyPotHandlers.handleGlobalMouseMove
-          );
+        // GUI Controls
+        if (typeof lil !== "undefined" && particleEffect) {
+          const gui = new lil.GUI();
+          const folder = gui.addFolder("particlesGL Effect");
+          const controls = particleEffect.options;
+
+          // Tilt Controls (disabled for this demo but kept for consistency)
+          folder
+            .add(controls, "tilt")
+            .name("tilt")
+            .onChange((value) => particleEffect.updateOptions({ tilt: value }))
+            .disable();
+          folder
+            .add(controls, "tiltFactor", 0, 1, 0.01)
+            .name("tiltFactor")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltFactor: value })
+            )
+            .disable();
+          folder
+            .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+            .name("tiltSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltSpeed: value })
+            )
+            .disable();
+
+          // Particle Controls
+          folder
+            .add(controls, "particleSize", 0.005, 0.1, 0.001)
+            .name("particleSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ particleSize: value })
+            );
+
+          // Displace Controls
+          folder
+            .add(controls, "displaceStrength", 0, 2, 0.1)
+            .name("displaceStrength")
+            .onChange((value) =>
+              particleEffect.updateOptions({ displaceStrength: value })
+            );
+          folder
+            .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+            .name("displaceRadius")
+            .onChange((value) =>
+              particleEffect.updateOptions({ displaceRadius: value })
+            );
+          folder
+            .add(controls, "velocityInfluence", 0, 2, 0.01)
+            .name("velocityInfluence")
+            .onChange((value) =>
+              particleEffect.updateOptions({ velocityInfluence: value })
+            );
+          folder
+            .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+            .name("returnSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ returnSpeed: value })
+            );
+
+          // Character & Appearance
+          folder
+            .add(controls, "character")
+            .name("character")
+            .onChange((value) => {
+              particleEffect.updateOptions({ character: value });
+            });
+
+          folder
+            .addColor(controls, "particleColor")
+            .name("particleColor")
+            .onChange((value) => {
+              particleEffect.updateOptions({ particleColor: value });
+            });
+
+          folder
+            .add(controls, "fontSize", 12, 96, 1)
+            .name("fontSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ fontSize: value })
+            )
+            .disable();
+
+          folder
+            .add(controls, "fontFamily")
+            .name("fontFamily")
+            .onChange((value) => {
+              particleEffect.updateOptions({ fontFamily: value });
+            })
+            .disable();
+
+          folder.close();
         }
       });
     </script>
