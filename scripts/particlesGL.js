@@ -717,38 +717,28 @@
           break;
 
         default:
-          // For other HTML elements, try to use html2canvas if available
-          if (typeof html2canvas === "function") {
-            const html2canvasResult = await html2canvas(element, {
-              width: canvasWidth,
-              height: canvasHeight,
-              scale: 1,
-            });
-            ctx.drawImage(html2canvasResult, 0, 0, canvasWidth, canvasHeight);
-          } else {
-            // For text elements: Get actual computed styles
-            const computedStyle = window.getComputedStyle(element);
-            const text = element.textContent || element.innerText || "Text";
+          // For text elements: Get actual computed styles
+          const computedStyle = window.getComputedStyle(element);
+          const text = element.textContent || element.innerText || "Text";
 
-            // Extract actual font properties from DOM element
-            const originalFontSize = parseFloat(computedStyle.fontSize);
-            const fontFamily = computedStyle.fontFamily;
-            const fontWeight = computedStyle.fontWeight;
-            const fontStyle = computedStyle.fontStyle;
+          // Extract actual font properties from DOM element
+          const originalFontSize = parseFloat(computedStyle.fontSize);
+          const fontFamily = computedStyle.fontFamily;
+          const fontWeight = computedStyle.fontWeight;
+          const fontStyle = computedStyle.fontStyle;
 
-            // Canvas is 4x the element size, so scale font by 4x
-            const canvasScale = 4;
-            const canvasFontSize = originalFontSize * canvasScale;
+          // Canvas is 4x the element size, so scale font by 4x
+          const canvasScale = 4;
+          const canvasFontSize = originalFontSize * canvasScale;
 
-            // Set font with exact computed styles
-            ctx.font = `${fontStyle} ${fontWeight} ${canvasFontSize}px ${fontFamily}`;
-            ctx.fillStyle = options.particleColor || computedStyle.color;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
+          // Set font with exact computed styles
+          ctx.font = `${fontStyle} ${fontWeight} ${canvasFontSize}px ${fontFamily}`;
+          ctx.fillStyle = options.particleColor || computedStyle.color;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
 
-            // Render text centered on canvas
-            ctx.fillText(text, canvasWidth / 2, canvasHeight / 2);
-          }
+          // Render text centered on canvas
+          ctx.fillText(text, canvasWidth / 2, canvasHeight / 2);
           break;
       }
     } catch (error) {
