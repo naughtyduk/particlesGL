@@ -337,7 +337,6 @@
 
         canvas.style.display = "block";
         canvas.style.visibility = "visible";
-        canvas.style.opacity = "1";
 
         if (stacking.position === "fixed") {
           canvas.style.top = `${rect.top}px`;
