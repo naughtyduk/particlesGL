@@ -2,9 +2,10 @@
 
 <a href="https://particlesgl.naughtyduk.com"><img src="/assets/NDPGL-001.webp" alt="particlesGL" style="width: 100%"/></a>
 
-**STABLE Release** - `now with velocity-based interactions`
+**BETA Release**
 
-> [!NOTE] > `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling.
+> [!NOTE]
+> `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
