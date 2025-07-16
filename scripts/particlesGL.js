@@ -327,14 +327,23 @@
           this.updateVideoParticles(instanceId, systemData);
         }
 
-        // Apply glitch effect with system-specific mouse position
-        this.applyGlitchEffect(system, options, systemData);
-
         // Update renderer size and render for this element
         const rect = systemData.element.getBoundingClientRect();
         camera.aspect = rect.width / rect.height;
         camera.updateProjectionMatrix();
         renderer.setSize(rect.width, rect.height);
+
+        // Calculate visible plane dimensions at Z=0 to correctly map mouse coordinates
+        const fov = camera.fov * (Math.PI / 180);
+        const visibleHeight = 2 * Math.tan(fov / 2) * camera.position.z;
+        const visibleWidth = visibleHeight * camera.aspect;
+        const mouseWorld = new THREE.Vector2(
+          systemData.currentMouse.x * (visibleWidth / 2),
+          systemData.currentMouse.y * (visibleHeight / 2)
+        );
+
+        // Apply glitch effect with system-specific mouse position
+        this.applyGlitchEffect(system, options, systemData, mouseWorld);
 
         // Automatically determine canvas positioning based on its context
         const canvas = renderer.domElement;
@@ -365,7 +374,7 @@
       animationFrameId = requestAnimationFrame(() => this.animate());
     }
 
-    applyGlitchEffect(particleSystem, options, systemData) {
+    applyGlitchEffect(particleSystem, options, systemData, mouseWorld) {
       if (!particleSystem || !particleSystem.geometry) return;
 
       const posAttr = particleSystem.geometry.attributes.position;
@@ -401,10 +410,6 @@
       const mouseVelocity = currentMouse.clone().sub(systemData.lastMousePos);
       systemData.lastMousePos.copy(currentMouse);
 
-      const mouseWorld = new THREE.Vector2(
-        currentMouse.x * 1.5,
-        currentMouse.y * 1.5
-      );
       const velocityAngle = Math.atan2(mouseVelocity.y, mouseVelocity.x);
 
       for (let i = 0; i < positions.length; i += 3) {
