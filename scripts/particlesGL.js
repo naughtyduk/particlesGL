@@ -1181,7 +1181,7 @@
       character: "•",
       particleSize: 0.015,
       particleSpacing: 0.002,
-      particleColor: "#8c8c8c",
+      particleColor: "sample",
       sampling: 4,
       tilt: false,
       tiltFactor: 0.2,

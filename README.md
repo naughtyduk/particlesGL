@@ -4,7 +4,8 @@
 
 **STABLE Release** - `now with velocity-based interactions`
 
-> [!NOTE] > `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling.
+> [!NOTE]
+> `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
@@ -83,7 +84,7 @@ Next, initialise the library with your desired configuration.
       character: "•", // Character/emoji to use for particles
       particleSize: 0.015, // Size of individual particles
       particleSpacing: 0.002, // Spacing between particles (for images/videos)
-      particleColour: "#8c8c8c", // Hex colour or 'sample' to use the element's colours
+      particleColour: "sample", // Hex colour or 'sample' to use the element's colours
       sampling: 4, // Pixel sampling rate (lower = more particles)
       tilt: true, // Enable tilt effect on hover
       tiltFactor: 0.2, // Intensity of tilt effect
@@ -109,46 +110,6 @@ Next, initialise the library with your desired configuration.
 ---
 
 ## Advanced Usage
-
-### Multiple Elements
-
-`particlesGL` can handle multiple elements with the same configuration:
-
-```javascript
-const particleEffect = particlesGL({
-  target: ".particle-element", // Will affect all elements with this class
-  character: "✨",
-  particleSize: 0.02,
-  // ... other options
-});
-```
-
-### Particle Colour Sampling
-
-Set `particleColour: 'sample'` to make particles inherit the colour of the original element's pixels. This is perfect for creating vibrant, multi-coloured effects from images and videos.
-
-```javascript
-const imageEffect = particlesGL({
-  target: "img.photo",
-  particleColour: "sample", // Particles will match the image's colours
-  character: "•",
-});
-```
-
-### Custom Characters & Emojis
-
-Use any character or emoji as particles:
-
-```javascript
-const particleEffect = particlesGL({
-  target: ".particlesGL",
-  character: "🔥", // Fire emoji
-  // or
-  character: "★", // Star character
-  // or
-  character: "◆", // Diamond shape
-});
-```
 
 ### Velocity-Based Interactions
 
