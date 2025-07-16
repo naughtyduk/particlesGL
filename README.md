@@ -5,7 +5,7 @@
 **BETA Release**
 
 > [!NOTE]
-> `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling. Please notify us of any issues whilst the library is in BETA.
+> `particlesGL` has been built for and tested on modern browsers with WebGL support. It optimises performance automatically through a shared renderer and viewport culling. Please notify us of any issues whilst the library is in **BETA**.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
