@@ -575,152 +575,148 @@
 
         fontsReady.then(() => {
           // Setup toggle controls after DOM is fully ready
-          setTimeout(() => {
-            setupToggleControls();
-          }, 100);
+          setupToggleControls();
           /* GUI Controls */
           if (typeof lil !== "undefined" && asciiEffect) {
-            setTimeout(() => {
-              const gui = new lil.GUI();
-              const folder = gui.addFolder("particlesGL Effect");
+            const gui = new lil.GUI();
+            const folder = gui.addFolder("particlesGL Effect");
 
-              // Use actual options from the effect instance
-              const controls = asciiEffect.options;
+            // Use actual options from the effect instance
+            const controls = asciiEffect.options;
 
-              // Tilt Controls
-              folder
-                .add(controls, "tilt")
-                .name("tilt")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ tilt: value });
-                });
+            // Tilt Controls
+            folder
+              .add(controls, "tilt")
+              .name("tilt")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tilt: value });
+              });
 
-              folder
-                .add(controls, "tiltFactor", 0, 1, 0.01)
-                .name("tiltFactor")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ tiltFactor: value });
-                });
+            folder
+              .add(controls, "tiltFactor", 0, 1, 0.01)
+              .name("tiltFactor")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tiltFactor: value });
+              });
 
-              folder
-                .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
-                .name("tiltSpeed")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ tiltSpeed: value });
-                });
+            folder
+              .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+              .name("tiltSpeed")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tiltSpeed: value });
+              });
 
-              // Particle Controls
-              folder
-                .add(controls, "particleSize", 0.005, 0.1, 0.001)
-                .name("particleSize")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ particleSize: value });
-                });
+            // Particle Controls
+            folder
+              .add(controls, "particleSize", 0.005, 0.1, 0.001)
+              .name("particleSize")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ particleSize: value });
+              });
 
-              folder
-                .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
-                .name("particleSpacing")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ particleSpacing: value });
-                });
+            folder
+              .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+              .name("particleSpacing")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ particleSpacing: value });
+              });
 
-              // Displace Controls
-              folder
-                .add(controls, "displaceStrength", 0, 2, 0.1)
-                .name("displaceStrength")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ displaceStrength: value });
-                });
+            // Displace Controls
+            folder
+              .add(controls, "displaceStrength", 0, 2, 0.1)
+              .name("displaceStrength")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ displaceStrength: value });
+              });
 
-              folder
-                .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
-                .name("displaceRadius")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ displaceRadius: value });
-                });
+            folder
+              .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+              .name("displaceRadius")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ displaceRadius: value });
+              });
 
-              folder
-                .add(controls, "velocityInfluence", 0, 2, 0.01)
-                .name("velocityInfluence")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ velocityInfluence: value });
-                });
+            folder
+              .add(controls, "velocityInfluence", 0, 2, 0.01)
+              .name("velocityInfluence")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ velocityInfluence: value });
+              });
 
-              folder
-                .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
-                .name("returnSpeed")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ returnSpeed: value });
-                });
+            folder
+              .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+              .name("returnSpeed")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ returnSpeed: value });
+              });
 
-              // Rendering Controls
-              folder
-                .add(controls, "sampling", 1, 10, 1)
-                .name("sampling")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ sampling: value });
-                });
+            // Rendering Controls
+            folder
+              .add(controls, "sampling", 1, 10, 1)
+              .name("sampling")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ sampling: value });
+              });
 
-              // Character selection (this will cause reinit)
-              const characterOptions = {
-                character: controls.character,
-                setCharacter: function (newChar) {
-                  asciiEffect.updateOptions({ character: newChar });
-                },
-              };
+            // Character selection (this will cause reinit)
+            const characterOptions = {
+              character: controls.character,
+              setCharacter: function (newChar) {
+                asciiEffect.updateOptions({ character: newChar });
+              },
+            };
 
-              folder
-                .add(characterOptions, "character")
-                .name("character")
-                .onChange((value) => {
-                  characterOptions.setCharacter(value);
-                });
+            folder
+              .add(characterOptions, "character")
+              .name("character")
+              .onChange((value) => {
+                characterOptions.setCharacter(value);
+              });
 
-              // Add particle color control
-              const colorOptions = {
-                particleColor: controls.particleColor,
-                setColor: function (newColor) {
-                  asciiEffect.updateOptions({ particleColor: newColor });
-                },
-              };
+            // Add particle color control
+            const colorOptions = {
+              particleColor: controls.particleColor,
+              setColor: function (newColor) {
+                asciiEffect.updateOptions({ particleColor: newColor });
+              },
+            };
 
-              folder
-                .addColor(colorOptions, "particleColor")
-                .name("particleColor")
-                .onChange((value) => {
-                  colorOptions.setColor(value);
-                });
+            folder
+              .addColor(colorOptions, "particleColor")
+              .name("particleColor")
+              .onChange((value) => {
+                colorOptions.setColor(value);
+              });
 
-              // Font Controls
-              folder
-                .add(controls, "fontSize", 12, 72, 1)
-                .name("fontSize")
-                .onChange((value) => {
-                  asciiEffect.updateOptions({ fontSize: value });
-                });
+            // Font Controls
+            folder
+              .add(controls, "fontSize", 12, 72, 1)
+              .name("fontSize")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ fontSize: value });
+              });
 
-              const fontOptions = {
-                fontFamily: controls.fontFamily,
-                setFont: function (newFont) {
-                  asciiEffect.updateOptions({ fontFamily: newFont });
-                },
-              };
+            const fontOptions = {
+              fontFamily: controls.fontFamily,
+              setFont: function (newFont) {
+                asciiEffect.updateOptions({ fontFamily: newFont });
+              },
+            };
 
-              folder
-                .add(fontOptions, "fontFamily", [
-                  "monospace",
-                  "Arial",
-                  "Helvetica",
-                  "Georgia",
-                  "Times New Roman",
-                ])
-                .name("fontFamily")
-                .onChange((value) => {
-                  fontOptions.setFont(value);
-                });
+            folder
+              .add(fontOptions, "fontFamily", [
+                "monospace",
+                "Arial",
+                "Helvetica",
+                "Georgia",
+                "Times New Roman",
+              ])
+              .name("fontFamily")
+              .onChange((value) => {
+                fontOptions.setFont(value);
+              });
 
-              folder.close();
-            }, 2000);
+            folder.close();
           }
 
           console.log("particlesGL page ready!", asciiEffect);
