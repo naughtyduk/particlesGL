@@ -195,8 +195,8 @@
       }
 
       .lil-gui {
-        --focus-color: #fafafa;
-        --number-color: #ff3333;
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
       }
 
       .lil-gui.autoPlace {
@@ -534,41 +534,94 @@
         // GUI Controls
         if (typeof lil !== "undefined" && particleEffect) {
           const gui = new lil.GUI();
-          const folder = gui.addFolder("Audio Visualizer");
+          const folder = gui.addFolder("particlesGL Effect");
           const controls = particleEffect.options;
 
+          // Tilt Controls (disabled for this demo but kept for consistency)
+          folder
+            .add(controls, "tilt")
+            .name("tilt")
+            .onChange((value) => particleEffect.updateOptions({ tilt: value }))
+            .disable();
+          folder
+            .add(controls, "tiltFactor", 0, 1, 0.01)
+            .name("tiltFactor")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltFactor: value })
+            )
+            .disable();
+          folder
+            .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+            .name("tiltSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltSpeed: value })
+            )
+            .disable();
+
+          // Particle Controls
           folder
             .add(controls, "particleSize", 0.005, 0.1, 0.001)
-            .name("Base Size")
+            .name("particleSize")
             .onChange((value) =>
               particleEffect.updateOptions({ particleSize: value })
             );
+
+          // Displace Controls
           folder
             .add(controls, "displaceStrength", 0, 2, 0.1)
-            .name("Pulse Strength")
+            .name("displaceStrength")
             .onChange((value) =>
               particleEffect.updateOptions({ displaceStrength: value })
             );
           folder
             .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
-            .name("Pulse Radius")
+            .name("displaceRadius")
             .onChange((value) =>
               particleEffect.updateOptions({ displaceRadius: value })
             );
           folder
+            .add(controls, "velocityInfluence", 0, 2, 0.01)
+            .name("velocityInfluence")
+            .onChange((value) =>
+              particleEffect.updateOptions({ velocityInfluence: value })
+            );
+          folder
             .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
-            .name("Return Speed")
+            .name("returnSpeed")
             .onChange((value) =>
               particleEffect.updateOptions({ returnSpeed: value })
             );
 
-          const colorOptions = { particleColor: controls.particleColor };
+          // Character & Appearance
           folder
-            .addColor(colorOptions, "particleColor")
-            .name("Base Color")
+            .add(controls, "character")
+            .name("character")
+            .onChange((value) => {
+              particleEffect.updateOptions({ character: value });
+            });
+
+          folder
+            .addColor(controls, "particleColor")
+            .name("particleColor")
             .onChange((value) => {
               particleEffect.updateOptions({ particleColor: value });
             });
+
+          folder
+            .add(controls, "fontSize", 12, 96, 1)
+            .name("fontSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ fontSize: value })
+            )
+            .disable();
+
+          folder
+            .add(controls, "fontFamily")
+            .name("fontFamily")
+            .onChange((value) => {
+              particleEffect.updateOptions({ fontFamily: value });
+            })
+            .disable();
 
           folder.close();
         }
