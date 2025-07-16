@@ -19,7 +19,7 @@
     <style>
       body {
         margin: 0;
-        background-color: #e8e8e8;
+        background-color: #eae9ec;
         color: #323232;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
@@ -93,15 +93,19 @@
               target: "#particle-container",
               geometry: positions,
               character: "•",
-              particleSize: 0.025,
+              particleSize: 0.075,
+              particleSpacing: 0.0049,
               particleColor: "#3b3b3b",
               tilt: true,
               tiltFactor: 0.1,
               tiltSpeed: 0.05,
               displaceStrength: 0.2,
-              displaceRadius: 0.2,
-              velocityInfluence: 0.5,
-              returnSpeed: 0.02,
+              displaceRadius: 0.11,
+              velocityInfluence: 0.16,
+              returnSpeed: 0.01,
+              sampling: 4,
+              fontSize: 48,
+              fontFamily: "monospace",
             });
 
             // GUI Controls - Now matches other demos
