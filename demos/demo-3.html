@@ -824,6 +824,189 @@
                 })
               );
             }
+
+            /* Setup Artwork Effects GUI Controls */
+            setTimeout(() => {
+              if (typeof lil !== "undefined" && window.particleGUI) {
+                const { gui, folder } = window.particleGUI;
+
+                // Artwork Effects Controls
+                artworkEffects.forEach((effect, index) => {
+                  if (effect) {
+                    const artworkFolder = folder.addFolder(
+                      `Artwork ${index + 1}`
+                    );
+                    const controls = effect.options;
+                    const artworkIndex = index; // Capture index for closure
+
+                    // Tilt Controls
+                    artworkFolder
+                      .add(controls, "tilt")
+                      .name("tilt")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { tilt: value });
+                      });
+
+                    artworkFolder
+                      .add(controls, "tiltFactor", 0, 1, 0.01)
+                      .name("tiltFactor")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { tiltFactor: value });
+                      });
+
+                    artworkFolder
+                      .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+                      .name("tiltSpeed")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { tiltSpeed: value });
+                      });
+
+                    // Particle Controls
+                    artworkFolder
+                      .add(controls, "particleSize", 0.005, 0.1, 0.001)
+                      .name("particleSize")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          particleSize: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+                      .name("particleSpacing")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          particleSpacing: value,
+                        });
+                      });
+
+                    // Displace Controls
+                    artworkFolder
+                      .add(controls, "displaceStrength", 0, 2, 0.1)
+                      .name("displaceStrength")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          displaceStrength: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+                      .name("displaceRadius")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          displaceRadius: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "velocityInfluence", 0, 2, 0.01)
+                      .name("velocityInfluence")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          velocityInfluence: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+                      .name("returnSpeed")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { returnSpeed: value });
+                      });
+
+                    // Rendering Controls
+                    artworkFolder
+                      .add(controls, "sampling", 1, 10, 1)
+                      .name("sampling")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { sampling: value });
+                      });
+
+                    // Character selection (this will cause reinit)
+                    const characterOptions = {
+                      character: controls.character,
+                      setCharacter: function (newChar) {
+                        updateBothEffects(artworkIndex, { character: newChar });
+                      },
+                    };
+
+                    artworkFolder
+                      .add(characterOptions, "character")
+                      .name("character")
+                      .onChange((value) => {
+                        characterOptions.setCharacter(value);
+                      });
+
+                    // Color sampling toggle
+                    const colorOptions = {
+                      particleColor: controls.particleColor,
+                      useColorSampling: controls.particleColor === "sample",
+                      setColor: function (newColor) {
+                        updateBothEffects(artworkIndex, {
+                          particleColor: newColor,
+                        });
+                      },
+                    };
+
+                    artworkFolder
+                      .add(colorOptions, "useColorSampling")
+                      .name("useColorSampling")
+                      .onChange((value) => {
+                        const newColor = value ? "sample" : "#8c8c8c";
+                        colorOptions.particleColor = newColor;
+                        updateBothEffects(artworkIndex, {
+                          particleColor: newColor,
+                        });
+                      });
+
+                    // Color picker (only active when not sampling)
+                    if (controls.particleColor !== "sample") {
+                      artworkFolder
+                        .addColor(colorOptions, "particleColor")
+                        .name("particleColor")
+                        .onChange((value) => {
+                          colorOptions.setColor(value);
+                        });
+                    }
+
+                    // Font Controls
+                    artworkFolder
+                      .add(controls, "fontSize", 12, 72, 1)
+                      .name("fontSize")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { fontSize: value });
+                      });
+
+                    const fontOptions = {
+                      fontFamily: controls.fontFamily,
+                      setFont: function (newFont) {
+                        updateBothEffects(artworkIndex, {
+                          fontFamily: newFont,
+                        });
+                      },
+                    };
+
+                    artworkFolder
+                      .add(fontOptions, "fontFamily", [
+                        "monospace",
+                        "Arial",
+                        "Helvetica",
+                        "Georgia",
+                        "Times New Roman",
+                      ])
+                      .name("fontFamily")
+                      .onChange((value) => {
+                        fontOptions.setFont(value);
+                      });
+
+                    artworkFolder.close();
+                  }
+                });
+
+                folder.close();
+              }
+            }, 100);
           }, 500);
 
           /* Setup Individual Artwork Toggle Controls */
@@ -831,7 +1014,7 @@
             setupArtworkToggleControls();
           }, 600);
 
-          /* GUI Controls */
+          /* Initialize GUI Controls */
           if (typeof lil !== "undefined") {
             const gui = new lil.GUI();
             const folder = gui.addFolder("Gallery Particle Effects");
@@ -976,175 +1159,8 @@
               titleFolder.close();
             }
 
-            // Artwork Effects Controls
-            artworkEffects.forEach((effect, index) => {
-              if (effect) {
-                const artworkFolder = folder.addFolder(`Artwork ${index + 1}`);
-                const controls = effect.options;
-                const artworkIndex = index; // Capture index for closure
-
-                // Tilt Controls
-                artworkFolder
-                  .add(controls, "tilt")
-                  .name("tilt")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { tilt: value });
-                  });
-
-                artworkFolder
-                  .add(controls, "tiltFactor", 0, 1, 0.01)
-                  .name("tiltFactor")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { tiltFactor: value });
-                  });
-
-                artworkFolder
-                  .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
-                  .name("tiltSpeed")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { tiltSpeed: value });
-                  });
-
-                // Particle Controls
-                artworkFolder
-                  .add(controls, "particleSize", 0.005, 0.1, 0.001)
-                  .name("particleSize")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { particleSize: value });
-                  });
-
-                artworkFolder
-                  .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
-                  .name("particleSpacing")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, {
-                      particleSpacing: value,
-                    });
-                  });
-
-                // Displace Controls
-                artworkFolder
-                  .add(controls, "displaceStrength", 0, 2, 0.1)
-                  .name("displaceStrength")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, {
-                      displaceStrength: value,
-                    });
-                  });
-
-                artworkFolder
-                  .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
-                  .name("displaceRadius")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, {
-                      displaceRadius: value,
-                    });
-                  });
-
-                artworkFolder
-                  .add(controls, "velocityInfluence", 0, 2, 0.01)
-                  .name("velocityInfluence")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, {
-                      velocityInfluence: value,
-                    });
-                  });
-
-                artworkFolder
-                  .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
-                  .name("returnSpeed")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { returnSpeed: value });
-                  });
-
-                // Rendering Controls
-                artworkFolder
-                  .add(controls, "sampling", 1, 10, 1)
-                  .name("sampling")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { sampling: value });
-                  });
-
-                // Character selection (this will cause reinit)
-                const characterOptions = {
-                  character: controls.character,
-                  setCharacter: function (newChar) {
-                    updateBothEffects(artworkIndex, { character: newChar });
-                  },
-                };
-
-                artworkFolder
-                  .add(characterOptions, "character")
-                  .name("character")
-                  .onChange((value) => {
-                    characterOptions.setCharacter(value);
-                  });
-
-                // Color sampling toggle
-                const colorOptions = {
-                  particleColor: controls.particleColor,
-                  useColorSampling: controls.particleColor === "sample",
-                  setColor: function (newColor) {
-                    updateBothEffects(artworkIndex, {
-                      particleColor: newColor,
-                    });
-                  },
-                };
-
-                artworkFolder
-                  .add(colorOptions, "useColorSampling")
-                  .name("useColorSampling")
-                  .onChange((value) => {
-                    const newColor = value ? "sample" : "#8c8c8c";
-                    colorOptions.particleColor = newColor;
-                    updateBothEffects(artworkIndex, {
-                      particleColor: newColor,
-                    });
-                  });
-
-                // Color picker (only active when not sampling)
-                if (controls.particleColor !== "sample") {
-                  artworkFolder
-                    .addColor(colorOptions, "particleColor")
-                    .name("particleColor")
-                    .onChange((value) => {
-                      colorOptions.setColor(value);
-                    });
-                }
-
-                // Font Controls
-                artworkFolder
-                  .add(controls, "fontSize", 12, 72, 1)
-                  .name("fontSize")
-                  .onChange((value) => {
-                    updateBothEffects(artworkIndex, { fontSize: value });
-                  });
-
-                const fontOptions = {
-                  fontFamily: controls.fontFamily,
-                  setFont: function (newFont) {
-                    updateBothEffects(artworkIndex, { fontFamily: newFont });
-                  },
-                };
-
-                artworkFolder
-                  .add(fontOptions, "fontFamily", [
-                    "monospace",
-                    "Arial",
-                    "Helvetica",
-                    "Georgia",
-                    "Times New Roman",
-                  ])
-                  .name("fontFamily")
-                  .onChange((value) => {
-                    fontOptions.setFont(value);
-                  });
-
-                artworkFolder.close();
-              }
-            });
-
-            folder.close();
+            // Store GUI reference for later use
+            window.particleGUI = { gui, folder };
           }
 
           console.log("Digital Art Gallery ready!", {
