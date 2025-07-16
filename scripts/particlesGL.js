@@ -763,12 +763,94 @@
   }
 
   /* --------------------------------------------------
+   *  3D Model Loader
+   * ------------------------------------------------*/
+  async function loadModelGeometry(modelSrc, options) {
+    return new Promise((resolve, reject) => {
+      // Check for THREE.js and GLTFLoader
+      if (typeof THREE === "undefined" || !THREE.GLTFLoader) {
+        console.error(
+          "particlesGL: THREE.js and THREE.GLTFLoader are required for model loading. Please include them in your project."
+        );
+        return reject(
+          "Missing THREE.js or GLTFLoader. Required for 3D model support."
+        );
+      }
+
+      const loader = new THREE.GLTFLoader();
+      loader.load(
+        modelSrc,
+        (gltf) => {
+          const positions = [];
+          const box = new THREE.Box3().setFromObject(gltf.scene);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = options.modelScale / maxDim;
+
+          gltf.scene.traverse((child) => {
+            if (child.isMesh) {
+              const geometry = child.geometry;
+              const posAttr = geometry.attributes.position;
+              const tempVertex = new THREE.Vector3();
+              child.updateWorldMatrix(true, false);
+
+              for (let i = 0; i < posAttr.count; i++) {
+                tempVertex.fromBufferAttribute(posAttr, i);
+                tempVertex.applyMatrix4(child.matrixWorld);
+
+                // Center and scale vertices
+                tempVertex.sub(center);
+                tempVertex.multiplyScalar(scale);
+
+                positions.push(tempVertex.x, tempVertex.y, tempVertex.z);
+              }
+            }
+          });
+
+          if (positions.length === 0) {
+            console.warn(`particlesGL: No mesh geometry found in ${modelSrc}`);
+            return reject(`No mesh geometry found in ${modelSrc}`);
+          }
+
+          resolve(positions);
+        },
+        undefined, // onProgress callback not used
+        (error) => {
+          console.error(
+            `particlesGL: Failed to load 3D model from ${modelSrc}`,
+            error
+          );
+          reject(`Failed to load model: ${error}`);
+        }
+      );
+    });
+  }
+
+  /* --------------------------------------------------
    *  Particle System Creation
    * ------------------------------------------------*/
   async function createParticleSystem(element, options) {
     let particleData;
+    const modelSrc = element.dataset.modelSrc;
 
-    if (options.geometry) {
+    if (modelSrc) {
+      // New: Load geometry from a 3D model source
+      try {
+        const positions = await loadModelGeometry(modelSrc, options);
+        particleData = { positions: positions, colors: [] };
+      } catch (error) {
+        console.error(
+          `particlesGL: Could not process model ${modelSrc}.`,
+          error
+        );
+        // Fallback to treating element as empty div which will result in no particles
+        const canvas = await elementToCanvas(element, options);
+        const ctx = canvas.getContext("2d");
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        particleData = { positions: [], colors: [] }; // Ensure it's an empty array
+      }
+    } else if (options.geometry) {
       // Use pre-computed geometry if provided by the user
       particleData = { positions: options.geometry, colors: [] };
     } else {
@@ -1216,8 +1298,9 @@
       returnSpeed: 0.05,
       fontSize: 48,
       fontFamily: "monospace",
-      videoUpdateRate: 100,
-      geometry: null,
+      videoUpdateRate: 100, // ms between video frame updates
+      modelScale: 1.5, // New: Scale factor for 3D models
+      geometry: null, // Optional pre-computed geometry
       on: {},
     };
 
