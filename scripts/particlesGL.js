@@ -1216,8 +1216,8 @@
       returnSpeed: 0.05,
       fontSize: 48,
       fontFamily: "monospace",
-      videoUpdateRate: 100, // ms between video frame updates
-      geometry: null, // Optional pre-computed geometry
+      videoUpdateRate: 100,
+      geometry: null,
       on: {},
     };
 
