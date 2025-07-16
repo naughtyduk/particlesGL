@@ -1157,6 +1157,13 @@
     let lastHeight = window.innerHeight;
     let lastDevicePixelRatio = window.devicePixelRatio;
 
+    // Detect mobile devices
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) ||
+      ("ontouchstart" in window && window.innerWidth < 1024);
+
     const handleResize = () => {
       if (resizeDebounceTimer) {
         clearTimeout(resizeDebounceTimer);
@@ -1167,26 +1174,15 @@
         const currentHeight = window.innerHeight;
         const currentDevicePixelRatio = window.devicePixelRatio;
 
-        // Only reinitialize if there's a significant change
+        // Smart resize detection based on device type
         const widthChanged = Math.abs(currentWidth - lastWidth) > 10;
-        const heightChanged = Math.abs(currentHeight - lastHeight) > 100; // Higher threshold for height to ignore mobile address bar
+        const heightChanged = isMobile
+          ? false // Ignore height changes on mobile (scrolling/address bar)
+          : Math.abs(currentHeight - lastHeight) > 100;
         const pixelRatioChanged =
           currentDevicePixelRatio !== lastDevicePixelRatio;
 
         if (widthChanged || heightChanged || pixelRatioChanged) {
-          console.log(
-            "particlesGL: Significant resize detected, reinitializing effects...",
-            {
-              widthChanged,
-              heightChanged,
-              pixelRatioChanged,
-              oldSize: `${lastWidth}x${lastHeight}`,
-              newSize: `${currentWidth}x${currentHeight}`,
-              oldDPR: lastDevicePixelRatio,
-              newDPR: currentDevicePixelRatio,
-            }
-          );
-
           for (const [, instance] of activeInstances) {
             if (instance && instance.initialized) {
               instance.cleanup(true);
@@ -1203,13 +1199,37 @@
       }, 250);
     };
 
+    const handleOrientationChange = () => {
+      // Handle orientation changes on mobile with a longer delay
+      if (isMobile) {
+        setTimeout(() => {
+          handleResize();
+        }, 500); // Longer delay for orientation changes
+      }
+    };
+
     window.addEventListener("resize", handleResize);
-    resizeObserver = handleResize;
+
+    // Add orientation change listener for mobile devices
+    if (isMobile) {
+      window.addEventListener("orientationchange", handleOrientationChange);
+    }
+
+    resizeObserver = { handleResize, handleOrientationChange, isMobile };
   }
 
   function cleanupGlobalResizeObserver() {
     if (resizeObserver) {
-      window.removeEventListener("resize", resizeObserver);
+      window.removeEventListener("resize", resizeObserver.handleResize);
+
+      // Remove orientation change listener if it was added
+      if (resizeObserver.isMobile) {
+        window.removeEventListener(
+          "orientationchange",
+          resizeObserver.handleOrientationChange
+        );
+      }
+
       resizeObserver = null;
     }
 
