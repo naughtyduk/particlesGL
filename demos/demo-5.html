@@ -446,6 +446,8 @@
               on: {
                 init: function (instance) {
                   console.log("particlesGL fire effect initialized!", instance);
+                  // Initialize GUI after particles are ready
+                  initializeGUI();
                 },
               },
             });
@@ -473,6 +475,8 @@
               on: {
                 init: function (instance) {
                   console.log("particlesGL fire effect initialized!", instance);
+                  // Initialize GUI after particles are ready
+                  initializeGUI();
                 },
               },
             });
@@ -571,11 +575,7 @@
           });
         }
 
-        initLenis();
-
-        fontsReady.then(() => {
-          // Setup toggle controls after DOM is fully ready
-          setupToggleControls();
+        function initializeGUI() {
           /* GUI Controls */
           if (typeof lil !== "undefined" && asciiEffect) {
             const gui = new lil.GUI();
@@ -718,6 +718,13 @@
 
             folder.close();
           }
+        }
+
+        initLenis();
+
+        fontsReady.then(() => {
+          // Setup toggle controls after DOM is fully ready
+          setupToggleControls();
 
           console.log("particlesGL page ready!", asciiEffect);
         });
