@@ -87,7 +87,7 @@ Set up your HTML structure first. Add the `particlesGL` class to any element you
 </body>
 ```
 
-> The original element will be hidden and replaced with the particle system. Make sure your target elements are positioned where you want the particle effect to appear.
+> The original element will be hidden and replaced with the particle system. Make sure your target elements are positioned where you want the particle effect to appear. Note if you are using 3D models, you must use `data-model-src` for `particlesGL` to detect it.
 
 Next, initialise the library with your desired configuration.
 
