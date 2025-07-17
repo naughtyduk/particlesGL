@@ -234,6 +234,7 @@
             height: 100svh;
             background: #111111;
             z-index: 99999;
+            visibility: hidden;
         }
 
         .fullscreen-player.inactive .custom-controls,
@@ -868,6 +869,7 @@
 
             if (!videoTrigger) return;
 
+            // Initialize modal position immediately to prevent flash
             gsap.set(fullscreenPlayer, {
                 xPercent: -100,
                 visibility: "hidden",
