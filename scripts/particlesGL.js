@@ -457,32 +457,41 @@
         !videoElement.ended
       ) {
         if (!systemData.videoCanvas) {
+          const MAX_SIDE = 2048;
+          const aspect =
+            (videoElement.videoWidth || 16) / (videoElement.videoHeight || 9);
+
           systemData.videoCanvas = document.createElement("canvas");
-          systemData.videoCanvas.width = 2048;
-          systemData.videoCanvas.height = 1024;
+
+          if (aspect >= 1) {
+            systemData.videoCanvas.width = MAX_SIDE;
+            systemData.videoCanvas.height = Math.round(MAX_SIDE / aspect);
+          } else {
+            systemData.videoCanvas.height = MAX_SIDE;
+            systemData.videoCanvas.width = Math.round(MAX_SIDE * aspect);
+          }
+
           systemData.videoContext = systemData.videoCanvas.getContext("2d", {
             willReadFrequently: true,
           });
         }
 
-        systemData.videoContext.clearRect(0, 0, 2048, 1024);
-        systemData.videoContext.drawImage(videoElement, 0, 0, 2048, 1024);
+        const vcw = systemData.videoCanvas.width;
+        const vch = systemData.videoCanvas.height;
 
-        const imageData = systemData.videoContext.getImageData(
-          0,
-          0,
-          2048,
-          1024
-        );
+        systemData.videoContext.clearRect(0, 0, vcw, vch);
+        systemData.videoContext.drawImage(videoElement, 0, 0, vcw, vch);
+
+        const imageData = systemData.videoContext.getImageData(0, 0, vcw, vch);
 
         const newPositions = [];
         const newColors = [];
         const brightnessThreshold = 80;
         const useColorSampling = systemData.options.particleColor === "sample";
 
-        for (let y = 0; y < 1024; y += systemData.options.sampling) {
-          for (let x = 0; x < 2048; x += systemData.options.sampling) {
-            const i = (y * 2048 + x) * 4;
+        for (let y = 0; y < vch; y += systemData.options.sampling) {
+          for (let x = 0; x < vcw; x += systemData.options.sampling) {
+            const i = (y * vcw + x) * 4;
             const r = imageData.data[i];
             const g = imageData.data[i + 1];
             const b = imageData.data[i + 2];
@@ -493,8 +502,8 @@
             const hasSignificantColor = maxColorComponent > 50;
 
             if (brightness > brightnessThreshold && hasSignificantColor) {
-              const xPos = (x - 1024) * systemData.options.particleSpacing;
-              const yPos = (512 - y) * systemData.options.particleSpacing;
+              const xPos = (x - vcw / 2) * systemData.options.particleSpacing;
+              const yPos = (vch / 2 - y) * systemData.options.particleSpacing;
               newPositions.push(xPos, yPos, 0);
 
               if (useColorSampling) {
@@ -602,19 +611,62 @@
     let canvasWidth, canvasHeight;
     const tagName = element.tagName.toLowerCase();
 
-    if (
-      tagName === "img" ||
-      tagName === "svg" ||
-      tagName === "canvas" ||
-      tagName === "video"
-    ) {
-      canvasWidth = 2048;
-      canvasHeight = 1024;
-    } else {
-      const rect = element.getBoundingClientRect();
-      const scale = 4;
-      canvasWidth = rect.width * scale;
-      canvasHeight = rect.height * scale;
+    const MAX_SIDE = 2048;
+
+    const rect = element.getBoundingClientRect();
+
+    // ---------------------------------------------------------------
+    // Primary path – use the element's on-screen bounding box so that
+    // the particle cloud always matches the visible target area (this
+    // automatically respects object-fit, aspect-ratio, transforms, …)
+    // ---------------------------------------------------------------
+    const scale = 4; // supersampling factor for crisp particles
+    canvasWidth = Math.round(rect.width * scale);
+    canvasHeight = Math.round(rect.height * scale);
+
+    // Fallback: some elements may report 0×0 before layout (e.g. images
+    // not yet loaded). In that rare case use intrinsic dimensions and
+    // cap the longest side at MAX_SIDE while preserving aspect ratio.
+    if (canvasWidth === 0 || canvasHeight === 0) {
+      let intrinsicW = 0;
+      let intrinsicH = 0;
+
+      if (tagName === "img") {
+        intrinsicW = element.naturalWidth;
+        intrinsicH = element.naturalHeight;
+      } else if (tagName === "video") {
+        intrinsicW = element.videoWidth;
+        intrinsicH = element.videoHeight;
+      } else if (tagName === "canvas") {
+        intrinsicW = element.width;
+        intrinsicH = element.height;
+      }
+
+      if (intrinsicW && intrinsicH) {
+        const aspect = intrinsicW / intrinsicH;
+        if (aspect >= 1) {
+          canvasWidth = MAX_SIDE;
+          canvasHeight = Math.round(MAX_SIDE / aspect);
+        } else {
+          canvasHeight = MAX_SIDE;
+          canvasWidth = Math.round(MAX_SIDE * aspect);
+        }
+      } else {
+        // Ultimate fallback – at least make it 1×1 to avoid errors
+        canvasWidth = canvasHeight = 256;
+      }
+    }
+
+    // Clamp to MAX_SIDE just in case the bounding box is huge
+    if (canvasWidth > MAX_SIDE || canvasHeight > MAX_SIDE) {
+      const aspect = canvasWidth / canvasHeight;
+      if (aspect >= 1) {
+        canvasWidth = MAX_SIDE;
+        canvasHeight = Math.round(MAX_SIDE / aspect);
+      } else {
+        canvasHeight = MAX_SIDE;
+        canvasWidth = Math.round(MAX_SIDE * aspect);
+      }
     }
 
     canvas.width = canvasWidth;
@@ -791,8 +843,6 @@
           error
         );
         const canvas = await elementToCanvas(element, options);
-        const ctx = canvas.getContext("2d");
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         particleData = { positions: [], colors: [] };
       }
     } else if (options.geometry) {
@@ -835,8 +885,9 @@
           if (shouldCreateParticle) {
             let xPos, yPos;
 
-            const isTextCanvas =
-              canvas.width !== 2048 || canvas.height !== 1024;
+            const isTextCanvas = !["img", "svg", "canvas", "video"].includes(
+              element.tagName.toLowerCase()
+            );
 
             if (isTextCanvas) {
               const fov = 75 * (Math.PI / 180);
