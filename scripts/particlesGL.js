@@ -613,53 +613,37 @@
 
     const MAX_SIDE = 2048;
 
-    const rect = element.getBoundingClientRect();
-
-    // ---------------------------------------------------------------
-    // Primary path – use the element's on-screen bounding box so that
-    // the particle cloud always matches the visible target area (this
-    // automatically respects object-fit, aspect-ratio, transforms, …)
-    // ---------------------------------------------------------------
-    const scale = 4; // supersampling factor for crisp particles
-    canvasWidth = Math.round(rect.width * scale);
-    canvasHeight = Math.round(rect.height * scale);
-
-    // Fallback: some elements may report 0×0 before layout (e.g. images
-    // not yet loaded). In that rare case use intrinsic dimensions and
-    // cap the longest side at MAX_SIDE while preserving aspect ratio.
-    if (canvasWidth === 0 || canvasHeight === 0) {
+    if (["img", "svg", "canvas", "video"].includes(tagName)) {
       let intrinsicW = 0;
       let intrinsicH = 0;
 
       if (tagName === "img") {
-        intrinsicW = element.naturalWidth;
-        intrinsicH = element.naturalHeight;
+        intrinsicW = element.naturalWidth || 0;
+        intrinsicH = element.naturalHeight || 0;
       } else if (tagName === "video") {
-        intrinsicW = element.videoWidth;
-        intrinsicH = element.videoHeight;
+        intrinsicW = element.videoWidth || 0;
+        intrinsicH = element.videoHeight || 0;
       } else if (tagName === "canvas") {
-        intrinsicW = element.width;
-        intrinsicH = element.height;
-      }
-
-      if (intrinsicW && intrinsicH) {
-        const aspect = intrinsicW / intrinsicH;
-        if (aspect >= 1) {
-          canvasWidth = MAX_SIDE;
-          canvasHeight = Math.round(MAX_SIDE / aspect);
-        } else {
-          canvasHeight = MAX_SIDE;
-          canvasWidth = Math.round(MAX_SIDE * aspect);
+        intrinsicW = element.width || 0;
+        intrinsicH = element.height || 0;
+      } else if (tagName === "svg") {
+        const viewBox = element.getAttribute("viewBox");
+        if (viewBox) {
+          const vb = viewBox.split(/[ ,]+/).map(Number);
+          if (vb.length === 4) {
+            intrinsicW = vb[2];
+            intrinsicH = vb[3];
+          }
         }
-      } else {
-        // Ultimate fallback – at least make it 1×1 to avoid errors
-        canvasWidth = canvasHeight = 256;
       }
-    }
 
-    // Clamp to MAX_SIDE just in case the bounding box is huge
-    if (canvasWidth > MAX_SIDE || canvasHeight > MAX_SIDE) {
-      const aspect = canvasWidth / canvasHeight;
+      if (!intrinsicW || !intrinsicH) {
+        const rect = element.getBoundingClientRect();
+        intrinsicW = rect.width;
+        intrinsicH = rect.height;
+      }
+
+      const aspect = intrinsicW / intrinsicH || 1;
       if (aspect >= 1) {
         canvasWidth = MAX_SIDE;
         canvasHeight = Math.round(MAX_SIDE / aspect);
@@ -667,6 +651,11 @@
         canvasHeight = MAX_SIDE;
         canvasWidth = Math.round(MAX_SIDE * aspect);
       }
+    } else {
+      const rect = element.getBoundingClientRect();
+      const scale = 4;
+      canvasWidth = Math.min(MAX_SIDE, Math.round(rect.width * scale));
+      canvasHeight = Math.min(MAX_SIDE, Math.round(rect.height * scale));
     }
 
     canvas.width = canvasWidth;
