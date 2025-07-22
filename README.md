@@ -240,8 +240,10 @@ A paid commercial licence is required for any project that is commercial in natu
 
 Commercial Licensing
 
-**Single Licence:** For one commercial website or project.<br>
+**Single Licence:**<br>
+`For one commercial website or project.`<br><br>
 <a href="https://pay.naughtyduk.com/b/fZu14n28abkraJG9RH9sk09" target="_blank" rel="noopener noreferrer"><img src="./assets/license-btn.svg" alt="Get License Button"></a>
 
-**Extended Licence:** For up to five commercial projects.<br>
+**Extended Licence:**<br>
+`For up to five commercial projects.`<br><br>
 <a href="https://pay.naughtyduk.com/b/fZuaEX8wy1JRbNK8ND9sk0a" target="_blank" rel="noopener noreferrer"><img src="./assets/license-btn.svg" alt="Get License Button"></a>
