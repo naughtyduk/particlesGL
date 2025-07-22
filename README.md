@@ -9,7 +9,7 @@
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
-<a href="https://particlesgl.naughtyduk.com" target="_blank" rel="noopener noreferrer"><strong>TRY IT OUT</strong></a>
+<a href="https://particlesgl.naughtyduk.com" target="_blank" rel="noopener noreferrer"><img src="./assets/try-btn.svg" alt="Try It Out Button"></a>
 
 <a href="https://particlesgl.naughtyduk.com/demos/demo-1.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (3D)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-2.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (AUDIO)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-3.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (MULTIPLE)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-4.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (CAMERA)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-5.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (VIDEO)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-6.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (EMOJI)</strong></a>
 
@@ -241,7 +241,7 @@ A paid commercial licence is required for any project that is commercial in natu
 Commercial Licensing
 
 **Single Licence:** For one commercial website or project.<br>
-**[GET LICENSE](https://buy.stripe.com/fZu14n28abkraJG9RH9sk09)**
+<a href="https://pay.naughtyduk.com/b/fZu14n28abkraJG9RH9sk09" target="_blank" rel="noopener noreferrer"><img src="./assets/license-btn.svg" alt="Get License Button"></a>
 
 **Extended Licence:** For up to five commercial projects.<br>
-**[GET LICENSE](https://buy.stripe.com/fZuaEX8wy1JRbNK8ND9sk0a)**
+<a href="https://pay.naughtyduk.com/b/fZuaEX8wy1JRbNK8ND9sk0a" target="_blank" rel="noopener noreferrer"><img src="./assets/license-btn.svg" alt="Get License Button"></a>
