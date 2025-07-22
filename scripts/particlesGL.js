@@ -3,7 +3,7 @@
  * -----------------------------------------------------------------------------
  *
  * Author: NaughtyDuk© – https://particlesgl.naughtyduk.com
- * Licence: Dual License
+ * Licence: Dual Licence
  */
 
 (function () {
