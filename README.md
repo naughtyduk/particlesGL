@@ -238,7 +238,7 @@ For personal websites, portfolios, academic projects, and other non-commercial a
 
 A paid commercial licence is required for any project that is commercial in nature. This includes websites for businesses, projects that generate revenue, or use in any proprietary software.
 
-Commercial Licensing
+### Licensing Options
 
 **Single Licence:**<br>
 `For one commercial website or project.`<br><br>
