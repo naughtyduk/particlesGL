@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo 1 - particlesGL WebGL - NaughtyDuk©</title>
+    <meta
+      name="description"
+      content="Explore a 3D model transformed into an interactive particle system with particlesGL. Mouse over to see the displacement effect."
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, WebGL, 3D, particles, javascript, interactive, naughtyduk"
+    />
+    <meta name="author" content="NaughtyDuk" />
+    <link
+      rel="canonical"
+      href="https://particlesgl.naughtyduk.com/demos/demo-1"
+    />
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <meta
+      property="og:title"
+      content="Demo 1 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      property="og:description"
+      content="Explore a 3D model transformed into an interactive particle system with particlesGL. Mouse over to see the displacement effect."
+    />
+    <meta
+      property="og:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://particlesgl.naughtyduk.com/demos/demo-1"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Demo 1 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      name="twitter:description"
+      content="Explore a 3D model transformed into an interactive particle system with particlesGL. Mouse over to see the displacement effect."
+    />
+    <meta
+      name="twitter:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <style>
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+      body {
+        margin: 0;
+        background-color: #eae9ec;
+        color: #323232;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+      /* The target element now only needs a class and the data attribute */
+      .particle-model-target {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      /* Global Navigation Styles */
+      .global-nav {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .nav-container {
+        background: rgb(9 9 11 / 85%);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 0.5px solid #1e1e20;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+      }
+
+      .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #fafafa;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggle:hover {
+        background: rgb(39 39 42 / 50%);
+      }
+
+      .nav-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .nav-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-menu {
+        max-height: 300px;
+      }
+
+      .nav-item {
+        display: block;
+        padding: 10px 16px;
+        color: #a1a1aa;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        border-top: 0.5px solid #1e1e20;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background: rgb(39 39 42 / 50%);
+        color: #fafafa;
+      }
+
+      .nav-item.active {
+        color: #fafafa;
+        background: rgb(39 39 42 / 30%);
+      }
+
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #fafafa;
+      }
+
+      @media (max-width: 768px) {
+        .global-nav {
+          top: 0.5rem;
+          left: 0.5rem;
+        }
+
+        .nav-toggle {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+
+        .nav-item {
+          padding: 8px 14px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+      <div class="nav-container">
+        <button
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span>Demos</span>
+          <svg viewBox="0 0 16 16">
+            <path d="M8 11L3 6h10l-5 5z" />
+          </svg>
+        </button>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-item">Index</a>
+          <a href="demo-1.html" class="nav-item active">D1 - 3D</a>
+          <a href="demo-2.html" class="nav-item">D2 - Audio</a>
+          <a href="demo-3.html" class="nav-item">D3 - Multiple</a>
+          <a href="demo-4.html" class="nav-item">D4 - Camera</a>
+          <a href="demo-5.html" class="nav-item">D5 - Video</a>
+          <a href="demo-6.html" class="nav-item">D6 - Emoji</a>
+        </div>
+      </div>
+    </nav>
+
+    <div
+      class="particle-model-target"
+      data-model-src="../assets/Duk_Animated.gltf"
+    ></div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+
+    <!-- particlesGL Library -->
+    <script src="/scripts/particlesGL.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (typeof particlesGL === "undefined") {
+          console.error("particlesGL library not found.");
+          return;
+        }
+
+        // Initialize particlesGL - it will automatically find and process the 3D model.
+        const particleEffect = particlesGL({
+          target: ".particle-model-target",
+          character: "•",
+          particleSize: 0.075,
+          particleColor: "#3b3b3b",
+          modelScale: 1.5, // Controls the overall size of the model
+          tilt: true,
+          tiltFactor: 0.1,
+          tiltSpeed: 0.05,
+          displaceStrength: 0.2,
+          displaceRadius: 0.11,
+          velocityInfluence: 0.16,
+          returnSpeed: 0.01,
+        });
+
+        // GUI Controls for live tweaking
+        if (typeof lil !== "undefined" && particleEffect) {
+          const gui = new lil.GUI();
+          const folder = gui.addFolder("particlesGL Effect");
+          const controls = particleEffect.options;
+
+          // Tilt Controls
+          folder
+            .add(controls, "tilt")
+            .name("tilt")
+            .onChange((value) => particleEffect.updateOptions({ tilt: value }));
+          folder
+            .add(controls, "tiltFactor", 0, 1, 0.01)
+            .name("tiltFactor")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltFactor: value })
+            );
+          folder
+            .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+            .name("tiltSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltSpeed: value })
+            );
+
+          // Particle Controls
+          folder
+            .add(controls, "particleSize", 0.005, 0.1, 0.001)
+            .name("particleSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ particleSize: value })
+            );
+
+          // Displace Controls
+          folder
+            .add(controls, "displaceStrength", 0, 2, 0.1)
+            .name("displaceStrength")
+            .onChange((value) =>
+              particleEffect.updateOptions({ displaceStrength: value })
+            );
+          folder
+            .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+            .name("displaceRadius")
+            .onChange((value) =>
+              particleEffect.updateOptions({ displaceRadius: value })
+            );
+          folder
+            .add(controls, "velocityInfluence", 0, 2, 0.01)
+            .name("velocityInfluence")
+            .onChange((value) =>
+              particleEffect.updateOptions({ velocityInfluence: value })
+            );
+          folder
+            .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+            .name("returnSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ returnSpeed: value })
+            );
+
+          // Character & Appearance
+          folder
+            .add(controls, "character")
+            .name("character")
+            .onChange((value) => {
+              particleEffect.updateOptions({ character: value });
+            });
+
+          folder
+            .addColor(controls, "particleColor")
+            .name("particleColor")
+            .onChange((value) => {
+              particleEffect.updateOptions({ particleColor: value });
+            });
+
+          folder
+            .add(controls, "fontSize", 12, 96, 1)
+            .name("fontSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ fontSize: value })
+            );
+
+          folder
+            .add(controls, "fontFamily")
+            .name("fontFamily")
+            .onChange((value) => {
+              particleEffect.updateOptions({ fontFamily: value });
+            });
+
+          folder.close();
+        }
+      });
+    </script>
+
+    <script>
+      /* Global Navigation Setup */
+      document.addEventListener("DOMContentLoaded", () => {
+        const navToggle = document.querySelector(".nav-toggle");
+        const navContainer = document.querySelector(".nav-container");
+
+        if (navToggle && navContainer) {
+          navToggle.addEventListener("click", () => {
+            const isExpanded = navContainer.classList.contains("expanded");
+            navContainer.classList.toggle("expanded");
+            navToggle.setAttribute("aria-expanded", !isExpanded);
+          });
+
+          // Close navigation when clicking outside
+          document.addEventListener("click", (e) => {
+            if (!navContainer.contains(e.target)) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+
+          // Close navigation when pressing Escape
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              navContainer.classList.contains("expanded")
+            ) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

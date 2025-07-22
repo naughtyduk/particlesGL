@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo 2 - particlesGL WebGL - NaughtyDuk©</title>
+    <meta
+      name="description"
+      content="Watch particlesGL react to audio in real-time. This demo visualises sound frequencies as a dynamic particle animation."
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, WebGL, audio, visualization, particles, javascript, interactive, naughtyduk"
+    />
+    <meta name="author" content="NaughtyDuk" />
+    <link
+      rel="canonical"
+      href="https://particlesgl.naughtyduk.com/demos/demo-2"
+    />
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <meta
+      property="og:title"
+      content="Demo 2 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      property="og:description"
+      content="Watch particlesGL react to audio in real-time. This demo visualises sound frequencies as a dynamic particle animation."
+    />
+    <meta
+      property="og:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://particlesgl.naughtyduk.com/demos/demo-2"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Demo 2 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      name="twitter:description"
+      content="Watch particlesGL react to audio in real-time. This demo visualises sound frequencies as a dynamic particle animation."
+    />
+    <meta
+      name="twitter:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <style>
+      body {
+        margin: 0;
+        background-color: #111111;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      .visualizer-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #circle-target {
+        width: 1vw;
+        height: 1vw;
+        position: relative;
+        opacity: 1;
+        padding: 30vw 50vw;
+      }
+
+      .track-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+        justify-content: center;
+      }
+
+      .track-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #fafafa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-left: -5px;
+        margin-top: 5px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .title-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .player-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .progress-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: 4px;
+      }
+
+      /* ShadCN Dark Audio Controls */
+      .audio-controls {
+        position: fixed;
+        bottom: 2rem;
+        left: 1rem;
+        right: 1rem;
+        background: rgb(9 9 11 / 20%);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 1000;
+        border: 0.5px solid #1e1e20;
+        margin: 0 auto;
+        max-width: 640px;
+      }
+
+      .play-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: transparent;
+        border: 1px solid #27272a;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .play-button:hover {
+        background: #27272a;
+        transform: scale(1.05);
+      }
+
+      .play-button svg {
+        width: 18px;
+        height: 18px;
+        fill: #fafafa;
+      }
+
+      .progress-container {
+        flex: 1;
+        height: 4px;
+        background: #3f3f46;
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .progress-bar {
+        position: relative;
+        height: 100%;
+        background: #fafafa;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.1s ease;
+      }
+
+      .progress-bar::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translate(50%, -50%);
+        width: 16px;
+        height: 4px;
+        background-color: #fafafa;
+        border-radius: 999px;
+        transition: transform 0.2s ease;
+      }
+
+      .volume-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .volume-slider {
+        width: 80px;
+        height: 4px;
+        background: #27272a;
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .volume-bar {
+        height: 100%;
+        background: #fafafa;
+        border-radius: 2px;
+        width: 70%;
+      }
+
+      .time-display {
+        font-size: 12px;
+        color: #a1a1aa;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      /* Global Navigation Styles */
+      .global-nav {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .nav-container {
+        background: rgb(9 9 11 / 85%);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 0.5px solid #1e1e20;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+      }
+
+      .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #fafafa;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggle:hover {
+        background: rgb(39 39 42 / 50%);
+      }
+
+      .nav-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .nav-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-menu {
+        max-height: 300px;
+      }
+
+      .nav-item {
+        display: block;
+        padding: 10px 16px;
+        color: #a1a1aa;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        border-top: 0.5px solid #1e1e20;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background: rgb(39 39 42 / 50%);
+        color: #fafafa;
+      }
+
+      .nav-item.active {
+        color: #fafafa;
+        background: rgb(39 39 42 / 30%);
+      }
+
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #fafafa;
+      }
+
+      @media (max-width: 768px) {
+        .global-nav {
+          top: 0.5rem;
+          left: 0.5rem;
+        }
+
+        .nav-toggle {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+
+        .nav-item {
+          padding: 8px 14px;
+          font-size: 12px;
+        }
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+      <div class="nav-container">
+        <button
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span>Demos</span>
+          <svg viewBox="0 0 16 16">
+            <path d="M8 11L3 6h10l-5 5z" />
+          </svg>
+        </button>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-item">Index</a>
+          <a href="demo-1.html" class="nav-item">D1 - 3D</a>
+          <a href="demo-2.html" class="nav-item active">D2 - Audio</a>
+          <a href="demo-3.html" class="nav-item">D3 - Multiple</a>
+          <a href="demo-4.html" class="nav-item">D4 - Camera</a>
+          <a href="demo-5.html" class="nav-item">D5 - Video</a>
+          <a href="demo-6.html" class="nav-item">D6 - Emoji</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="visualizer-container">
+      <div id="circle-target"></div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls">
+      <button class="play-button" id="playButton">
+        <svg id="playIcon" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
+
+      <div class="player-main">
+        <div class="title-section">
+          <div class="track-title">Swoon - Adrenaline</div>
+          <div class="volume-slider" id="volumeSlider">
+            <div class="volume-bar" id="volumeBar"></div>
+          </div>
+        </div>
+        <div class="progress-section">
+          <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden Audio Element -->
+    <audio id="audioElement" preload="auto">
+      <source src="../assets/swoon-adrenaline.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+
+    <!-- particlesGL Library -->
+    <script src="/scripts/particlesGL.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        let audioContext;
+        let analyser;
+        let dataArray;
+        let particleEffect;
+        let isPlaying = false;
+        let isScrubbing = false;
+
+        const audioElement = document.getElementById("audioElement");
+        const playButton = document.getElementById("playButton");
+        const playIcon = document.getElementById("playIcon");
+        const pauseIcon = document.getElementById("pauseIcon");
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        const timeDisplay = document.getElementById("timeDisplay");
+        const volumeSlider = document.getElementById("volumeSlider");
+        const volumeBar = document.getElementById("volumeBar");
+
+        // Create SINGLE circle geometry
+        function createCircleGeometry(radius = 0.3, segments = 128) {
+          const positions = [];
+          const angleStep = (Math.PI * 2) / segments;
+
+          for (let i = 0; i < segments; i++) {
+            const angle = i * angleStep;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            positions.push(x, y, 0);
+          }
+
+          return positions;
+        }
+
+        // Initialize particlesGL with single circle
+        if (typeof particlesGL !== "undefined") {
+          const circleGeometry = createCircleGeometry(0.4, 128);
+
+          particleEffect = particlesGL({
+            target: "#circle-target",
+            geometry: circleGeometry,
+            character: "●",
+            particleSize: 0.06,
+            particleColor: "#ff3333",
+            tilt: false,
+            tiltFactor: 0,
+            tiltSpeed: 0,
+            displaceStrength: 0.1,
+            displaceRadius: 0.1,
+            velocityInfluence: 0.5,
+            returnSpeed: 0.05,
+          });
+
+          console.log(
+            "particlesGL initialized with",
+            circleGeometry.length / 3,
+            "particles"
+          );
+        }
+
+        // Start the audio analysis loop immediately
+        analyzeAudio();
+
+        // Initialize Web Audio API
+        async function initAudio() {
+          try {
+            audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(audioElement);
+            analyser = audioContext.createAnalyser();
+
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+
+            // Start audio analysis loop
+            analyzeAudio();
+          } catch (error) {
+            console.error("Error initializing audio:", error);
+          }
+        }
+
+        // Audio analysis and particle updates
+        function analyzeAudio() {
+          requestAnimationFrame(analyzeAudio);
+
+          if (!analyser || !particleEffect) {
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+
+          // Calculate frequency bands
+          const bassRange = dataArray.slice(0, 10);
+          const midRange = dataArray.slice(10, 50);
+          const highRange = dataArray.slice(50, 128);
+
+          const bassAvg =
+            bassRange.reduce((a, b) => a + b, 0) / bassRange.length;
+          const midAvg = midRange.reduce((a, b) => a + b, 0) / midRange.length;
+          const highAvg =
+            highRange.reduce((a, b) => a + b, 0) / highRange.length;
+          const overallAvg =
+            dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+
+          // Normalize audio levels
+          const bassNorm = bassAvg / 255;
+          const midNorm = midAvg / 255;
+          const highNorm = highAvg / 255;
+          const overallNorm = overallAvg / 255;
+
+          // Create outward pulsing effect - particles shoot out from circle
+          const pulseIntensity = Math.max(bassNorm, midNorm, highNorm);
+
+          // Particle size grows with bass
+          const baseSize = 0.04;
+          const maxSize = 0.12;
+          const newSize = baseSize + bassNorm * (maxSize - baseSize);
+
+          // Displacement strength - how forcefully particles are pushed outward
+          const baseDisplacement = 0.1;
+          const maxDisplacement = 1.5;
+          const newDisplacement =
+            baseDisplacement +
+            pulseIntensity * (maxDisplacement - baseDisplacement);
+
+          // Displacement radius - how far from center the effect reaches
+          const baseRadius = 0.5;
+          const maxRadius = 1.5;
+          const newRadius = baseRadius + overallNorm * (maxRadius - baseRadius);
+
+          // Color changes with frequency
+          const redIntensity = Math.floor(200 + bassNorm * 55);
+          const greenIntensity = Math.floor(midNorm * 100);
+          const blueIntensity = Math.floor(highNorm * 80);
+          const newColor = `rgb(${redIntensity}, ${greenIntensity}, ${blueIntensity})`;
+
+          // Velocity for smooth outward movement
+          const baseVelocity = 0.3;
+          const maxVelocity = 1.5;
+          const newVelocity =
+            baseVelocity + pulseIntensity * (maxVelocity - baseVelocity);
+
+          // Return speed - how quickly particles come back to circle
+          const baseReturn = 0.02;
+          const maxReturn = 0.1;
+          const newReturn =
+            baseReturn + (1 - pulseIntensity) * (maxReturn - baseReturn);
+
+          // Update particle effect
+          particleEffect.updateOptions({
+            particleSize: newSize,
+            displaceStrength: newDisplacement,
+            displaceRadius: newRadius,
+            particleColor: newColor,
+            velocityInfluence: newVelocity,
+            returnSpeed: newReturn,
+          });
+
+          // Debug audio levels occasionally
+          if (Math.random() < 0.005) {
+            console.log("Audio visualizer:", {
+              bass: bassNorm.toFixed(2),
+              mid: midNorm.toFixed(2),
+              high: highNorm.toFixed(2),
+              pulse: pulseIntensity.toFixed(2),
+              displacement: newDisplacement.toFixed(2),
+              radius: newRadius.toFixed(2),
+            });
+          }
+        }
+
+        // Play/Pause functionality
+        playButton.addEventListener("click", async () => {
+          if (!audioContext) {
+            await initAudio();
+          }
+
+          if (audioContext.state === "suspended") {
+            await audioContext.resume();
+          }
+
+          if (isPlaying) {
+            audioElement.pause();
+            playIcon.style.display = "block";
+            pauseIcon.style.display = "none";
+            isPlaying = false;
+          } else {
+            audioElement.play();
+            playIcon.style.display = "none";
+            pauseIcon.style.display = "block";
+            isPlaying = true;
+          }
+        });
+
+        // Progress bar functionality
+        audioElement.addEventListener("timeupdate", () => {
+          if (isScrubbing) return; // Don't update UI while scrubbing
+
+          const progress =
+            (audioElement.currentTime / audioElement.duration) * 100;
+          progressBar.style.width = `${progress}%`;
+
+          const currentTime = formatTime(audioElement.currentTime);
+          const duration = formatTime(audioElement.duration);
+          timeDisplay.textContent = `${currentTime} / ${duration}`;
+        });
+
+        const seek = (e) => {
+          const rect = progressContainer.getBoundingClientRect();
+          const clientX = e.clientX ?? e.touches[0].clientX;
+          const progress = (clientX - rect.left) / rect.width;
+          const clampedProgress = Math.max(0, Math.min(1, progress));
+
+          progressBar.style.width = `${clampedProgress * 100}%`;
+          audioElement.currentTime = clampedProgress * audioElement.duration;
+        };
+
+        progressContainer.addEventListener("mousedown", (e) => {
+          isScrubbing = true;
+          seek(e);
+
+          const onMouseMove = (moveEvent) => {
+            if (isScrubbing) {
+              seek(moveEvent);
+            }
+          };
+
+          const onMouseUp = () => {
+            isScrubbing = false;
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+          };
+
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+        });
+
+        progressContainer.addEventListener(
+          "touchstart",
+          (e) => {
+            isScrubbing = true;
+            seek(e);
+
+            const onTouchMove = (moveEvent) => {
+              if (isScrubbing) {
+                seek(moveEvent);
+              }
+            };
+
+            const onTouchEnd = () => {
+              isScrubbing = false;
+              document.removeEventListener("touchmove", onTouchMove);
+              document.removeEventListener("touchend", onTouchEnd);
+            };
+
+            document.addEventListener("touchmove", onTouchMove);
+            document.addEventListener("touchend", onTouchEnd);
+          },
+          { passive: true }
+        );
+
+        // Volume control
+        volumeSlider.addEventListener("click", (e) => {
+          const rect = volumeSlider.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const volume = clickX / rect.width;
+          audioElement.volume = Math.max(0, Math.min(1, volume));
+          volumeBar.style.width = volume * 100 + "%";
+        });
+
+        // Format time helper
+        function formatTime(seconds) {
+          if (isNaN(seconds)) return "0:00";
+          const mins = Math.floor(seconds / 60);
+          const secs = Math.floor(seconds % 60);
+          return `${mins}:${secs.toString().padStart(2, "0")}`;
+        }
+
+        // GUI Controls
+        if (typeof lil !== "undefined" && particleEffect) {
+          const gui = new lil.GUI();
+          const folder = gui.addFolder("particlesGL Effect");
+          const controls = particleEffect.options;
+
+          // Tilt Controls (disabled for this demo but kept for consistency)
+          folder
+            .add(controls, "tilt")
+            .name("tilt")
+            .onChange((value) => particleEffect.updateOptions({ tilt: value }))
+            .disable();
+          folder
+            .add(controls, "tiltFactor", 0, 1, 0.01)
+            .name("tiltFactor")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltFactor: value })
+            )
+            .disable();
+          folder
+            .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+            .name("tiltSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ tiltSpeed: value })
+            )
+            .disable();
+
+          // Particle Controls
+          folder
+            .add(controls, "particleSize", 0.005, 0.1, 0.001)
+            .name("particleSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ particleSize: value })
+            );
+
+          // Displace Controls
+          folder
+            .add(controls, "displaceStrength", 0, 2, 0.1)
+            .name("displaceStrength")
+            .onChange((value) =>
+              particleEffect.updateOptions({ displaceStrength: value })
+            );
+          folder
+            .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+            .name("displaceRadius")
+            .onChange((value) =>
+              particleEffect.updateOptions({ displaceRadius: value })
+            );
+          folder
+            .add(controls, "velocityInfluence", 0, 2, 0.01)
+            .name("velocityInfluence")
+            .onChange((value) =>
+              particleEffect.updateOptions({ velocityInfluence: value })
+            );
+          folder
+            .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+            .name("returnSpeed")
+            .onChange((value) =>
+              particleEffect.updateOptions({ returnSpeed: value })
+            );
+
+          // Character & Appearance
+          folder
+            .add(controls, "character")
+            .name("character")
+            .onChange((value) => {
+              particleEffect.updateOptions({ character: value });
+            });
+
+          folder
+            .addColor(controls, "particleColor")
+            .name("particleColor")
+            .onChange((value) => {
+              particleEffect.updateOptions({ particleColor: value });
+            });
+
+          folder
+            .add(controls, "fontSize", 12, 96, 1)
+            .name("fontSize")
+            .onChange((value) =>
+              particleEffect.updateOptions({ fontSize: value })
+            )
+            .disable();
+
+          folder
+            .add(controls, "fontFamily")
+            .name("fontFamily")
+            .onChange((value) => {
+              particleEffect.updateOptions({ fontFamily: value });
+            })
+            .disable();
+
+          folder.close();
+        }
+      });
+    </script>
+
+    <script>
+      /* Global Navigation Setup */
+      document.addEventListener("DOMContentLoaded", () => {
+        const navToggle = document.querySelector(".nav-toggle");
+        const navContainer = document.querySelector(".nav-container");
+
+        if (navToggle && navContainer) {
+          navToggle.addEventListener("click", () => {
+            const isExpanded = navContainer.classList.contains("expanded");
+            navContainer.classList.toggle("expanded");
+            navToggle.setAttribute("aria-expanded", !isExpanded);
+          });
+
+          // Close navigation when clicking outside
+          document.addEventListener("click", (e) => {
+            if (!navContainer.contains(e.target)) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+
+          // Close navigation when pressing Escape
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              navContainer.classList.contains("expanded")
+            ) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

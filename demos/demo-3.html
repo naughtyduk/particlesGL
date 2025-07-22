@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo 3 - particlesGL WebGL - NaughtyDuk©</title>
+    <meta
+      name="description"
+      content="See multiple particlesGL instances running on a single page, each with unique configurations and effects. Performance is optimized through a shared renderer."
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, WebGL, multiple instances, performance, particles, javascript, interactive, naughtyduk"
+    />
+    <meta name="author" content="NaughtyDuk" />
+    <link
+      rel="canonical"
+      href="https://particlesgl.naughtyduk.com/demos/demo-3"
+    />
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <meta
+      property="og:title"
+      content="Demo 3 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      property="og:description"
+      content="See multiple particlesGL instances running on a single page, each with unique configurations and effects. Performance is optimized through a shared renderer."
+    />
+    <meta
+      property="og:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://particlesgl.naughtyduk.com/demos/demo-3"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="particlesGL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Demo 3 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      name="twitter:description"
+      content="See multiple particlesGL instances running on a single page, each with unique configurations and effects. Performance is optimized through a shared renderer."
+    />
+    <meta
+      name="twitter:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <style>
+      @font-face {
+        font-family: "ProtoMono";
+        src: url("../assets/ProtoMono-Regular.woff2") format("woff2"),
+          url("../assets/ProtoMono-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --bg: #ffffff;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --border-hover: #cbd5e1;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --accent: #000000;
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "ProtoMono", "Courier New", monospace;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        font-weight: 400;
+      }
+
+      .gallery-container {
+        min-height: 100vh;
+        padding: 6rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4rem;
+        background: var(--bg);
+      }
+
+      .gallery-title {
+        text-align: center;
+        margin-bottom: 0;
+      }
+
+      .gallery-title h1 {
+        font-size: 2.5rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+      }
+
+      .gallery-title .subtitle {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        max-width: 1400px;
+        width: 100%;
+        position: relative;
+        z-index: 2;
+      }
+
+      .artwork-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      .artwork-frame {
+        position: relative;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.2s ease-in-out;
+        margin-bottom: 1.5rem;
+        width: 100%;
+        max-width: 100%;
+        contain: layout style;
+      }
+
+      .artwork-frame:hover {
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+      }
+
+      .artwork-image {
+        width: 100%;
+        max-width: 100%;
+        height: 38svh;
+        min-height: 280px;
+        object-fit: cover;
+        display: block;
+        transition: opacity 0.3s ease;
+        opacity: 0;
+      }
+
+      .artwork-plaque {
+        background: var(--surface);
+        width: 100%;
+        transition: all 0.2s ease;
+      }
+
+      .artwork-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
+      }
+
+      .plaque-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .artwork-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        align-self: flex-start;
+      }
+
+      .artwork-toggle-checkbox {
+        position: relative;
+        width: 36px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .artwork-toggle-checkbox input[type="checkbox"] {
+        opacity: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 20;
+      }
+
+      .artwork-checkbox-display {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: var(--border);
+        border-radius: 12px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .artwork-checkbox-display::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        background: var(--surface);
+        border-radius: 50%;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .artwork-toggle-checkbox
+        input[type="checkbox"]:checked
+        + .artwork-checkbox-display {
+        background: var(--accent);
+      }
+
+      .artwork-toggle-checkbox
+        input[type="checkbox"]:checked
+        + .artwork-checkbox-display::after {
+        transform: translateX(16px);
+        background: var(--surface);
+      }
+
+      .artwork-toggle-checkbox:hover .artwork-checkbox-display {
+        background: var(--border-hover);
+      }
+
+      .artwork-toggle-checkbox:hover
+        input[type="checkbox"]:checked
+        + .artwork-checkbox-display {
+        background: #374151;
+      }
+
+      .artwork-toggle-label {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+      }
+
+      .artwork-artist {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        letter-spacing: 0.025em;
+      }
+
+      .artwork-description {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* Fullscreen Button */
+      .fullscreen-button {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 15;
+        transition: all 0.2s ease-in-out;
+        backdrop-filter: blur(8px);
+        box-shadow: var(--shadow);
+      }
+
+      .fullscreen-button:hover {
+        background: var(--surface);
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-lg);
+        transform: scale(1.05);
+      }
+
+      .fullscreen-button svg {
+        width: 18px;
+        height: 18px;
+        fill: var(--text);
+        transition: fill 0.2s ease;
+      }
+
+      .fullscreen-button:hover svg {
+        fill: var(--accent);
+      }
+
+      /* Modal Overlay */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(12px);
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .modal-artwork {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        max-width: 80vw;
+        max-height: 80vh;
+        opacity: 0;
+        border-radius: 8px;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+
+      /* Global Navigation Styles */
+      .global-nav {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .nav-container {
+        background: rgb(9 9 11 / 85%);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 0.5px solid #1e1e20;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+      }
+
+      .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #fafafa;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggle:hover {
+        background: rgb(39 39 42 / 50%);
+      }
+
+      .nav-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .nav-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-menu {
+        max-height: 300px;
+      }
+
+      .nav-item {
+        display: block;
+        padding: 10px 16px;
+        color: #a1a1aa;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        border-top: 0.5px solid #1e1e20;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background: rgb(39 39 42 / 50%);
+        color: #fafafa;
+      }
+
+      .nav-item.active {
+        color: #fafafa;
+        background: rgb(39 39 42 / 30%);
+      }
+
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #fafafa;
+      }
+
+      @media (max-width: 768px) {
+        .global-nav {
+          top: 0.5rem;
+          left: 0.5rem;
+        }
+
+        .nav-toggle {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+
+        .nav-item {
+          padding: 8px 14px;
+          font-size: 12px;
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1200px) {
+        .gallery-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .gallery-container {
+          padding: 7rem 1rem;
+          gap: 3rem;
+        }
+
+        .gallery-title h1 {
+          font-size: 2rem;
+          letter-spacing: 0.03em;
+        }
+
+        .gallery-title .subtitle {
+          font-size: 0.8rem;
+        }
+
+        .gallery-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .artwork-image {
+          height: 240px;
+        }
+
+        .artwork-toggle-checkbox {
+          width: 32px;
+          height: 18px;
+        }
+
+        .artwork-checkbox-display::after {
+          width: 14px;
+          height: 14px;
+        }
+
+        .artwork-toggle-checkbox
+          input[type="checkbox"]:checked
+          + .artwork-checkbox-display::after {
+          transform: translateX(14px);
+        }
+
+        .artwork-toggle-label {
+          font-size: 0.7rem;
+        }
+
+        .fullscreen-button {
+          width: 32px;
+          height: 32px;
+        }
+
+        .fullscreen-button svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .gallery-container {
+          gap: 2rem;
+        }
+
+        .gallery-title h1 {
+          font-size: 1.75rem;
+        }
+
+        .artwork-image {
+          height: 200px;
+        }
+
+        .plaque-header {
+          gap: 0.5rem;
+        }
+
+        .fullscreen-button {
+          width: 28px;
+          height: 28px;
+        }
+
+        .fullscreen-button svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
+
+      /* Entrance animations */
+      .artwork-container {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+      }
+
+      .artwork-container:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .artwork-container:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .artwork-container:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .artwork-container:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .gallery-title {
+        opacity: 0;
+        animation: fadeIn 1s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+      <div class="nav-container">
+        <button
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span>Demos</span>
+          <svg viewBox="0 0 16 16">
+            <path d="M8 11L3 6h10l-5 5z" />
+          </svg>
+        </button>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-item">Index</a>
+          <a href="demo-1.html" class="nav-item">D1 - 3D</a>
+          <a href="demo-2.html" class="nav-item">D2 - Audio</a>
+          <a href="demo-3.html" class="nav-item active">D3 - Multiple</a>
+          <a href="demo-4.html" class="nav-item">D4 - Camera</a>
+          <a href="demo-5.html" class="nav-item">D5 - Video</a>
+          <a href="demo-6.html" class="nav-item">D6 - Emoji</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="gallery-container">
+      <!-- Gallery Title -->
+      <div class="gallery-title">
+        <h1 class="gallery-title-text particlesGL">Pixel Gallery</h1>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid">
+        <!-- Artwork 1 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/NDAG-_0000_Lucaspezeta.webp"
+              alt="Digital artwork By Lucas Pezeta"
+              class="artwork-image gallery-artwork"
+              id="artwork-1"
+            />
+            <button class="fullscreen-button" onclick="openModal(1)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="artwork-plaque">
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-1" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-1"
+                  class="artwork-toggle-label"
+                  id="particles-label-1"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Neon Dreams</h3>
+            </div>
+            <p class="artwork-artist">By Lucas Pezeta</p>
+          </div>
+        </div>
+
+        <!-- Artwork 2 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/ND-ART-002.webp"
+              alt="Digital artwork by NaughtyDuk"
+              class="artwork-image gallery-artwork"
+              id="artwork-2"
+            />
+            <button class="fullscreen-button" onclick="openModal(2)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="artwork-plaque">
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-2" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-2"
+                  class="artwork-toggle-label"
+                  id="particles-label-2"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Fractured Reality</h3>
+            </div>
+            <p class="artwork-artist">by NaughtyDuk</p>
+          </div>
+        </div>
+
+        <!-- Artwork 3 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/NDAG-_0001_Zaksheuskaya.webp"
+              alt="Digital artwork by Anni Roenkae"
+              class="artwork-image gallery-artwork"
+              id="artwork-3"
+            />
+            <button class="fullscreen-button" onclick="openModal(3)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="artwork-plaque">
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-3" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-3"
+                  class="artwork-toggle-label"
+                  id="particles-label-3"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Ethereal Visions</h3>
+            </div>
+            <p class="artwork-artist">by Anni Roenkae</p>
+          </div>
+        </div>
+
+        <!-- Artwork 4 -->
+        <div class="artwork-container">
+          <div class="artwork-frame">
+            <img
+              src="../assets/ND-ART-004.webp"
+              alt="Digital artwork by NaughtyDuk"
+              class="artwork-image gallery-artwork"
+              id="artwork-4"
+            />
+            <button class="fullscreen-button" onclick="openModal(4)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="artwork-plaque">
+            <div class="plaque-header">
+              <div class="artwork-toggle">
+                <div class="artwork-toggle-checkbox">
+                  <input type="checkbox" id="particles-toggle-4" checked />
+                  <div class="artwork-checkbox-display"></div>
+                </div>
+                <label
+                  for="particles-toggle-4"
+                  class="artwork-toggle-label"
+                  id="particles-label-4"
+                  >Enabled</label
+                >
+              </div>
+              <h3 class="artwork-title">Data Streams</h3>
+            </div>
+            <p class="artwork-artist">by NaughtyDuk</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="artworkModal">
+      <div class="modal-content">
+        <img src="" alt="" class="modal-artwork" id="modalImage" />
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
+
+    <!-- ASCII Effect Library -->
+    <script src="/scripts/particlesGL.min.js"></script>
+
+    <script>
+      /* Global particle effect variables */
+      let titleEffect;
+      let artworkEffects = [];
+      let modalEffect;
+      let activeModalArtworkNumber = null;
+
+      /* Helper to update both gallery and modal effects */
+      function updateBothEffects(artworkIndex, options) {
+        // Update the main gallery effect
+        if (artworkEffects[artworkIndex]) {
+          artworkEffects[artworkIndex].updateOptions(options);
+        }
+
+        // Update the modal effect if it's currently showing this artwork
+        if (modalEffect && activeModalArtworkNumber === artworkIndex + 1) {
+          modalEffect.updateOptions(options);
+        }
+      }
+
+      /* DOM Content Loaded */
+      document.addEventListener("DOMContentLoaded", () => {
+        /* Wait for fonts to be loaded */
+        const fontsReady =
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready
+            : Promise.resolve();
+
+        fontsReady.then(() => {
+          /* Initialize Gallery Title Effect */
+          if (typeof particlesGL !== "undefined") {
+            titleEffect = particlesGL({
+              target: ".gallery-title-text",
+              character: "•",
+              particleSize: 0.079,
+              particleSpacing: 0.003,
+              particleColor: "#2c3e50",
+              tilt: false,
+              displaceStrength: 0.8,
+              displaceRadius: 0.15,
+              velocityInfluence: 0.5,
+              returnSpeed: 0.04,
+              sampling: 3,
+              fontSize: 52,
+              fontFamily: "Playfair Display",
+              on: {
+                init: function (instance) {
+                  console.log("Gallery title particles initialized!", instance);
+                },
+              },
+            });
+          }
+
+          /* Initialize Individual Artwork Effects */
+          setTimeout(() => {
+            if (typeof particlesGL !== "undefined") {
+              // Artwork 1 - Neon Dreams By Lucas Pezeta
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-1",
+                  character: "+++",
+                  particleSize: 0.075,
+                  particleSpacing: 0.004,
+                  particleColor: "sample",
+                  tilt: true,
+                  tiltFactor: 0.3,
+                  tiltSpeed: 0.08,
+                  displaceStrength: 1.2,
+                  displaceRadius: 0.2,
+                  velocityInfluence: 0.8,
+                  returnSpeed: 0.03,
+                  sampling: 6,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 1 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+
+              // Artwork 2 - Fractured Reality by NaughtyDuk
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-2",
+                  character: "NAUGHTY",
+                  particleSize: 0.075,
+                  particleSpacing: 0.0035,
+                  particleColor: "sample",
+                  tilt: true,
+                  tiltFactor: 0.25,
+                  tiltSpeed: 0.06,
+                  displaceStrength: 1.5,
+                  displaceRadius: 0.18,
+                  velocityInfluence: 1.0,
+                  returnSpeed: 0.025,
+                  sampling: 5,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 2 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+
+              // Artwork 3 - Ethereal Visions by Anni Roenkae
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-3",
+                  character: "DUK",
+                  particleSize: 0.1,
+                  particleSpacing: 0.0054,
+                  particleColor: "sample",
+                  tilt: true,
+                  tiltFactor: 0.2,
+                  tiltSpeed: 0.05,
+                  displaceStrength: 1.6,
+                  displaceRadius: 0.12,
+                  velocityInfluence: 0.6,
+                  returnSpeed: 0.05,
+                  sampling: 4,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 3 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+
+              // Artwork 4 - Data Streams by NaughtyDuk
+              artworkEffects.push(
+                particlesGL({
+                  target: "#artwork-4",
+                  character: "{|}8{|}",
+                  particleSize: 0.075,
+                  particleSpacing: 0.0038,
+                  particleColor: "sample",
+                  tilt: true,
+                  tiltFactor: 0.35,
+                  tiltSpeed: 0.07,
+                  displaceStrength: 1.1,
+                  displaceRadius: 0.22,
+                  velocityInfluence: 0.7,
+                  returnSpeed: 0.06,
+                  sampling: 5,
+                  on: {
+                    init: function (instance) {
+                      console.log("Artwork 4 particles initialized!", instance);
+                    },
+                  },
+                })
+              );
+            }
+
+            /* Setup Artwork Effects GUI Controls */
+            setTimeout(() => {
+              if (typeof lil !== "undefined" && window.particleGUI) {
+                const { gui, folder } = window.particleGUI;
+
+                // Artwork Effects Controls
+                artworkEffects.forEach((effect, index) => {
+                  if (effect) {
+                    const artworkFolder = folder.addFolder(
+                      `Artwork ${index + 1}`
+                    );
+                    const controls = effect.options;
+                    const artworkIndex = index; // Capture index for closure
+
+                    // Tilt Controls
+                    artworkFolder
+                      .add(controls, "tilt")
+                      .name("tilt")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { tilt: value });
+                      });
+
+                    artworkFolder
+                      .add(controls, "tiltFactor", 0, 1, 0.01)
+                      .name("tiltFactor")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { tiltFactor: value });
+                      });
+
+                    artworkFolder
+                      .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+                      .name("tiltSpeed")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { tiltSpeed: value });
+                      });
+
+                    // Particle Controls
+                    artworkFolder
+                      .add(controls, "particleSize", 0.005, 0.1, 0.001)
+                      .name("particleSize")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          particleSize: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+                      .name("particleSpacing")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          particleSpacing: value,
+                        });
+                      });
+
+                    // Displace Controls
+                    artworkFolder
+                      .add(controls, "displaceStrength", 0, 2, 0.1)
+                      .name("displaceStrength")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          displaceStrength: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+                      .name("displaceRadius")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          displaceRadius: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "velocityInfluence", 0, 2, 0.01)
+                      .name("velocityInfluence")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, {
+                          velocityInfluence: value,
+                        });
+                      });
+
+                    artworkFolder
+                      .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+                      .name("returnSpeed")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { returnSpeed: value });
+                      });
+
+                    // Rendering Controls
+                    artworkFolder
+                      .add(controls, "sampling", 1, 10, 1)
+                      .name("sampling")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { sampling: value });
+                      });
+
+                    // Character selection (this will cause reinit)
+                    const characterOptions = {
+                      character: controls.character,
+                      setCharacter: function (newChar) {
+                        updateBothEffects(artworkIndex, { character: newChar });
+                      },
+                    };
+
+                    artworkFolder
+                      .add(characterOptions, "character")
+                      .name("character")
+                      .onChange((value) => {
+                        characterOptions.setCharacter(value);
+                      });
+
+                    // Color sampling toggle
+                    const colorOptions = {
+                      particleColor: controls.particleColor,
+                      useColorSampling: controls.particleColor === "sample",
+                      setColor: function (newColor) {
+                        updateBothEffects(artworkIndex, {
+                          particleColor: newColor,
+                        });
+                      },
+                    };
+
+                    artworkFolder
+                      .add(colorOptions, "useColorSampling")
+                      .name("useColorSampling")
+                      .onChange((value) => {
+                        const newColor = value ? "sample" : "#8c8c8c";
+                        colorOptions.particleColor = newColor;
+                        updateBothEffects(artworkIndex, {
+                          particleColor: newColor,
+                        });
+                      });
+
+                    // Color picker (only active when not sampling)
+                    if (controls.particleColor !== "sample") {
+                      artworkFolder
+                        .addColor(colorOptions, "particleColor")
+                        .name("particleColor")
+                        .onChange((value) => {
+                          colorOptions.setColor(value);
+                        });
+                    }
+
+                    // Font Controls
+                    artworkFolder
+                      .add(controls, "fontSize", 12, 72, 1)
+                      .name("fontSize")
+                      .onChange((value) => {
+                        updateBothEffects(artworkIndex, { fontSize: value });
+                      });
+
+                    const fontOptions = {
+                      fontFamily: controls.fontFamily,
+                      setFont: function (newFont) {
+                        updateBothEffects(artworkIndex, {
+                          fontFamily: newFont,
+                        });
+                      },
+                    };
+
+                    artworkFolder
+                      .add(fontOptions, "fontFamily", [
+                        "monospace",
+                        "Arial",
+                        "Helvetica",
+                        "Georgia",
+                        "Times New Roman",
+                      ])
+                      .name("fontFamily")
+                      .onChange((value) => {
+                        fontOptions.setFont(value);
+                      });
+
+                    artworkFolder.close();
+                  }
+                });
+
+                folder.close();
+              }
+            }, 100);
+          }, 500);
+
+          /* Setup Individual Artwork Toggle Controls */
+          setTimeout(() => {
+            setupArtworkToggleControls();
+          }, 600);
+
+          /* Initialize GUI Controls */
+          if (typeof lil !== "undefined") {
+            const gui = new lil.GUI();
+            const folder = gui.addFolder("Gallery Particle Effects");
+
+            // Title Effect Controls
+            if (titleEffect) {
+              const titleFolder = folder.addFolder("Gallery Title");
+              const titleControls = titleEffect.options;
+
+              // Tilt Controls
+              titleFolder
+                .add(titleControls, "tilt")
+                .name("tilt")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ tilt: value });
+                });
+
+              titleFolder
+                .add(titleControls, "tiltFactor", 0, 1, 0.01)
+                .name("tiltFactor")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ tiltFactor: value });
+                });
+
+              titleFolder
+                .add(titleControls, "tiltSpeed", 0.01, 0.2, 0.01)
+                .name("tiltSpeed")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ tiltSpeed: value });
+                });
+
+              // Particle Controls
+              titleFolder
+                .add(titleControls, "particleSize", 0.005, 0.1, 0.001)
+                .name("particleSize")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ particleSize: value });
+                });
+
+              titleFolder
+                .add(titleControls, "particleSpacing", 0.001, 0.01, 0.0001)
+                .name("particleSpacing")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ particleSpacing: value });
+                });
+
+              // Displace Controls
+              titleFolder
+                .add(titleControls, "displaceStrength", 0, 2, 0.1)
+                .name("displaceStrength")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ displaceStrength: value });
+                });
+
+              titleFolder
+                .add(titleControls, "displaceRadius", 0.01, 0.5, 0.01)
+                .name("displaceRadius")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ displaceRadius: value });
+                });
+
+              titleFolder
+                .add(titleControls, "velocityInfluence", 0, 2, 0.01)
+                .name("velocityInfluence")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ velocityInfluence: value });
+                });
+
+              titleFolder
+                .add(titleControls, "returnSpeed", 0.01, 0.2, 0.01)
+                .name("returnSpeed")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ returnSpeed: value });
+                });
+
+              // Rendering Controls
+              titleFolder
+                .add(titleControls, "sampling", 1, 10, 1)
+                .name("sampling")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ sampling: value });
+                });
+
+              // Character selection
+              const titleCharacterOptions = {
+                character: titleControls.character,
+                setCharacter: function (newChar) {
+                  titleEffect.updateOptions({ character: newChar });
+                },
+              };
+
+              titleFolder
+                .add(titleCharacterOptions, "character")
+                .name("character")
+                .onChange((value) => {
+                  titleCharacterOptions.setCharacter(value);
+                });
+
+              // Color Controls
+              const titleColorOptions = {
+                particleColor: titleControls.particleColor,
+                setColor: function (newColor) {
+                  titleEffect.updateOptions({ particleColor: newColor });
+                },
+              };
+
+              titleFolder
+                .addColor(titleColorOptions, "particleColor")
+                .name("particleColor")
+                .onChange((value) => {
+                  titleColorOptions.setColor(value);
+                });
+
+              // Font Controls
+              titleFolder
+                .add(titleControls, "fontSize", 12, 72, 1)
+                .name("fontSize")
+                .onChange((value) => {
+                  titleEffect.updateOptions({ fontSize: value });
+                });
+
+              const titleFontOptions = {
+                fontFamily: titleControls.fontFamily,
+                setFont: function (newFont) {
+                  titleEffect.updateOptions({ fontFamily: newFont });
+                },
+              };
+
+              titleFolder
+                .add(titleFontOptions, "fontFamily", [
+                  "monospace",
+                  "Arial",
+                  "Helvetica",
+                  "Georgia",
+                  "Times New Roman",
+                ])
+                .name("fontFamily")
+                .onChange((value) => {
+                  titleFontOptions.setFont(value);
+                });
+
+              titleFolder.close();
+            }
+
+            // Store GUI reference for later use
+            window.particleGUI = { gui, folder };
+          }
+
+          console.log("Digital Art Gallery ready!", {
+            titleEffect,
+            artworkEffects,
+          });
+        });
+      });
+
+      /* Setup Individual Artwork Toggle Controls */
+      function setupArtworkToggleControls() {
+        // Setup toggle controls for each artwork
+        for (let i = 1; i <= 4; i++) {
+          const particlesToggle = document.getElementById(
+            `particles-toggle-${i}`
+          );
+          const particlesLabel = document.getElementById(
+            `particles-label-${i}`
+          );
+
+          if (!particlesToggle || !particlesLabel) continue;
+
+          // Get artwork elements
+          const artworkImage = document.getElementById(`artwork-${i}`);
+
+          // Particles toggle functionality
+          particlesToggle.addEventListener("change", function () {
+            // Find the canvas for this specific artwork
+            const canvas = document.querySelector(
+              `canvas[data-particles-target*="artwork-${i}"]`
+            );
+
+            if (this.checked) {
+              // Particles enabled
+              particlesLabel.textContent = "Enabled";
+
+              // Show particles
+              if (canvas) {
+                canvas.style.transition = "opacity 0.3s ease";
+                canvas.style.opacity = "1";
+              }
+
+              // Hide image (particlesGL library sets visibility: hidden, but we also control opacity)
+              if (artworkImage) {
+                artworkImage.style.transition = "opacity 0.3s ease";
+                artworkImage.style.opacity = "0";
+                artworkImage.style.visibility = "hidden";
+              }
+            } else {
+              // Particles disabled
+              particlesLabel.textContent = "Disabled";
+
+              // Hide particles
+              if (canvas) {
+                canvas.style.transition = "opacity 0.3s ease";
+                canvas.style.opacity = "0";
+              }
+
+              // Show image (override particlesGL library's visibility: hidden)
+              if (artworkImage) {
+                artworkImage.style.transition = "opacity 0.3s ease";
+                artworkImage.style.opacity = "1";
+                artworkImage.style.visibility = "visible";
+              }
+            }
+          });
+        }
+      }
+
+      /* Modal functionality */
+      function openModal(artworkNumber) {
+        const artworkImage = document.getElementById(
+          `artwork-${artworkNumber}`
+        );
+        const modal = document.getElementById("artworkModal");
+        const modalImage = document.getElementById("modalImage");
+
+        if (!artworkImage || !modal || !modalImage) return;
+
+        // Copy image to modal
+        modalImage.src = artworkImage.src;
+        modalImage.alt = artworkImage.alt;
+        activeModalArtworkNumber = artworkNumber;
+
+        // Show modal
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+
+        // Initialize particles for the modal image.
+        // The library will now automatically handle positioning and z-index.
+        setTimeout(() => {
+          const originalEffect = artworkEffects[artworkNumber - 1];
+          if (!originalEffect) {
+            console.error(
+              `Could not find original artwork effect for number ${artworkNumber}`
+            );
+            return;
+          }
+
+          modalEffect = particlesGL({
+            ...originalEffect.options,
+            target: "#modalImage",
+          });
+        }, 150);
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("artworkModal");
+
+        // Hide modal
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+        activeModalArtworkNumber = null;
+
+        // Clean up modal particles effect
+        if (modalEffect && typeof modalEffect.cleanup === "function") {
+          modalEffect.cleanup();
+          modalEffect = null;
+        }
+      }
+
+      // Close modal with escape key
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      // Close modal when clicking overlay
+      document.addEventListener("click", function (e) {
+        const modal = document.getElementById("artworkModal");
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+
+      /* Cleanup on page unload */
+      window.addEventListener("beforeunload", () => {
+        if (titleEffect && typeof titleEffect.cleanup === "function") {
+          titleEffect.cleanup();
+        }
+
+        artworkEffects.forEach((effect) => {
+          if (effect && typeof effect.cleanup === "function") {
+            effect.cleanup();
+          }
+        });
+
+        if (modalEffect && typeof modalEffect.cleanup === "function") {
+          modalEffect.cleanup();
+        }
+      });
+    </script>
+
+    <script>
+      /* Global Navigation Setup */
+      document.addEventListener("DOMContentLoaded", () => {
+        const navToggle = document.querySelector(".nav-toggle");
+        const navContainer = document.querySelector(".nav-container");
+
+        if (navToggle && navContainer) {
+          navToggle.addEventListener("click", () => {
+            const isExpanded = navContainer.classList.contains("expanded");
+            navContainer.classList.toggle("expanded");
+            navToggle.setAttribute("aria-expanded", !isExpanded);
+          });
+
+          // Close navigation when clicking outside
+          document.addEventListener("click", (e) => {
+            if (!navContainer.contains(e.target)) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+
+          // Close navigation when pressing Escape
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              navContainer.classList.contains("expanded")
+            ) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

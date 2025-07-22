@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo 4 - particlesGL WebGL - NaughtyDuk©</title>
+    <meta
+      name="description"
+      content="Experience camera tilt and movement with particlesGL. The particle system responds to mouse position, creating an immersive 3D effect."
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, WebGL, camera, tilt, 3D, particles, javascript, interactive, naughtyduk"
+    />
+    <meta name="author" content="NaughtyDuk" />
+    <link
+      rel="canonical"
+      href="https://particlesgl.naughtyduk.com/demos/demo-4"
+    />
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <meta
+      property="og:title"
+      content="Demo 4 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      property="og:description"
+      content="Experience camera tilt and movement with particlesGL. The particle system responds to mouse position, creating an immersive 3D effect."
+    />
+    <meta
+      property="og:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://particlesgl.naughtyduk.com/demos/demo-4"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Demo 4 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      name="twitter:description"
+      content="Experience camera tilt and movement with particlesGL. The particle system responds to mouse position, creating an immersive 3D effect."
+    />
+    <meta
+      name="twitter:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <style>
+      body {
+        margin: 0;
+        background-color: #111111;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      .webcam-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #webcam-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1); /* Mirror the webcam feed */
+      }
+
+      /* Also flip the particle canvas to match the mirrored video */
+      canvas[data-particles-target] {
+        transform: scaleX(-1);
+        pointer-events: none;
+      }
+
+      .permission-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: white;
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .permission-overlay h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      .permission-overlay p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        line-height: 1.5;
+      }
+
+      .enable-camera-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: transparent;
+        color: #f5f5f5;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid #f5f5f5;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.125rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        height: 3rem;
+        box-sizing: border-box;
+        min-height: 3.2rem;
+      }
+
+      .enable-camera-btn:hover {
+        opacity: 0.8;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      /* Global Navigation Styles */
+      .global-nav {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .nav-container {
+        background: rgb(9 9 11 / 85%);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 0.5px solid #1e1e20;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+      }
+
+      .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #fafafa;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggle:hover {
+        background: rgb(39 39 42 / 50%);
+      }
+
+      .nav-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .nav-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-menu {
+        max-height: 300px;
+      }
+
+      .nav-item {
+        display: block;
+        padding: 10px 16px;
+        color: #a1a1aa;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        border-top: 0.5px solid #1e1e20;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background: rgb(39 39 42 / 50%);
+        color: #fafafa;
+      }
+
+      .nav-item.active {
+        color: #fafafa;
+        background: rgb(39 39 42 / 30%);
+      }
+
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #fafafa;
+      }
+
+      @media (max-width: 768px) {
+        .global-nav {
+          top: 0.5rem;
+          left: 0.5rem;
+        }
+
+        .nav-toggle {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+
+        .nav-item {
+          padding: 8px 14px;
+          font-size: 12px;
+        }
+
+        /* Permission Overlay Mobile Styles */
+        .permission-overlay {
+          padding: 1rem;
+          height: 100vh;
+          height: 100dvh; /* Use dynamic viewport height for better mobile support */
+          box-sizing: border-box;
+        }
+
+        .permission-overlay h2 {
+          font-size: 1.5rem;
+          margin: 0 0 0.75rem 0;
+        }
+
+        .permission-overlay p {
+          font-size: 1rem;
+          margin: 0 0 1.5rem 0;
+          max-width: 85%;
+          line-height: 1.4;
+        }
+
+        .enable-camera-btn {
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          margin: 0;
+          min-height: 2.8rem;
+          height: 2.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+      <div class="nav-container">
+        <button
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span>Demos</span>
+          <svg viewBox="0 0 16 16">
+            <path d="M8 11L3 6h10l-5 5z" />
+          </svg>
+        </button>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-item">Index</a>
+          <a href="demo-1.html" class="nav-item">D1 - 3D</a>
+          <a href="demo-2.html" class="nav-item">D2 - Audio</a>
+          <a href="demo-3.html" class="nav-item">D3 - Multiple</a>
+          <a href="demo-4.html" class="nav-item active">D4 - Camera</a>
+          <a href="demo-5.html" class="nav-item">D5 - Video</a>
+          <a href="demo-6.html" class="nav-item">D6 - Emoji</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="permission-overlay" id="permission-overlay">
+      <h2>Camera Access Required</h2>
+      <p>
+        This demo requires access to your camera to create real-time particle
+        effects from your webcam feed. Click the button below to enable camera
+        access.
+      </p>
+      <button class="enable-camera-btn" id="enable-camera-btn">
+        Enable Camera
+      </button>
+    </div>
+
+    <div class="webcam-container">
+      <video
+        id="webcam-feed"
+        autoplay
+        playsinline
+        data-flip-horizontal="true"
+      ></video>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+
+    <!-- particlesGL Library -->
+    <script src="/scripts/particlesGL.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const videoElement = document.getElementById("webcam-feed");
+        const permissionOverlay = document.getElementById("permission-overlay");
+        const enableCameraBtn = document.getElementById("enable-camera-btn");
+        let particleEffect;
+
+        // 1. Get webcam access
+        async function setupWebcam() {
+          // Force HTTPS redirect if needed (except localhost)
+          if (
+            location.protocol !== "https:" &&
+            location.hostname !== "localhost" &&
+            location.hostname !== "127.0.0.1"
+          ) {
+            location.replace(
+              "https:" +
+                window.location.href.substring(window.location.protocol.length)
+            );
+            return false;
+          }
+
+          try {
+            let stream;
+
+            // For localhost HTTP, manually enable mediaDevices
+            if (!navigator.mediaDevices && location.hostname === "localhost") {
+              navigator.mediaDevices = {};
+              navigator.mediaDevices.getUserMedia = function (constraints) {
+                const getUserMedia =
+                  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+                if (!getUserMedia) {
+                  return Promise.reject(
+                    new Error("getUserMedia is not implemented")
+                  );
+                }
+                return new Promise((resolve, reject) => {
+                  getUserMedia.call(navigator, constraints, resolve, reject);
+                });
+              };
+            }
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  width: { ideal: 1280 },
+                  height: { ideal: 720 },
+                  aspectRatio: { ideal: 16 / 9 },
+                  facingMode: "user",
+                },
+              });
+            } else {
+              return false;
+            }
+
+            videoElement.srcObject = stream;
+
+            // Hide permission overlay once camera is granted
+            permissionOverlay.classList.add("hidden");
+
+            return new Promise((resolve) => {
+              videoElement.onloadedmetadata = () => {
+                resolve(true);
+              };
+            });
+          } catch (err) {
+            return false;
+          }
+        }
+
+        // Handle camera permission button click
+        enableCameraBtn.addEventListener("click", async () => {
+          enableCameraBtn.disabled = true;
+          enableCameraBtn.textContent = "Requesting Camera Access...";
+
+          const webcamReady = await setupWebcam();
+          if (webcamReady) {
+            initParticleEffect();
+            setupGUI();
+          } else {
+            enableCameraBtn.disabled = false;
+            enableCameraBtn.textContent = "Enable Camera";
+          }
+        });
+
+        // 2. Initialize particlesGL
+        function initParticleEffect() {
+          if (typeof particlesGL !== "undefined") {
+            particleEffect = particlesGL({
+              target: "#webcam-feed",
+              character: "•",
+              particleSize: 0.02,
+              particleSpacing: 0.0025,
+              particleColor: "sample", // Sample color from the video
+              sampling: 8,
+              tilt: false,
+              tiltFactor: 0.2,
+              tiltSpeed: 0.05,
+              displaceStrength: 0.5,
+              displaceRadius: 0.15,
+              velocityInfluence: 0.4,
+              returnSpeed: 0.05,
+              videoUpdateRate: 33, // ~30fps
+            });
+          }
+        }
+
+        // 3. Setup GUI Controls
+        function setupGUI() {
+          if (typeof lil !== "undefined" && particleEffect) {
+            const gui = new lil.GUI();
+            const folder = gui.addFolder("particlesGL Effect");
+            const controls = particleEffect.options;
+
+            // Tilt Controls
+            folder
+              .add(controls, "tilt")
+              .name("tilt")
+              .onChange((value) => {
+                particleEffect.updateOptions({ tilt: value });
+              });
+
+            folder
+              .add(controls, "tiltFactor", 0, 1, 0.01)
+              .name("tiltFactor")
+              .onChange((value) => {
+                particleEffect.updateOptions({ tiltFactor: value });
+              });
+
+            folder
+              .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+              .name("tiltSpeed")
+              .onChange((value) => {
+                particleEffect.updateOptions({ tiltSpeed: value });
+              });
+
+            // Particle Controls
+            folder
+              .add(controls, "particleSize", 0.005, 0.1, 0.001)
+              .name("particleSize")
+              .onChange((value) => {
+                particleEffect.updateOptions({ particleSize: value });
+              });
+
+            folder
+              .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+              .name("particleSpacing")
+              .onChange((value) => {
+                particleEffect.updateOptions({ particleSpacing: value });
+              });
+
+            // Displace Controls
+            folder
+              .add(controls, "displaceStrength", 0, 2, 0.1)
+              .name("displaceStrength")
+              .onChange((value) => {
+                particleEffect.updateOptions({ displaceStrength: value });
+              });
+
+            folder
+              .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+              .name("displaceRadius")
+              .onChange((value) => {
+                particleEffect.updateOptions({ displaceRadius: value });
+              });
+
+            folder
+              .add(controls, "velocityInfluence", 0, 2, 0.01)
+              .name("velocityInfluence")
+              .onChange((value) => {
+                particleEffect.updateOptions({ velocityInfluence: value });
+              });
+
+            folder
+              .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+              .name("returnSpeed")
+              .onChange((value) => {
+                particleEffect.updateOptions({ returnSpeed: value });
+              });
+
+            // Rendering Controls
+            folder
+              .add(controls, "sampling", 1, 10, 1)
+              .name("sampling")
+              .onChange((value) => {
+                particleEffect.updateOptions({ sampling: value });
+              });
+
+            // Character selection (this will cause reinit)
+            const characterOptions = {
+              character: controls.character,
+              setCharacter: function (newChar) {
+                particleEffect.updateOptions({ character: newChar });
+              },
+            };
+
+            folder
+              .add(characterOptions, "character")
+              .name("character")
+              .onChange((value) => {
+                characterOptions.setCharacter(value);
+              });
+
+            // Add particle color control
+            const colorOptions = {
+              particleColor: controls.particleColor,
+              setColor: function (newColor) {
+                particleEffect.updateOptions({ particleColor: newColor });
+              },
+            };
+
+            folder
+              .addColor(colorOptions, "particleColor")
+              .name("particleColor")
+              .onChange((value) => {
+                colorOptions.setColor(value);
+              });
+
+            // Font Controls
+            folder
+              .add(controls, "fontSize", 12, 72, 1)
+              .name("fontSize")
+              .onChange((value) => {
+                particleEffect.updateOptions({ fontSize: value });
+              });
+
+            const fontOptions = {
+              fontFamily: controls.fontFamily,
+              setFont: function (newFont) {
+                particleEffect.updateOptions({ fontFamily: newFont });
+              },
+            };
+
+            folder
+              .add(fontOptions, "fontFamily", [
+                "monospace",
+                "Arial",
+                "Helvetica",
+                "Georgia",
+                "Times New Roman",
+              ])
+              .name("fontFamily")
+              .onChange((value) => {
+                fontOptions.setFont(value);
+              });
+
+            folder.close();
+          }
+        }
+      });
+    </script>
+
+    <script>
+      /* Global Navigation Setup */
+      document.addEventListener("DOMContentLoaded", () => {
+        const navToggle = document.querySelector(".nav-toggle");
+        const navContainer = document.querySelector(".nav-container");
+
+        if (navToggle && navContainer) {
+          navToggle.addEventListener("click", () => {
+            const isExpanded = navContainer.classList.contains("expanded");
+            navContainer.classList.toggle("expanded");
+            navToggle.setAttribute("aria-expanded", !isExpanded);
+          });
+
+          // Close navigation when clicking outside
+          document.addEventListener("click", (e) => {
+            if (!navContainer.contains(e.target)) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+
+          // Close navigation when pressing Escape
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              navContainer.classList.contains("expanded")
+            ) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

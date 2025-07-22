@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo 5 - particlesGL WebGL - NaughtyDuk©</title>
+    <meta
+      name="description"
+      content="Transform a playing video into a real-time particle system. The particles dynamically update to match the video's content frame-by-frame."
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, WebGL, video, real-time, particles, javascript, interactive, naughtyduk"
+    />
+    <meta name="author" content="NaughtyDuk" />
+    <link
+      rel="canonical"
+      href="https://particlesgl.naughtyduk.com/demos/demo-5"
+    />
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <meta
+      property="og:title"
+      content="Demo 5 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      property="og:description"
+      content="Transform a playing video into a real-time particle system. The particles dynamically update to match the video's content frame-by-frame."
+    />
+    <meta
+      property="og:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://particlesgl.naughtyduk.com/demos/demo-5"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="particlesGL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Demo 5 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      name="twitter:description"
+      content="Transform a playing video into a real-time particle system. The particles dynamically update to match the video's content frame-by-frame."
+    />
+    <meta
+      name="twitter:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <style>
+      :root {
+        --bg: #f0f0f0;
+        --fg: #333;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .content-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        padding: 0 10vw;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        gap: 2vw;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Hero Effect Container - Full Page Background */
+      #hero {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Ensure particles appear above video */
+      canvas[data-particles-target] {
+        z-index: 5 !important;
+      }
+
+      .fire-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        opacity: 1;
+        filter: saturate(1.5) grayscale(0.5) brightness(0.5);
+      }
+
+      /* Dark overlay to make fire particles more visible */
+      .hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      /* Global Navigation Styles */
+      .global-nav {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .nav-container {
+        background: rgb(9 9 11 / 85%);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 0.5px solid #1e1e20;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+      }
+
+      .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #fafafa;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggle:hover {
+        background: rgb(39 39 42 / 50%);
+      }
+
+      .nav-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .nav-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-menu {
+        max-height: 300px;
+      }
+
+      .nav-item {
+        display: block;
+        padding: 10px 16px;
+        color: #a1a1aa;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        border-top: 0.5px solid #1e1e20;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background: rgb(39 39 42 / 50%);
+        color: #fafafa;
+      }
+
+      .nav-item.active {
+        color: #fafafa;
+        background: rgb(39 39 42 / 30%);
+      }
+
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #fafafa;
+      }
+
+      @media (max-width: 768px) {
+        .global-nav {
+          top: 0.5rem;
+          left: 0.5rem;
+        }
+
+        .nav-toggle {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+
+        .nav-item {
+          padding: 8px 14px;
+          font-size: 12px;
+        }
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+
+      .hero-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+        font-size: 10vw;
+        font-weight: 900;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        color: #1f1f1f;
+        mix-blend-mode: difference;
+        text-align: center;
+        line-height: 0.9;
+        white-space: nowrap;
+        overflow: clip;
+        pointer-events: none;
+        mix-blend-mode: difference;
+      }
+
+      /* Toggle Controls */
+      .toggle-controls {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        display: flex;
+        gap: 2rem;
+        background: rgba(0, 0, 0, 0.05);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        pointer-events: auto;
+      }
+
+      .toggle-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        pointer-events: auto;
+      }
+
+      .toggle-checkbox {
+        position: relative;
+        width: 32px;
+        height: 18px;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      .toggle-checkbox input[type="checkbox"] {
+        opacity: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 20;
+        pointer-events: auto;
+      }
+
+      .checkbox-display {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.3);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+      }
+
+      .checkbox-display::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .toggle-checkbox input[type="checkbox"]:checked + .checkbox-display {
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .toggle-checkbox
+        input[type="checkbox"]:checked
+        + .checkbox-display::after {
+        transform: translateX(14px);
+      }
+
+      .toggle-checkbox:hover .checkbox-display {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .toggle-checkbox:hover
+        input[type="checkbox"]:checked
+        + .checkbox-display {
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .toggle-label {
+        color: rgba(219, 219, 219, 0.9);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .toggle-controls {
+          flex-direction: row;
+          gap: 3rem;
+          padding: 0.5rem 1rem;
+          width: calc(100% - 2rem);
+          justify-content: space-between;
+        }
+
+        .toggle-item {
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .toggle-checkbox {
+          width: 28px;
+          height: 16px;
+        }
+
+        .checkbox-display::after {
+          width: 12px;
+          height: 12px;
+        }
+
+        .toggle-checkbox
+          input[type="checkbox"]:checked
+          + .checkbox-display::after {
+          transform: translateX(12px);
+        }
+
+        .toggle-label {
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+      <div class="nav-container">
+        <button
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span>Demos</span>
+          <svg viewBox="0 0 16 16">
+            <path d="M8 11L3 6h10l-5 5z" />
+          </svg>
+        </button>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-item">Index</a>
+          <a href="demo-1.html" class="nav-item">D1 - 3D</a>
+          <a href="demo-2.html" class="nav-item">D2 - Audio</a>
+          <a href="demo-3.html" class="nav-item">D3 - Multiple</a>
+          <a href="demo-4.html" class="nav-item">D4 - Camera</a>
+          <a href="demo-5.html" class="nav-item active">D5 - Video</a>
+          <a href="demo-6.html" class="nav-item">D6 - Emoji</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <!-- Hero Section with ASCII Effect Background -->
+      <div class="content-section hero-section">
+        <div id="hero">
+          <!-- Background video (visible) -->
+          <video
+            class="fire-video"
+            autoplay
+            loop
+            muted
+            playsinline
+            id="backgroundVideo"
+          >
+            <source src="../assets/fire.webm" type="video/webm" />
+            <source src="../assets/fire.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+
+          <!-- Hidden video for particle generation -->
+          <video
+            class="particlesGL"
+            autoplay
+            loop
+            muted
+            playsinline
+            id="fireVideo"
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              opacity: 0;
+              pointer-events: none;
+            "
+          >
+            <source src="../assets/fire.webm" type="video/webm" />
+            <source src="../assets/fire.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <!-- Hero Text Overlay -->
+        <div class="hero-text">
+          FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE
+          REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />FIRE IS HOT™<br />FLAMES ARE REAL©<br />FIRE IS HOT™<br />FLAMES
+          ARE REAL©<br />
+        </div>
+
+        <!-- Toggle Controls -->
+        <div class="toggle-controls">
+          <div class="toggle-item">
+            <div class="toggle-checkbox">
+              <input type="checkbox" id="sourceToggle" checked />
+              <div class="checkbox-display"></div>
+            </div>
+            <label for="sourceToggle" class="toggle-label">SOURCE</label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-checkbox">
+              <input type="checkbox" id="textToggle" checked />
+              <div class="checkbox-display"></div>
+            </div>
+            <label for="textToggle" class="toggle-label">TEXT</label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-checkbox">
+              <input type="checkbox" id="particlesToggle" checked />
+              <div class="checkbox-display"></div>
+            </div>
+            <label for="particlesToggle" class="toggle-label">PARTICLES</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
+
+    <!-- ASCII Effect Library -->
+    <script src="/scripts/particlesGL.min.js"></script>
+
+    <script>
+      /* GSAP plugins are registered in initLenis() */
+
+      /* Global ASCII effect variable */
+      let asciiEffect;
+
+      /**
+       * Helper functions for locking/unlocking scroll
+       */
+
+      // Init Lenis
+      let lenisInstance;
+      let lenisEnabled = true;
+
+      // GUI instance variable to prevent duplicates
+      let guiInstance;
+
+      /* DOM Content Loaded */
+      document.addEventListener("DOMContentLoaded", () => {
+        /* Wait for fonts to be loaded */
+        const fontsReady =
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready
+            : Promise.resolve();
+
+        /* Initialize particlesGL Effect immediately */
+        if (typeof particlesGL !== "undefined") {
+          const fireVideo = document.getElementById("fireVideo");
+          const backgroundVideo = document.getElementById("backgroundVideo");
+
+          // Sync videos to play together
+          function syncVideos() {
+            if (
+              Math.abs(fireVideo.currentTime - backgroundVideo.currentTime) >
+              0.1
+            ) {
+              fireVideo.currentTime = backgroundVideo.currentTime;
+            }
+          }
+
+          backgroundVideo.addEventListener("play", () => {
+            fireVideo.play();
+            setInterval(syncVideos, 200);
+          });
+
+          // Function to initialize particles (prevents duplicate initialization)
+          function initializeParticles() {
+            if (asciiEffect) {
+              console.log("Particles already initialized, skipping...");
+              return;
+            }
+
+            console.log("Initializing particles...");
+            asciiEffect = particlesGL({
+              target: ".particlesGL",
+              character: "🔥",
+              particleSize: 0.07,
+              particleSpacing: 0.0024,
+              particleColor: "#ff6b00",
+              tilt: false,
+              tiltFactor: 0.2,
+              tiltSpeed: 0.05,
+              displaceStrength: 1.3,
+              displaceRadius: 0.03,
+              velocityInfluence: 1.2,
+              returnSpeed: 0.03,
+              sampling: 10,
+              fontSize: 40,
+              fontFamily: "monospace",
+              videoUpdateRate: 150,
+              on: {
+                init: function (instance) {
+                  console.log("particlesGL fire effect initialized!", instance);
+                  // Initialize GUI after particles are ready
+                  initializeGUI();
+                },
+              },
+            });
+          }
+
+          // Wait for video to load before initializing particles
+          fireVideo.addEventListener("loadeddata", function () {
+            console.log("Fire video loaded, initializing particles...");
+            initializeParticles();
+          });
+
+          // Fallback if video is already loaded
+          if (fireVideo.readyState >= 2) {
+            initializeParticles();
+          }
+        }
+
+        function initLenis() {
+          if (!lenisInstance) {
+            lenisInstance = new Lenis({
+              lerp: 0.15,
+              wheelMultiplier: 0.7,
+              gestureOrientation: "vertical",
+              normalizeWheel: true,
+              smoothWheel: true,
+              smoothTouch: false,
+              touchMultiplier: 1,
+              touchInertiaMultiplier: 35,
+              infinite: false,
+              orientation: "vertical",
+            });
+
+            gsap.registerPlugin(ScrollTrigger);
+
+            ScrollTrigger.scrollerProxy(document.body, {
+              scrollTop(value) {
+                if (arguments.length) {
+                  lenisInstance.scrollTo(value, { immediate: true });
+                }
+                return lenisInstance.animatedScroll || 0;
+              },
+              getBoundingClientRect() {
+                return {
+                  top: 0,
+                  left: 0,
+                  width: window.innerWidth,
+                  height: window.innerHeight,
+                };
+              },
+              pinType: document.body.style.transform ? "transform" : "fixed",
+            });
+
+            function raf(time) {
+              if (lenisEnabled) {
+                lenisInstance.raf(time);
+                ScrollTrigger.update();
+              }
+              requestAnimationFrame(raf);
+            }
+
+            requestAnimationFrame(raf);
+          }
+        }
+
+        function setupToggleControls() {
+          const sourceToggle = document.getElementById("sourceToggle");
+          const textToggle = document.getElementById("textToggle");
+          const particlesToggle = document.getElementById("particlesToggle");
+
+          if (!sourceToggle || !textToggle || !particlesToggle) {
+            return;
+          }
+
+          // Toggle source video
+          sourceToggle.addEventListener("change", function () {
+            const fireVideo = document.querySelector(".fire-video");
+            if (fireVideo) {
+              fireVideo.style.transition = "opacity 0.3s ease";
+              fireVideo.style.opacity = this.checked ? "1" : "0";
+            }
+          });
+
+          // Toggle hero text
+          textToggle.addEventListener("change", function () {
+            const heroText = document.querySelector(".hero-text");
+            if (heroText) {
+              heroText.style.transition = "opacity 0.3s ease";
+              heroText.style.opacity = this.checked ? "1" : "0";
+            }
+          });
+
+          // Toggle particles
+          particlesToggle.addEventListener("change", function () {
+            const particlesCanvas = document.querySelector(
+              "canvas[data-particles-target]"
+            );
+            if (particlesCanvas) {
+              particlesCanvas.style.transition = "opacity 0.3s ease";
+              particlesCanvas.style.opacity = this.checked ? "1" : "0";
+            }
+
+            const particlesVideo = document.querySelector(".particlesGL");
+            if (particlesVideo) {
+              particlesVideo.style.transition = "opacity 0.3s ease";
+              particlesVideo.style.opacity = this.checked ? "1" : "0";
+            }
+          });
+        }
+
+        function initializeGUI() {
+          /* GUI Controls */
+          if (typeof lil !== "undefined" && asciiEffect) {
+            // Clean up existing GUI instance if it exists
+            if (guiInstance) {
+              guiInstance.destroy();
+              guiInstance = null;
+            }
+
+            const gui = new lil.GUI();
+            guiInstance = gui; // Store reference to prevent duplicates
+            const folder = gui.addFolder("particlesGL Effect");
+
+            // Use actual options from the effect instance
+            const controls = asciiEffect.options;
+
+            // Tilt Controls
+            folder
+              .add(controls, "tilt")
+              .name("tilt")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tilt: value });
+              });
+
+            folder
+              .add(controls, "tiltFactor", 0, 1, 0.01)
+              .name("tiltFactor")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tiltFactor: value });
+              });
+
+            folder
+              .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+              .name("tiltSpeed")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tiltSpeed: value });
+              });
+
+            // Particle Controls
+            folder
+              .add(controls, "particleSize", 0.005, 0.1, 0.001)
+              .name("particleSize")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ particleSize: value });
+              });
+
+            folder
+              .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+              .name("particleSpacing")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ particleSpacing: value });
+              });
+
+            // Displace Controls
+            folder
+              .add(controls, "displaceStrength", 0, 2, 0.1)
+              .name("displaceStrength")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ displaceStrength: value });
+              });
+
+            folder
+              .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+              .name("displaceRadius")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ displaceRadius: value });
+              });
+
+            folder
+              .add(controls, "velocityInfluence", 0, 2, 0.01)
+              .name("velocityInfluence")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ velocityInfluence: value });
+              });
+
+            folder
+              .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+              .name("returnSpeed")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ returnSpeed: value });
+              });
+
+            // Rendering Controls
+            folder
+              .add(controls, "sampling", 1, 10, 1)
+              .name("sampling")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ sampling: value });
+              });
+
+            folder
+              .add(controls, "videoUpdateRate", 16, 500, 1)
+              .name("videoUpdateRate")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ videoUpdateRate: value });
+              });
+
+            // Character selection (this will cause reinit)
+            const characterOptions = {
+              character: controls.character,
+              setCharacter: function (newChar) {
+                asciiEffect.updateOptions({ character: newChar });
+              },
+            };
+
+            folder
+              .add(characterOptions, "character")
+              .name("character")
+              .onChange((value) => {
+                characterOptions.setCharacter(value);
+              });
+
+            // Add particle color control
+            const colorOptions = {
+              particleColor: controls.particleColor,
+              setColor: function (newColor) {
+                asciiEffect.updateOptions({ particleColor: newColor });
+              },
+            };
+
+            folder
+              .addColor(colorOptions, "particleColor")
+              .name("particleColor")
+              .onChange((value) => {
+                colorOptions.setColor(value);
+              });
+
+            // Font Controls
+            folder
+              .add(controls, "fontSize", 12, 72, 1)
+              .name("fontSize")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ fontSize: value });
+              });
+
+            const fontOptions = {
+              fontFamily: controls.fontFamily,
+              setFont: function (newFont) {
+                asciiEffect.updateOptions({ fontFamily: newFont });
+              },
+            };
+
+            folder
+              .add(fontOptions, "fontFamily", [
+                "monospace",
+                "Arial",
+                "Helvetica",
+                "Georgia",
+                "Times New Roman",
+              ])
+              .name("fontFamily")
+              .onChange((value) => {
+                fontOptions.setFont(value);
+              });
+
+            folder.close();
+          }
+        }
+
+        initLenis();
+
+        fontsReady.then(() => {
+          // Setup toggle controls after DOM is fully ready
+          setupToggleControls();
+
+          console.log("particlesGL page ready!", asciiEffect);
+        });
+      });
+
+      /* Cleanup on page unload */
+      window.addEventListener("beforeunload", () => {
+        if (asciiEffect && typeof asciiEffect.cleanup === "function") {
+          asciiEffect.cleanup();
+        }
+        if (lenisInstance && typeof lenisInstance.destroy === "function") {
+          lenisInstance.destroy();
+        }
+        if (guiInstance && typeof guiInstance.destroy === "function") {
+          guiInstance.destroy();
+        }
+      });
+    </script>
+
+    <script>
+      /* Global Navigation Setup */
+      document.addEventListener("DOMContentLoaded", () => {
+        const navToggle = document.querySelector(".nav-toggle");
+        const navContainer = document.querySelector(".nav-container");
+
+        if (navToggle && navContainer) {
+          navToggle.addEventListener("click", () => {
+            const isExpanded = navContainer.classList.contains("expanded");
+            navContainer.classList.toggle("expanded");
+            navToggle.setAttribute("aria-expanded", !isExpanded);
+          });
+
+          // Close navigation when clicking outside
+          document.addEventListener("click", (e) => {
+            if (!navContainer.contains(e.target)) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+
+          // Close navigation when pressing Escape
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              navContainer.classList.contains("expanded")
+            ) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

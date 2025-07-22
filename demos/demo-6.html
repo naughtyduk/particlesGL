@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo 6 - particlesGL WebGL - NaughtyDuk©</title>
+    <meta
+      name="description"
+      content="Use emojis as particles with particlesGL. This demo shows how to customize particle characters for fun and creative effects."
+    />
+    <meta
+      name="keywords"
+      content="particlesGL, WebGL, emoji, character, particles, javascript, interactive, naughtyduk"
+    />
+    <meta name="author" content="NaughtyDuk" />
+    <link
+      rel="canonical"
+      href="https://particlesgl.naughtyduk.com/demos/demo-6"
+    />
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <meta
+      property="og:title"
+      content="Demo 6 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      property="og:description"
+      content="Use emojis as particles with particlesGL. This demo shows how to customize particle characters for fun and creative effects."
+    />
+    <meta
+      property="og:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <meta
+      property="og:url"
+      content="https://particlesgl.naughtyduk.com/demos/demo-6"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="particlesGL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Demo 6 - particlesGL WebGL - NaughtyDuk©"
+    />
+    <meta
+      name="twitter:description"
+      content="Use emojis as particles with particlesGL. This demo shows how to customize particle characters for fun and creative effects."
+    />
+    <meta
+      name="twitter:image"
+      content="https://particlesgl.naughtyduk.com/assets/meta-img.jpg"
+    />
+    <style>
+      :root {
+        --bg: #f0f0f0;
+        --fg: #333;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .content-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        padding: 0 10vw;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+        gap: 2vw;
+        background: #e3e3e1;
+        position: relative;
+      }
+
+      /* Hero Effect Container - Full Page Background */
+      #hero {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-logo {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      .lil-gui {
+        --focus-color: #f5f5f5;
+        --number-color: #f5f5f5;
+      }
+
+      /* Global Navigation Styles */
+      .global-nav {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .nav-container {
+        background: rgb(9 9 11 / 85%);
+        backdrop-filter: blur(16px);
+        border-radius: 12px;
+        border: 0.5px solid #1e1e20;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+      }
+
+      .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #fafafa;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+
+      .nav-toggle:hover {
+        background: rgb(39 39 42 / 50%);
+      }
+
+      .nav-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .nav-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-container.expanded .nav-menu {
+        max-height: 300px;
+      }
+
+      .nav-item {
+        display: block;
+        padding: 10px 16px;
+        color: #a1a1aa;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        border-top: 0.5px solid #1e1e20;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background: rgb(39 39 42 / 50%);
+        color: #fafafa;
+      }
+
+      .nav-item.active {
+        color: #fafafa;
+        background: rgb(39 39 42 / 30%);
+      }
+
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #fafafa;
+      }
+
+      @media (max-width: 768px) {
+        .global-nav {
+          top: 0.5rem;
+          left: 0.5rem;
+        }
+
+        .nav-toggle {
+          padding: 10px 14px;
+          font-size: 13px;
+        }
+
+        .nav-item {
+          padding: 8px 14px;
+          font-size: 12px;
+        }
+      }
+
+      .lil-gui.autoPlace {
+        z-index: 10000;
+      }
+
+      /* Honey Pot Cursor Follower */
+      .honey-pot-cursor {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        pointer-events: none;
+        z-index: 15;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+        transition: opacity 0.2s ease, transform 0.15s ease;
+        object-fit: contain;
+        will-change: transform, opacity;
+      }
+
+      .honey-pot-cursor.active {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0);
+      }
+
+      .honey-pot-cursor.moving {
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+      <div class="nav-container">
+        <button
+          class="nav-toggle"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span>Demos</span>
+          <svg viewBox="0 0 16 16">
+            <path d="M8 11L3 6h10l-5 5z" />
+          </svg>
+        </button>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-item">Index</a>
+          <a href="demo-1.html" class="nav-item">D1 - 3D</a>
+          <a href="demo-2.html" class="nav-item">D2 - Audio</a>
+          <a href="demo-3.html" class="nav-item">D3 - Multiple</a>
+          <a href="demo-4.html" class="nav-item">D4 - Camera</a>
+          <a href="demo-5.html" class="nav-item">D5 - Video</a>
+          <a href="demo-6.html" class="nav-item active">D6 - Emoji</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <!-- Hero Section with ASCII Effect Background -->
+      <div class="content-section hero-section">
+        <div id="hero">
+          <img
+            src="../assets/ND25-Grey-Logo.svg"
+            alt="NaughtyDuk Logo"
+            class="hero-logo particlesGL"
+          />
+          <!-- Honey Pot Cursor Follower -->
+          <img
+            src="../assets/honey-pot.webp"
+            alt="Honey Pot"
+            class="honey-pot-cursor"
+            id="honeyPot"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.1/dist/lil-gui.umd.min.js"></script>
+    <script src="https://naughtydukassets.com/1.1.2.lenis.min.js"></script>
+
+    <!-- ASCII Effect Library -->
+    <script src="/scripts/particlesGL.min.js"></script>
+
+    <script>
+      /* GSAP plugins are registered in initLenis() */
+
+      /* Global ASCII effect variable */
+      let asciiEffect;
+
+      /* Global honey pot variables */
+      let honeyPotHandlers = null;
+
+      /**
+       * Helper functions for locking/unlocking scroll
+       */
+
+      // Init Lenis
+      let lenisInstance;
+      let lenisEnabled = true;
+
+      /* DOM Content Loaded */
+      document.addEventListener("DOMContentLoaded", () => {
+        /* Wait for fonts to be loaded */
+        const fontsReady =
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready
+            : Promise.resolve();
+
+        /* Honey Pot Cursor Follower - Simplified */
+        const honeyPot = document.getElementById("honeyPot");
+        const heroSection = document.querySelector(".hero-section");
+        let isMouseInHero = false;
+        let velocityTimeout;
+
+        function handleGlobalMouseMove(e) {
+          const rect = heroSection.getBoundingClientRect();
+          const isInBounds =
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom;
+
+          if (isInBounds) {
+            // Show honey pot
+            if (!isMouseInHero) {
+              isMouseInHero = true;
+              honeyPot.classList.add("active");
+            }
+
+            // Position relative to hero section
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            honeyPot.style.left = x + "px";
+            honeyPot.style.top = y + "px";
+
+            // Add moving class for scaling
+            honeyPot.classList.add("moving");
+
+            // Remove moving class after delay
+            clearTimeout(velocityTimeout);
+            velocityTimeout = setTimeout(() => {
+              honeyPot.classList.remove("moving");
+            }, 150);
+          } else {
+            // Hide honey pot
+            if (isMouseInHero) {
+              isMouseInHero = false;
+              honeyPot.classList.remove("active", "moving");
+              clearTimeout(velocityTimeout);
+            }
+          }
+        }
+
+        // Store handlers globally for cleanup
+        honeyPotHandlers = {
+          handleGlobalMouseMove,
+          heroSection,
+        };
+
+        // Add single global mouse move listener
+        document.addEventListener("mousemove", handleGlobalMouseMove);
+
+        /* Initialize particlesGL Effect immediately */
+        if (typeof particlesGL !== "undefined") {
+          asciiEffect = particlesGL({
+            target: ".particlesGL",
+            character: "🐝",
+            particleSize: 0.035,
+            particleSpacing: 0.005,
+            particleColor: "#8c8c8c",
+            tilt: true,
+            tiltFactor: 0.19,
+            tiltSpeed: 0.06,
+            displaceStrength: 1.1,
+            displaceRadius: 0.33,
+            velocityInfluence: 2,
+            returnSpeed: 0.01,
+            sampling: 4,
+            fontSize: 48,
+            fontFamily: "monospace",
+            on: {
+              init: function (instance) {
+                console.log("particlesGL initialized!", instance);
+              },
+            },
+          });
+        }
+
+        function initLenis() {
+          if (!lenisInstance) {
+            lenisInstance = new Lenis({
+              lerp: 0.15,
+              wheelMultiplier: 0.7,
+              gestureOrientation: "vertical",
+              normalizeWheel: true,
+              smoothWheel: true,
+              smoothTouch: false,
+              touchMultiplier: 1,
+              touchInertiaMultiplier: 35,
+              infinite: false,
+              orientation: "vertical",
+            });
+
+            gsap.registerPlugin(ScrollTrigger);
+
+            ScrollTrigger.scrollerProxy(document.body, {
+              scrollTop(value) {
+                if (arguments.length) {
+                  lenisInstance.scrollTo(value, { immediate: true });
+                }
+                return lenisInstance.animatedScroll || 0;
+              },
+              getBoundingClientRect() {
+                return {
+                  top: 0,
+                  left: 0,
+                  width: window.innerWidth,
+                  height: window.innerHeight,
+                };
+              },
+              pinType: document.body.style.transform ? "transform" : "fixed",
+            });
+
+            function raf(time) {
+              if (lenisEnabled) {
+                lenisInstance.raf(time);
+                ScrollTrigger.update();
+              }
+              requestAnimationFrame(raf);
+            }
+
+            requestAnimationFrame(raf);
+          }
+        }
+
+        initLenis();
+
+        fontsReady.then(() => {
+          /* GUI Controls */
+          if (typeof lil !== "undefined" && asciiEffect) {
+            const gui = new lil.GUI();
+            const folder = gui.addFolder("particlesGL Effect");
+
+            // Use actual options from the effect instance
+            const controls = asciiEffect.options;
+
+            // Tilt Controls
+            folder
+              .add(controls, "tilt")
+              .name("tilt")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tilt: value });
+              });
+
+            folder
+              .add(controls, "tiltFactor", 0, 1, 0.01)
+              .name("tiltFactor")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tiltFactor: value });
+              });
+
+            folder
+              .add(controls, "tiltSpeed", 0.01, 0.2, 0.01)
+              .name("tiltSpeed")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ tiltSpeed: value });
+              });
+
+            // Particle Controls
+            folder
+              .add(controls, "particleSize", 0.005, 0.1, 0.001)
+              .name("particleSize")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ particleSize: value });
+              });
+
+            folder
+              .add(controls, "particleSpacing", 0.001, 0.01, 0.0001)
+              .name("particleSpacing")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ particleSpacing: value });
+              });
+
+            // Displace Controls
+            folder
+              .add(controls, "displaceStrength", 0, 2, 0.1)
+              .name("displaceStrength")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ displaceStrength: value });
+              });
+
+            folder
+              .add(controls, "displaceRadius", 0.01, 0.5, 0.01)
+              .name("displaceRadius")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ displaceRadius: value });
+              });
+
+            folder
+              .add(controls, "velocityInfluence", 0, 2, 0.01)
+              .name("velocityInfluence")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ velocityInfluence: value });
+              });
+
+            folder
+              .add(controls, "returnSpeed", 0.01, 0.2, 0.01)
+              .name("returnSpeed")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ returnSpeed: value });
+              });
+
+            // Rendering Controls
+            folder
+              .add(controls, "sampling", 1, 10, 1)
+              .name("sampling")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ sampling: value });
+              });
+
+            // Character selection (this will cause reinit)
+            const characterOptions = {
+              character: controls.character,
+              setCharacter: function (newChar) {
+                asciiEffect.updateOptions({ character: newChar });
+              },
+            };
+
+            folder
+              .add(characterOptions, "character")
+              .name("character")
+              .onChange((value) => {
+                characterOptions.setCharacter(value);
+              });
+
+            // Add particle color control
+            const colorOptions = {
+              particleColor: controls.particleColor,
+              setColor: function (newColor) {
+                asciiEffect.updateOptions({ particleColor: newColor });
+              },
+            };
+
+            folder
+              .addColor(colorOptions, "particleColor")
+              .name("particleColor")
+              .onChange((value) => {
+                colorOptions.setColor(value);
+              });
+
+            // Font Controls
+            folder
+              .add(controls, "fontSize", 12, 72, 1)
+              .name("fontSize")
+              .onChange((value) => {
+                asciiEffect.updateOptions({ fontSize: value });
+              });
+
+            const fontOptions = {
+              fontFamily: controls.fontFamily,
+              setFont: function (newFont) {
+                asciiEffect.updateOptions({ fontFamily: newFont });
+              },
+            };
+
+            folder
+              .add(fontOptions, "fontFamily", [
+                "monospace",
+                "Arial",
+                "Helvetica",
+                "Georgia",
+                "Times New Roman",
+              ])
+              .name("fontFamily")
+              .onChange((value) => {
+                fontOptions.setFont(value);
+              });
+
+            folder.close();
+          }
+
+          console.log("particlesGL page ready!", asciiEffect);
+        });
+      });
+
+      /* Cleanup on page unload */
+      window.addEventListener("beforeunload", () => {
+        if (asciiEffect && typeof asciiEffect.cleanup === "function") {
+          asciiEffect.cleanup();
+        }
+        if (lenisInstance && typeof lenisInstance.destroy === "function") {
+          lenisInstance.destroy();
+        }
+
+        // Cleanup honey pot event listeners
+        if (honeyPotHandlers) {
+          document.removeEventListener(
+            "mousemove",
+            honeyPotHandlers.handleGlobalMouseMove
+          );
+        }
+      });
+    </script>
+
+    <script>
+      /* Global Navigation Setup */
+      document.addEventListener("DOMContentLoaded", () => {
+        const navToggle = document.querySelector(".nav-toggle");
+        const navContainer = document.querySelector(".nav-container");
+
+        if (navToggle && navContainer) {
+          navToggle.addEventListener("click", () => {
+            const isExpanded = navContainer.classList.contains("expanded");
+            navContainer.classList.toggle("expanded");
+            navToggle.setAttribute("aria-expanded", !isExpanded);
+          });
+
+          // Close navigation when clicking outside
+          document.addEventListener("click", (e) => {
+            if (!navContainer.contains(e.target)) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+
+          // Close navigation when pressing Escape
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              navContainer.classList.contains("expanded")
+            ) {
+              navContainer.classList.remove("expanded");
+              navToggle.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
