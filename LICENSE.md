@@ -6,7 +6,7 @@ This is a legal agreement between you and NaughtyDuk for the use of the particle
 
 ---
 
-## 1. Personal Use License
+## 1. Personal Use Licence
 
 You are granted a free, non-exclusive licence to use the Software for any personal, non-commercial projects.
 
@@ -15,7 +15,7 @@ You are granted a free, non-exclusive licence to use the Software for any person
 
 ---
 
-## 2. Commercial Use License
+## 2. Commercial Use Licence
 
 A paid licence is required for any commercial use of the Software.
 
@@ -46,7 +46,7 @@ You may not:
 
 #### d. Ownership of Modifications
 
-While you retain ownership of any original code you write to extend or modify the Software, the underlying Software remains the property of NaughtyDuk and is subject to the terms of this license.
+While you retain ownership of any original code you write to extend or modify the Software, the underlying Software remains the property of NaughtyDuk and is subject to the terms of this licence.
 
 ---
 

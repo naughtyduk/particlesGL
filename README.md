@@ -5,7 +5,7 @@
 **v1.0.0**
 
 > [!NOTE]
-> `particlesGL` uses a dual license model. It is **free for personal use**. `particlesGL` requires a license for commerical use, see the [licensing section](#licence) for more details.
+> `particlesGL` uses a dual licence model. It is **free for personal use**. `particlesGL` requires a licence for commerical use, see the [licensing section](#licence) for more details.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
@@ -242,8 +242,8 @@ A paid commercial licence is required for any project that is commercial in natu
 
 **Single Licence:**<br>
 `For one commercial website or project.`<br><br>
-<a href="https://pay.naughtyduk.com/b/fZu14n28abkraJG9RH9sk09" target="_blank" rel="noopener noreferrer"><img src="./assets/license-btn.svg" alt="Get License Button"></a>
+<a href="https://pay.naughtyduk.com/b/fZu14n28abkraJG9RH9sk09" target="_blank" rel="noopener noreferrer"><img src="./assets/licence-btn.svg" alt="Get Licence Button"></a>
 
 **Extended Licence:**<br>
 `For up to five commercial projects.`<br><br>
-<a href="https://pay.naughtyduk.com/b/fZuaEX8wy1JRbNK8ND9sk0a" target="_blank" rel="noopener noreferrer"><img src="./assets/license-btn.svg" alt="Get License Button"></a>
+<a href="https://pay.naughtyduk.com/b/fZuaEX8wy1JRbNK8ND9sk0a" target="_blank" rel="noopener noreferrer"><img src="./assets/licence-btn.svg" alt="Get Licence Button"></a>
