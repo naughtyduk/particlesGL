@@ -228,7 +228,7 @@ particleEffect.cleanup();
 
 ## Licence
 
-`particlesGL` is released under a dual-licence model to support both personal and commercial use. For full details, please see the [LICENCE](./LICENSE) file.
+`particlesGL` is released under a dual-licence model to support both personal and commercial use. For full details, please see the [LICENCE](./LICENSE.md) file.
 
 ### Personal Use
 
