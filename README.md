@@ -31,7 +31,7 @@
 | Smooth Particle Return         |    ✅     | Lightweight & Performant    |    ✅     |
 | Configurable Particle Size     |    ✅     | `on.init` Callback          |    ✅     |
 | Adjustable Displacement Radius |    ✅     | Smart DOM Positioning       |    ✅     |
-| Customizable Particle Spacing  |    ✅     | Particle Colour Sampling    |    ✅     |
+| Customisable Particle Spacing  |    ✅     | Particle Colour Sampling    |    ✅     |
 
 ---
 
