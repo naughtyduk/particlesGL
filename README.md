@@ -5,7 +5,7 @@
 **v1.0.0**
 
 > [!NOTE]
-> `particlesGL` uses a dual licence model. It is **free for personal use**. `particlesGL` requires a licence for commerical use, see the [licensing section](#licence) for more details.
+> `particlesGL` uses a dual licence model. It is **free for personal use**. `particlesGL` requires a licence for commercial use, see the [licensing section](#licence) for more details.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
