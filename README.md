@@ -2,7 +2,7 @@
 
 <a href="https://particlesgl.naughtyduk.com"><img src="/assets/particlesGL-promo-IMG.gif" alt="particlesGL" style="width: 100%"/></a>
 
-**v1.0.5**
+**v1.0.6**
 
 > [!IMPORTANT]
 > `particlesGL` is now available on npm: `npm install particles-gl`. The `package/` directory contains the npm package source and is not required when using the CDN/browser script.

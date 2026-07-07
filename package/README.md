@@ -2,7 +2,7 @@
 
 <a href="https://particlesgl.naughtyduk.com"><img src="https://raw.githubusercontent.com/naughtyduk/particlesGL/main/assets/particlesGL-promo-IMG.gif" alt="particlesGL" width="100%" height="auto"/></a>
 
-**v1.0.5**
+**v1.0.6**
 
 > [!NOTE]
 > `particlesGL` uses a dual licence model. It is **free for personal use**. `particlesGL` requires a licence for commercial use, see the [licensing section](#licence) for more details.
@@ -244,7 +244,7 @@ particleEffect.cleanup();
 
 ## Licence
 
-`particlesGL` is released under a dual-licence model to support both personal and commercial use. For full details, please see the [LICENCE](./LICENCE.md) file.
+`particlesGL` is released under a dual-licence model to support both personal and commercial use. For full details, please see the [LICENCE](https://github.com/naughtyduk/particlesGL/blob/main/LICENCE.md) file.
 
 ### Personal Use
 
@@ -258,8 +258,8 @@ A paid commercial licence is required for any project that is commercial in natu
 
 **Single Licence:**<br>
 `For one commercial website or project.`<br><br>
-<a href="https://pay.naughtyduk.com/b/fZu14n28abkraJG9RH9sk09" target="_blank" rel="noopener noreferrer"><img src="./assets/licence-btn.svg" alt="Get Licence Button"></a>
+<a href="https://pay.naughtyduk.com/b/fZu14n28abkraJG9RH9sk09" target="_blank" rel="noopener noreferrer"><img src="https://raw.githubusercontent.com/naughtyduk/particlesGL/main/assets/get-licence-npm.png" alt="Get Licence" width="120"></a>
 
 **Extended Licence:**<br>
 `For up to five commercial projects.`<br><br>
-<a href="https://pay.naughtyduk.com/b/fZuaEX8wy1JRbNK8ND9sk0a" target="_blank" rel="noopener noreferrer"><img src="./assets/licence-btn.svg" alt="Get Licence Button"></a>
+<a href="https://pay.naughtyduk.com/b/fZuaEX8wy1JRbNK8ND9sk0a" target="_blank" rel="noopener noreferrer"><img src="https://raw.githubusercontent.com/naughtyduk/particlesGL/main/assets/get-licence-npm.png" alt="Get Licence" width="120"></a>
