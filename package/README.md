@@ -1,18 +1,15 @@
 # particlesGL – Universal WebGL Particle Effect
 
-<a href="https://particlesgl.naughtyduk.com"><img src="/assets/particlesGL-promo-IMG.gif" alt="particlesGL" style="width: 100%"/></a>
+<a href="https://particlesgl.naughtyduk.com"><img src="https://raw.githubusercontent.com/naughtyduk/particlesGL/main/assets/particlesGL-promo-IMG.gif" alt="particlesGL" width="100%" height="auto"/></a>
 
 **v1.0.5**
-
-> [!IMPORTANT]
-> `particlesGL` is now available on npm: `npm install particles-gl`. The `package/` directory contains the npm package source and is not required when using the CDN/browser script.
 
 > [!NOTE]
 > `particlesGL` uses a dual licence model. It is **free for personal use**. `particlesGL` requires a licence for commercial use, see the [licensing section](#licence) for more details.
 
 `particlesGL` transforms any DOM element into beautiful, interactive particle systems with mouse displacement effects, rendered in high-performance WebGL.
 
-<a href="https://particlesgl.naughtyduk.com" target="_blank" rel="noopener noreferrer"><img src="./assets/try-btn.svg" alt="Try It Out Button"></a>
+<a href="https://particlesgl.naughtyduk.com" target="_blank" rel="noopener noreferrer"><img src="https://raw.githubusercontent.com/naughtyduk/particlesGL/main/assets/try-it-out-npm.png" alt="Try It Out" width="120"></a>
 
 <a href="https://particlesgl.naughtyduk.com/demos/demo-1.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (3D)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-2.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (AUDIO)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-3.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (MULTIPLE)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-4.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (CAMERA)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-5.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (VIDEO)</strong></a> | <a href="https://particlesgl.naughtyduk.com/demos/demo-6.html" target="_blank" rel="noopener noreferrer"><strong>DEMO (EMOJI)</strong></a>
 
@@ -38,9 +35,27 @@
 
 ---
 
+## Install from npm
+
+```sh
+npm install particles-gl
+```
+
+```js
+import particlesGL from "particles-gl";
+
+const particleEffect = particlesGL({
+  target: ".particlesGL",
+});
+```
+
+> `three` is installed automatically as a package dependency. `GLTFLoader` is only required when using 3D models.
+
+---
+
 ## Prerequisites
 
-Add the following scripts before you initialise `particlesGL()` (normally at the end of the `<body>`):
+For CDN/browser-script usage, add the following scripts before you initialise `particlesGL()` (normally at the end of the `<body>`):
 
 ```html
 <!-- Three.js – WebGL 3D library (required) -->
@@ -50,7 +65,7 @@ Add the following scripts before you initialise `particlesGL()` (normally at the
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/GLTFLoader.js"></script>
 
 <!-- particlesGL.min.js – the library itself -->
-<script src="/scripts/particlesGL.min.js"></script>
+<script src="https://particlesgl.naughtyduk.com/scripts/particlesGL.min.js"></script>
 ```
 
 > `Three.js` provides the WebGL rendering engine that powers `particlesGL`. The library will not work without Three.js. `GLTFLoader` is only required if you plan to use 3D models.
@@ -83,38 +98,36 @@ Set up your HTML structure first. Add the `particlesGL` class to any element you
 
 Next, initialise the library with your desired configuration.
 
-```html
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const particleEffect = particlesGL({
-      target: ".particlesGL", // CSS selector for the element(s) to particlise
-      character: "•", // Character/emoji to use for particles
-      particleSize: 0.015, // Size of individual particles
-      particleSpacing: 0.002, // Spacing between particles (for images/videos)
-      particleColor: "sample", // Hex colour or 'sample' to extract colours from source pixels
-      sampling: 4, // Pixel sampling rate (lower = more particles)
-      tilt: true, // Enable tilt effect on hover
-      tiltFactor: 0.2, // Intensity of tilt effect
-      tiltSpeed: 0.05, // Speed of tilt animation
-      displaceStrength: 0.6, // Strength of mouse displacement
-      displaceRadius: 0.1, // Radius of displacement effect
-      velocityInfluence: 0.3, // How much mouse velocity affects displacement
-      returnSpeed: 0.05, // Speed particles return to original position
-      fontSize: 48, // Font size for character particles
-      fontFamily: "monospace", // Font family for character particles
-      videoUpdateRate: 100, // Milliseconds between video frame updates
-      modelScale: 1, // Scale factor for 3D models
-      geometry: null, // Pre-computed particle positions for custom geometry
-      on: {
-        init(instance) {
-          // The `init` callback fires once particlesGL has converted
-          // the element and rendered the first frame
-          console.log("particlesGL ready!", instance);
-        },
-      },
-    });
-  });
-</script>
+```js
+import particlesGL from "particles-gl";
+
+const particleEffect = particlesGL({
+  target: ".particlesGL", // CSS selector for the element(s) to particlise
+  character: "•", // Character/emoji to use for particles
+  particleSize: 0.015, // Size of individual particles
+  particleSpacing: 0.002, // Spacing between particles (for images/videos)
+  particleColor: "sample", // Hex colour or 'sample' to extract colours from source pixels
+  sampling: 4, // Pixel sampling rate (lower = more particles)
+  tilt: true, // Enable tilt effect on hover
+  tiltFactor: 0.2, // Intensity of tilt effect
+  tiltSpeed: 0.05, // Speed of tilt animation
+  displaceStrength: 0.6, // Strength of mouse displacement
+  displaceRadius: 0.1, // Radius of displacement effect
+  velocityInfluence: 0.3, // How much mouse velocity affects displacement
+  returnSpeed: 0.05, // Speed particles return to original position
+  fontSize: 48, // Font size for character particles
+  fontFamily: "monospace", // Font family for character particles
+  videoUpdateRate: 100, // Milliseconds between video frame updates
+  modelScale: 1, // Scale factor for 3D models
+  geometry: null, // Pre-computed particle positions for custom geometry
+  on: {
+    init(instance) {
+      // The `init` callback fires once particlesGL has converted
+      // the element and rendered the first frame
+      console.log("particlesGL ready!", instance);
+    },
+  },
+});
 ```
 
 **HTML Data Attributes**

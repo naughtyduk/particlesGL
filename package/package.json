@@ -1,0 +1,36 @@
+{
+  "name": "particles-gl",
+  "version": "1.0.5",
+  "description": "Universal WebGL particle effects for any DOM element.",
+  "type": "module",
+  "main": "./particlesGL.js",
+  "module": "./particlesGL.js",
+  "exports": {
+    ".": {
+      "import": "./particlesGL.js",
+      "default": "./particlesGL.js"
+    }
+  },
+  "files": [
+    "particlesGL.js",
+    "README.md",
+    "LICENCE.md"
+  ],
+  "dependencies": {
+    "three": "^0.178.0"
+  },
+  "keywords": [
+    "particles",
+    "webgl",
+    "three",
+    "particle-system",
+    "interactive",
+    "shader"
+  ],
+  "author": "NaughtyDuk",
+  "license": "SEE LICENCE.md",
+  "homepage": "https://particlesgl.naughtyduk.com",
+  "publishConfig": {
+    "access": "public"
+  }
+}
